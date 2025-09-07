@@ -4,7 +4,7 @@
 import argparse
 from pathlib import Path
 
-from bench_utils import default_binary, maybe_write_xlsx, run_general, write_csv
+from bench_utils import default_binary, run_general, write_csv
 
 
 def main():
@@ -31,10 +31,6 @@ def main():
     outdir = Path(args.outdir)
     write_csv(outdir / 'general.csv', headers, rows)
     print(f"Wrote: {outdir / 'general.csv'}")
-
-    if maybe_write_xlsx(outdir / 'general.xlsx', [('general', headers, rows)]):
-        print(f"Also tried to write Excel workbook to: {outdir / 'general.xlsx'} (if Excel lib was available)")
-
 
 if __name__ == '__main__':
     main()

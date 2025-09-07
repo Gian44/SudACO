@@ -141,44 +141,6 @@ def write_csv(path, headers, rows):
         for r in rows:
             w.writerow(r)
 
-
-def maybe_write_xlsx(path, sheets):
-    """Attempt to write an Excel workbook with the given sheets."""
-    # sheets: list of (sheet_name, headers, rows)
-    try:
-        import openpyxl  # type: ignore
-        from openpyxl import Workbook
-    except Exception:
-        try:
-            import xlsxwriter  # type: ignore
-        except Exception:
-            return False
-        # xlsxwriter path
-        path.parent.mkdir(parents=True, exist_ok=True)
-        wb = xlsxwriter.Workbook(str(path))
-        for name, headers, rows in sheets:
-            ws = wb.add_worksheet(name[:31])
-            for j, h in enumerate(headers):
-                ws.write(0, j, h)
-            for i, row in enumerate(rows, start=1):
-                for j, val in enumerate(row):
-                    ws.write(i, j, val)
-        wb.close()
-        return True
-    # openpyxl path
-    wb = Workbook()
-    # remove default sheet
-    wb.remove(wb.active)
-    for name, headers, rows in sheets:
-        ws = wb.create_sheet(name[:31])
-        ws.append(headers)
-        for r in rows:
-            ws.append(r)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    wb.save(str(path))
-    return True
-
-
 def run_logic(algs, logic_dir, binary, timeout, reps_logic, vlog):
     """Run benchmarks on logic-solvable instances."""
     logic_rows = []

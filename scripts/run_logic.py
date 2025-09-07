@@ -6,7 +6,6 @@ from pathlib import Path
 
 from bench_utils import (
     default_binary,
-    maybe_write_xlsx,
     run_logic,
     write_csv,
 )
@@ -37,12 +36,6 @@ def main():
     outdir = Path(args.outdir)
     write_csv(outdir / 'logic-solvable.csv', headers, rows)
     print(f"Wrote: {outdir / 'logic-solvable.csv'}")
-
-    if maybe_write_xlsx(outdir / 'logic-solvable.xlsx', [('logic-solvable', headers, rows)]):
-        print(
-            f"Also tried to write Excel workbook to: {outdir / 'logic-solvable.xlsx'} (if Excel lib was available)"
-        )
-
 
 if __name__ == '__main__':
     main()
