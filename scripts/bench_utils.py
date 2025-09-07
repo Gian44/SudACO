@@ -47,27 +47,43 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
     elapsed = math.nan
     cycles = math.nan
 
-    # Prefer an explicit success flag line equal to '0' or '1'
-    flag = None
-    for ln in lines:
-        if ln in ('0', '1'):
-            flag = ln
+    # Keep a copy for cycle parsing before we mutate the list
+    all_lines = list(lines)
 
     # Robust float pattern supporting scientific notation
     float_pat = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?")
-    # Try to find the last float in the output (time line or 'solved in X')
-    for ln in reversed(lines):
-        m = float_pat.search(ln)
+
+    # If the final line looks like a float, treat it as the elapsed time and
+    # remove it from the list so it isn't misinterpreted as the success flag.
+    if lines:
+        m = float_pat.fullmatch(lines[-1])
         if m:
             try:
                 elapsed = float(m.group(0))
-                break
+                lines = lines[:-1]
             except ValueError:
-                continue
+                pass
+
+    # Prefer an explicit success flag line equal to '0' or '1' on the now-last line
+    flag = None
+    if lines and lines[-1] in ('0', '1'):
+        flag = lines[-1]
+        lines = lines[:-1]
+
+    # Fallback: search remaining lines for a float if we didn't find time above
+    if math.isnan(elapsed):
+        for ln in reversed(lines):
+            m = float_pat.search(ln)
+            if m:
+                try:
+                    elapsed = float(m.group(0))
+                    break
+                except ValueError:
+                    continue
 
     # Extract number of cycles if present (supports single- and multi-colony prints)
     cyc_pat = re.compile(r"Number of cycles(?: \(multi\))?:\s*(\d+)")
-    for ln in lines:
+    for ln in all_lines:
         m = cyc_pat.search(ln)
         if m:
             try:
@@ -79,7 +95,7 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
         success = (flag == '0')
     else:
         # Fallback: if we saw "solved in" treat as success
-        for ln in lines:
+        for ln in all_lines:
             if 'solved in' in ln.lower():
                 success = True
                 break
@@ -154,8 +170,8 @@ def run_logic(algs, logic_dir, binary, timeout, reps_logic, vlog):
             cycles_solved = []
             for r in range(reps_logic):
                 vlog(f"  - rep {r+1}/{reps_logic}")
-                ok, t, cyc, _ = run_solver(binary, fp, alg, timeout)
-                if ok:
+                _, t, cyc, out = run_solver(binary, fp, alg, timeout)
+                if "solved in" in out.lower():
                     successes += 1
                     times.append(t)
                     if not math.isnan(cyc):
@@ -190,8 +206,8 @@ def run_general(algs, gen_dir, binary, timeout, vlog):
             cycles_solved = []
             for i, fp in enumerate(files, start=1):
                 vlog(f"  - file {i}/{len(files)}: {fp.name}")
-                ok, t, cyc, _ = run_solver(binary, fp, alg, timeout)
-                if ok:
+                _, t, cyc, out = run_solver(binary, fp, alg, timeout)
+                if "solved in" in out.lower():
                     solved += 1
                     times.append(t)
                     if not math.isnan(cyc):
