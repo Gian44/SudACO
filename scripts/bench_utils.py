@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
-import argparse
+"""Shared benchmarking utilities for Sudoku ACO experiments.
+
+This module provides helpers for running the solver over the logic-solvable
+and general instance sets.  It is intended to be imported by small wrapper
+scripts that handle the command line interface for each benchmark type.
+"""
+
 import csv
 import math
 import os
 import re
 import subprocess
-import sys
-import time
 from pathlib import Path
 from statistics import mean, pstdev
 
 
 def default_binary():
-    # Try to guess a sensible default per platform
+    """Guess a sensible default solver binary depending on the platform."""
     if os.name == 'nt':
         cand = Path('vs2017') / 'x64' / 'Release' / 'sudoku_ants.exe'
         if cand.exists():
@@ -26,6 +30,7 @@ def default_binary():
 
 
 def run_solver(binary, file_path, alg, timeout, extra_args=None):
+    """Invoke the solver and parse its output."""
     args = [binary, '--file', str(file_path), '--alg', str(alg), '--timeout', str(timeout)]
     if extra_args:
         args.extend(extra_args)
@@ -34,6 +39,7 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
     except subprocess.CalledProcessError as e:
         # Non-zero exit; try to parse any output
         out = e.output
+
     # Parse output: expected two lines at the end: success_flag (0=success), time
     # Be robust to extra prints and scientific notation times like 5e-05.
     lines = [ln.strip() for ln in out.splitlines() if ln.strip() != '']
@@ -46,6 +52,7 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
     for ln in lines:
         if ln in ('0', '1'):
             flag = ln
+
     # Robust float pattern supporting scientific notation
     float_pat = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?")
     # Try to find the last float in the output (time line or 'solved in X')
@@ -57,6 +64,7 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
                 break
             except ValueError:
                 continue
+
     # Extract number of cycles if present (supports single- and multi-colony prints)
     cyc_pat = re.compile(r"Number of cycles(?: \(multi\))?:\s*(\d+)")
     for ln in lines:
@@ -66,6 +74,7 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
                 cycles = int(m.group(1))
             except ValueError:
                 pass
+
     if flag is not None:
         success = (flag == '0')
     else:
@@ -74,17 +83,19 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
             if 'solved in' in ln.lower():
                 success = True
                 break
+
     return success, elapsed, cycles, out
 
 
 def scan_logic_instances(base):
+    """Return a sorted list of logic-solvable instance files."""
     p = Path(base)
     files = sorted(p.glob('*.txt'))
     return files
 
 
 def parse_general_filename(name):
-    # Expected like: inst16x16_45_10.txt
+    """Parse a general instance filename, returning (size, F%)."""
     stem = Path(name).stem
     parts = stem.split('_')
     if len(parts) < 3:
@@ -98,6 +109,7 @@ def parse_general_filename(name):
 
 
 def scan_general_groups(base):
+    """Group general instances by size and fraction of given numbers."""
     groups = {}  # (size, frac) -> [files]
     for fp in sorted(Path(base).glob('*.txt')):
         size, frac = parse_general_filename(fp.name)
@@ -131,6 +143,7 @@ def write_csv(path, headers, rows):
 
 
 def maybe_write_xlsx(path, sheets):
+    """Attempt to write an Excel workbook with the given sheets."""
     # sheets: list of (sheet_name, headers, rows)
     try:
         import openpyxl  # type: ignore
@@ -167,6 +180,7 @@ def maybe_write_xlsx(path, sheets):
 
 
 def run_logic(algs, logic_dir, binary, timeout, reps_logic, vlog):
+    """Run benchmarks on logic-solvable instances."""
     logic_rows = []
     logic_headers = ['alg', 'instance', 'success_%', 'time_mean', 'time_std', 'cycles_mean']
     logic_files = scan_logic_instances(logic_dir)
@@ -186,12 +200,23 @@ def run_logic(algs, logic_dir, binary, timeout, reps_logic, vlog):
                         cycles_solved.append(cyc)
             succ_pct = (successes / float(reps_logic)) * 100.0
             cycles_mean_val = round(safe_mean(cycles_solved), 3)
-            logic_rows.append([alg, fp.name, round(succ_pct, 2), round(safe_mean(times), 6), round(safe_std(times), 6), cycles_mean_val])
-            vlog(f"  => success%={round(succ_pct,2)} time_mean={round(safe_mean(times),6)} time_std={round(safe_std(times),6)} cycles_mean={cycles_mean_val}")
+            logic_rows.append([
+                alg,
+                fp.name,
+                round(succ_pct, 2),
+                round(safe_mean(times), 6),
+                round(safe_std(times), 6),
+                cycles_mean_val,
+            ])
+            vlog(
+                f"  => success%={round(succ_pct,2)} time_mean={round(safe_mean(times),6)} "
+                f"time_std={round(safe_std(times),6)} cycles_mean={cycles_mean_val}"
+            )
     return logic_headers, logic_rows
 
 
 def run_general(algs, gen_dir, binary, timeout, vlog):
+    """Run benchmarks on general instances."""
     gen_rows = []
     gen_headers = ['alg', 'puzzle', 'F%', 'solution_rate', 'time_mean', 'time_std', 'cycles_mean']
     groups = scan_general_groups(gen_dir)
@@ -210,54 +235,18 @@ def run_general(algs, gen_dir, binary, timeout, vlog):
                     if not math.isnan(cyc):
                         cycles_solved.append(cyc)
             rate = (solved / float(len(files))) * 100.0 if files else 0.0
-            gen_rows.append([alg, size, frac, round(rate, 2), round(safe_mean(times), 6), round(safe_std(times), 6), round(safe_mean(cycles_solved), 3)])
-            vlog(f"  => solution_rate={round(rate,2)} time_mean={round(safe_mean(times),6)} time_std={round(safe_std(times),6)} cycles_mean={round(safe_mean(cycles_solved),3)}")
+            gen_rows.append([
+                alg,
+                size,
+                frac,
+                round(rate, 2),
+                round(safe_mean(times), 6),
+                round(safe_std(times), 6),
+                round(safe_mean(cycles_solved), 3),
+            ])
+            vlog(
+                f"  => solution_rate={round(rate,2)} time_mean={round(safe_mean(times),6)} "
+                f"time_std={round(safe_std(times),6)} cycles_mean={round(safe_mean(cycles_solved),3)}"
+            )
     return gen_headers, gen_rows
 
-
-def main():
-    ap = argparse.ArgumentParser(description='Run Sudoku ACO experiments over instances and export results.')
-    ap.add_argument('--binary', default=default_binary(), help='Path to solver binary (default: auto-detect)')
-    ap.add_argument('--instances', default='instances', help='Instances root folder (default: instances)')
-    ap.add_argument('--timeout', type=int, default=10, help='Per-run timeout seconds (default: 10)')
-    ap.add_argument('--algs', default='0,1,2', help='Comma-separated list of alg ids to run (default: 0,1,2)')
-    ap.add_argument('--reps_logic', type=int, default=100, help='Repetitions per logic-solvable instance (default: 100)')
-    ap.add_argument('--outdir', default='scripts', help='Output directory (default: results)')
-    ap.add_argument('--mode', choices=['logic', 'general', 'both'], default='both', help='Which set to run')
-    ap.add_argument('--verbose', action='store_true', help='Print progress while running instances')
-    args = ap.parse_args()
-
-    binary = args.binary
-    if not Path(binary).exists() and not os.path.isabs(binary):
-        # Allow PATH resolution
-        pass
-    algs = [int(x.strip()) for x in args.algs.split(',') if x.strip() != '']
-
-    logic_dir = Path(args.instances) / 'logic-solvable'
-    gen_dir = Path(args.instances) / 'general'
-
-    def vlog(*a, **k):
-        if args.verbose:
-            print(*a, **k, flush=True)
-
-    outdir = Path(args.outdir)
-    sheets = []
-    if args.mode in ('logic', 'both'):
-        logic_headers, logic_rows = run_logic(algs, logic_dir, binary, args.timeout, args.reps_logic, vlog)
-        write_csv(outdir / 'logic-solvable.csv', logic_headers, logic_rows)
-        sheets.append(('logic-solvable', logic_headers, logic_rows))
-        print(f"Wrote: {outdir / 'logic-solvable.csv'}")
-
-    if args.mode in ('general', 'both'):
-        gen_headers, gen_rows = run_general(algs, gen_dir, binary, args.timeout, vlog)
-        write_csv(outdir / 'general.csv', gen_headers, gen_rows)
-        sheets.append(('general', gen_headers, gen_rows))
-        print(f"Wrote: {outdir / 'general.csv'}")
-
-    if sheets:
-        maybe_write_xlsx(outdir / 'results.xlsx', sheets)
-        print(f"Also tried to write Excel workbook to: {outdir / 'results.xlsx'} (if Excel lib was available)")
-
-
-if __name__ == '__main__':
-    main()
