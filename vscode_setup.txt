@@ -1,0 +1,22 @@
+windows setup
+
+for cmd:
+
+cmd /k ""C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\VsDevCmd.bat"" -arch=x64
+
+msbuild .\vs2017\sudoku_ants.vcxproj /t:Build /p:Configuration=Release /p:Platform=x64
+
+for powershell (as a one-liner):
+
+cmd /c '"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\VsDevCmd.bat" -arch=x64 && msbuild .\vs2017\sudoku_ants.vcxproj /t:Build /p:Configuration=Release /p:Platform=x64'
+
+sample how to run:
+
+.\vs2017\x64\Release\sudoku_ants.exe --file instances/logic-solvable/platinumblond.txt --verbose
+
+for multi-swarm:
+.\vs2017\x64\Release\sudoku_ants.exe --alg 2 --file instances/logic-solvable/platinumblond.txt --showinitial --verbose 
+
+to run tests:
+
+python scripts\run_bench.py --algs 0,2 --verbose
