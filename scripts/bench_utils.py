@@ -31,13 +31,12 @@ def default_binary():
 
 def run_solver(binary, file_path, alg, timeout, extra_args=None):
     """Invoke the solver and parse its output."""
-    args = [binary, '--file', str(file_path), '--alg', str(alg), '--timeout', str(timeout)]
+    args = [binary, '--file', str(file_path), '--alg', str(alg), '--timeout', str(timeout), '--verbose']
     if extra_args:
         args.extend(extra_args)
     try:
         out = subprocess.check_output(args, stderr=subprocess.STDOUT, universal_newlines=True)
     except subprocess.CalledProcessError as e:
-        # Non-zero exit; try to parse any output
         out = e.output
 
     # Parse output: expected two lines at the end: success_flag (0=success), time
@@ -46,7 +45,7 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
     success = False
     elapsed = math.nan
     cycles = math.nan
-
+    
     # Keep a copy for cycle parsing before we mutate the list
     all_lines = list(lines)
 
