@@ -81,8 +81,8 @@ int main( int argc, char *argv[] )
 
     int algorithm = a.GetArg("alg", 0);
     int timeOutSecs = a.GetArg("timeout", 10);
-    // Algorithm-specific defaults: alg 2 (multi-colony) uses 3 ants/colony and 3 colonies by default
-    int nAntsDefault = (algorithm == 2 ? 3 : 10);
+    // Algorithm-specific defaults: alg 2 (multi-colony) uses 4 ants/colony and 3 colonies by default
+    int nAntsDefault = (algorithm == 2 ? 4 : 12);
     int coloniesDefault = (algorithm == 2 ? 3 : 1);
     // Support both --nAnts and --ants (fallback) for compatibility
     int nAnts = a.GetArg("nAnts", a.GetArg("ants", nAntsDefault));

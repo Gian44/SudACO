@@ -12,10 +12,12 @@ cmd /c '"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\
 
 sample how to run:
 
-.\vs2017\x64\Release\sudoku_ants.exe --file instances/logic-solvable/platinumblond.txt --verbose
+.\vs2017\x64\Release\sudoku_ants.exe --file instances/logic-solvable/platinumblond.txt --showinitial --verbose
+.\vs2017\x64\Release\sudoku_ants.exe --file instances/general/inst25x25_40_42.txt --showinitial --verbose
 
 for multi-swarm:
 .\vs2017\x64\Release\sudoku_ants.exe --alg 2 --file instances/logic-solvable/platinumblond.txt --showinitial --verbose 
+.\vs2017\x64\Release\sudoku_ants.exe --alg 2 --file instances/general/inst25x25_40_42.txt --showinitial --verbose
 
 to run tests:
 
