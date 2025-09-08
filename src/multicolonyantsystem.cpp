@@ -50,6 +50,7 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
     solutionTimer.Reset();
     int iter = 0;
     bool solved = false;
+    const int nACS = (std::min)(2, numColonies);
 
     // init colonies
     colonyQ0.resize(numColonies);
@@ -60,8 +61,8 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
         colonies[c].bestPher = 0.0f;
         colonies[c].bestVal = 0;
         colonies[c].tau0 = pher0;
-        // assign colony type: first half ACS, second half MMAS
-        colonies[c].type = (c < numColonies/2 ? 0 : 1);
+        // assign colony type: 2 ACS, 1 MMAS (for DCM-ACO)
+        colonies[c].type = (c < nACS ? 0 : 1);
         // Heterogeneous parameters across colonies (mild spread around base q0/rho)
         float spread = (numColonies > 1) ? (float)c / (float)(numColonies - 1) : 0.5f;
         {

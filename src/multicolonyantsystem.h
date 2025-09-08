@@ -57,7 +57,7 @@ class MultiColonyAntSystem : public SudokuSolver
 
     // dynamic collaborative mechanism parameters
     float entropyThreshold;   // E*(P) threshold for ACS fusion trigger
-    float convThreshold;      // convergence threshold for MMAS public path trigger
+    float convThreshold;     // convergence threshold for MMAS public path trigger
 
     // pheromone helpers
     void InitPheromone(Colony &c, int numCells, int valuesPerCell);
@@ -87,8 +87,8 @@ public:
         randGen = std::mt19937(rd());
         // default thresholds (can be tuned):
         // entropy threshold as a fraction of max entropy; we will compare absolute E(P) against this dynamic target per-iteration
-        entropyThreshold = 0.0f; // use dynamic threshold based on current E_max when checking
-        convThreshold = 0.5f;    // default convergence threshold for MMAS
+        entropyThreshold = 4.0f; // use dynamic threshold based on current E_max when checking
+        convThreshold = 0.8f;    // default convergence threshold for MMAS
     }
 
     ~MultiColonyAntSystem()
