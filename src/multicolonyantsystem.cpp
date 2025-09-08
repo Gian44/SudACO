@@ -4,45 +4,6 @@
 #include <climits>
 #include <limits>
 #include <cmath>
-#include <cassert>
-
-// New constructor specifying colony mix {numACS, numMMAS}
-MultiColonyAntSystem::MultiColonyAntSystem(int antsPerColony, float q0, float rho,
-                                           float pher0, float bestEvap,
-                                           int migrationInterval, float migrationRate,
-                                           int numACS, int numMMAS)
-    : numColonies(numACS + numMMAS), numACS(numACS), numMMAS(numMMAS),
-      antsPerColony(antsPerColony), q0(q0), rho(rho), pher0(pher0), bestEvap(bestEvap),
-      migrationInterval(migrationInterval), migrationRate(migrationRate),
-      globalBestPher(0.0f), globalBestVal(0), solTime(0.0f)
-{
-    colonies.resize(numColonies);
-    randomDist = std::uniform_real_distribution<float>(0.0f, 1.0f);
-    std::random_device rd;
-    randGen = std::mt19937(rd());
-    // default DCM-ACO thresholds (Mo, You, Liu 2022)
-    entropyThreshold = 4.0f; // Eq.(16) trigger; <=0 uses dynamic 0.7*E_max
-    convThreshold = 0.8f;    // Eq.(18) convergence trigger
-}
-
-// Legacy constructor: keep old API with total number of colonies
-MultiColonyAntSystem::MultiColonyAntSystem(int numColonies, int antsPerColony, float q0,
-                                           float rho, float pher0, float bestEvap,
-                                           int migrationInterval, float migrationRate)
-    : MultiColonyAntSystem(antsPerColony, q0, rho, pher0, bestEvap,
-                           migrationInterval, migrationRate,
-                           numColonies/2, numColonies - numColonies/2)
-{
-}
-
-MultiColonyAntSystem::~MultiColonyAntSystem()
-{
-    for (auto &c : colonies)
-    {
-        for (auto *a : c.ants) delete a;
-        if (c.pher) ClearPheromone(c);
-    }
-}
 
 void MultiColonyAntSystem::InitPheromone(Colony &c, int nNumCells, int valuesPerCell)
 {
@@ -99,10 +60,20 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
         colonies[c].bestPher = 0.0f;
         colonies[c].bestVal = 0;
         colonies[c].tau0 = pher0;
-        // assign colony type by explicit counts
-        colonies[c].type = (c < numACS ? 0 : 1); // 0=ACS,1=MMAS
+        // assign colony type: first half ACS, second half MMAS
+        colonies[c].type = (c < numColonies/2 ? 0 : 1);
         // Heterogeneous parameters across colonies (mild spread around base q0/rho)
-        ComputeColonyParams(c, q0, rho, colonyQ0[c], colonyRho[c]);
+        float spread = (numColonies > 1) ? (float)c / (float)(numColonies - 1) : 0.5f;
+        {
+            float cq0 = q0 * (0.9f + 0.2f * (spread - 0.5f));
+            if (cq0 < 0.5f) cq0 = 0.5f; else if (cq0 > 0.98f) cq0 = 0.98f;
+            colonyQ0[c] = cq0;
+        }
+        {
+            float crho = rho * (0.85f + 0.3f * (0.5f - spread));
+            if (crho < 0.5f) crho = 0.5f; else if (crho > 0.99f) crho = 0.99f;
+            colonyRho[c] = crho;
+        }
         // initial Max-Min bounds (used by MMAS colonies)
         colonies[c].tauMax = colonies[c].tau0 * 10.0f;
         colonies[c].tauMin = colonies[c].tau0 * 0.01f;
@@ -111,15 +82,6 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
         for (int i = 0; i < antsPerColony; i++)
             colonies[c].ants.push_back(new ColonyAnt(this, c));
     }
-#ifndef NDEBUG
-    if (numColonies == 3 && numACS == 2 && numMMAS == 1)
-    {
-        assert(colonies[0].type == 0 && colonies[1].type == 0 && colonies[2].type == 1);
-    }
-    int acsCount = 0;
-    for (int c = 0; c < numColonies; ++c) if (colonies[c].type == 0) ++acsCount;
-    assert(acsCount == numACS);
-#endif
 
     std::uniform_int_distribution<int> startDist(0, puzzle.CellCount() - 1);
 
@@ -164,7 +126,6 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
                 colonies[c].bestVal = bestVal;
                 colonies[c].lastImproveIter = iter;
                 // tighten Max-Min bounds with improvement (for MMAS colonies)
-                // Sudoku adaptation: keep simple bounds instead of TSP's τ_max=(1/ρ)/L_gb (no path length)
                 if (colonies[c].type == 1)
                 {
                     float tmax = colonies[c].tau0 * 5.0f;
@@ -270,7 +231,7 @@ void MultiColonyAntSystem::ACSCooperativeGameAllocate(std::vector<int> &acsIdx,
                                                       std::vector<float> &allocatedBestPher)
 {
     if (acsIdx.empty()) return;
-    // total payoff b = Σ pheromone revenue from each ACS best ant (Eq.10)
+    // total payoff b = sum of per-ACS pheromone revenues (use PherAdd from bestVal)
     double b = 0.0;
     int minLen = (std::numeric_limits<int>::max)();
     std::vector<int> lengths; lengths.reserve(acsIdx.size());
@@ -278,7 +239,7 @@ void MultiColonyAntSystem::ACSCooperativeGameAllocate(std::vector<int> &acsIdx,
     float emax = 0.0f;
     for (int idx : acsIdx)
     {
-        int len = colonies[idx].numCells - colonies[idx].bestVal; // remaining cells
+        int len = colonies[idx].numCells - colonies[idx].bestVal; // lower is better
         lengths.push_back(len);
         if (len < minLen) minLen = len;
         float add = PherAdd(colonies[idx].numCells, colonies[idx].bestVal);
@@ -287,7 +248,7 @@ void MultiColonyAntSystem::ACSCooperativeGameAllocate(std::vector<int> &acsIdx,
         entropies.push_back(e);
         if (e > emax) emax = e;
     }
-    // contributions contr_i = solidity_i * H_i (Eq.12)
+    // contributions
     double sumContr = 0.0;
     std::vector<double> contr(acsIdx.size(), 0.0);
     for (size_t k = 0; k < acsIdx.size(); ++k)
@@ -297,17 +258,12 @@ void MultiColonyAntSystem::ACSCooperativeGameAllocate(std::vector<int> &acsIdx,
         contr[k] = soli * Hi;
         sumContr += contr[k];
     }
-    // allocation π_i·b (Eq.13)
+    // allocate new pheromone revenue per ACS
     for (size_t k = 0; k < acsIdx.size(); ++k)
     {
         double ihat = (sumContr > 0.0 ? contr[k] / sumContr : (1.0 / (double)acsIdx.size()));
         allocatedBestPher[acsIdx[k]] = (float)(ihat * b);
     }
-#ifndef NDEBUG
-    double sumAlloc = 0.0;
-    for (int idx : acsIdx) sumAlloc += allocatedBestPher[idx];
-    assert(std::fabs(sumAlloc - b) <= 1e-4 * std::max(1.0, b));
-#endif
 }
 
 // Mix ACS pheromone with MMAS pheromone when ACS entropy below threshold
@@ -340,10 +296,10 @@ void MultiColonyAntSystem::ApplyPheromoneFusion(const std::vector<int> &acsIdx,
     for (int i = 0; i < nc; ++i) delete [] tmp.pher[i];
     delete [] tmp.pher; tmp.pher = nullptr;
 
-    // Determine entropy trigger threshold (Eq.16)
+    // Determine dynamic entropy threshold: use a fraction (70%) of current max ACS entropy if not preset
     float eMaxACS = 0.0f;
     for (int cidx : acsIdx) eMaxACS = (std::max)(eMaxACS, ComputeEntropy(colonies[cidx]));
-    float eThresh = EntropyTriggerThreshold(eMaxACS);
+    float eThresh = (entropyThreshold > 0.0f ? entropyThreshold : (0.7f * eMaxACS));
 
     for (int cidx : acsIdx)
     {
@@ -372,8 +328,8 @@ void MultiColonyAntSystem::ApplyPublicPathRecommendation(int iter,
     if (acsIdx.empty() || mmasIdx.empty()) return;
     // Build public assignments: intersection of ACS best solutions' fixed cells
     int nc = colonies[acsIdx[0]].numCells;
+    int vp = colonies[acsIdx[0]].valuesPerCell;
     std::vector<int> publicIdx(nc, -1);
-    int consensus = 0;
     for (int cell = 0; cell < nc; ++cell)
     {
         bool allAgree = true;
@@ -386,19 +342,16 @@ void MultiColonyAntSystem::ApplyPublicPathRecommendation(int iter,
             if (k == 0) agreeIdx = idx;
             else if (idx != agreeIdx) { allAgree = false; break; }
         }
-        if (allAgree) { publicIdx[cell] = agreeIdx; ++consensus; }
+        if (allAgree) publicIdx[cell] = agreeIdx;
     }
 
-    if (consensus == 0) return; // no common assignments
-
-    // reinforcement amount τ_public = exp(-iter)/n (Eq.19)
+    // reinforcement amount: 1 / (n * e^iter)
     float n = (float)nc;
-    float tauPub = std::exp(-(float)iter) / n;
-    if (!(tauPub > 0.0f) || std::isnan(tauPub)) return;
+    float tauPub = std::exp(-(float)iter) / n; // 1/(n*e^iter)
 
     for (int cidx : mmasIdx)
     {
-        // convergence rate con_t = iter_opt / iter_t (Eq.18)
+        // convergence rate con_t = iter_opt / iter_t
         float con_t = (iter > 0 ? ((float)colonies[cidx].lastImproveIter / (float)iter) : 1.0f);
         if (con_t < convThreshold)
         {
@@ -413,21 +366,4 @@ void MultiColonyAntSystem::ApplyPublicPathRecommendation(int iter,
             ClampPheromone(colonies[cidx]);
         }
     }
-}
-
-float MultiColonyAntSystem::EntropyTriggerThreshold(float maxACSentropy) const
-{
-    return (entropyThreshold > 0.0f ? entropyThreshold : 0.7f * maxACSentropy);
-}
-
-void MultiColonyAntSystem::ComputeColonyParams(int colonyIdx, float baseQ0, float baseRho,
-                                               float &outQ0, float &outRho)
-{
-    float spread = (numColonies > 1) ? (float)colonyIdx / (float)(numColonies - 1) : 0.5f;
-    float cq0 = baseQ0 * (0.9f + 0.2f * (spread - 0.5f));
-    if (cq0 < 0.5f) cq0 = 0.5f; else if (cq0 > 0.98f) cq0 = 0.98f; // q0∈[0.5,0.98]
-    outQ0 = cq0;
-    float crho = baseRho * (0.85f + 0.3f * (0.5f - spread));
-    if (crho < 0.5f) crho = 0.5f; else if (crho > 0.99f) crho = 0.99f; // rho∈[0.5,0.99]
-    outRho = crho;
 }

@@ -28,8 +28,6 @@ class MultiColonyAntSystem : public SudokuSolver
     };
 
     int numColonies;
-    int numACS;
-    int numMMAS;
     int antsPerColony;
     float q0;
     float rho;
@@ -69,9 +67,6 @@ class MultiColonyAntSystem : public SudokuSolver
     void ClampPheromone(Colony &c);
 
     // helpers for new algorithm
-    void ComputeColonyParams(int colonyIdx, float baseQ0, float baseRho,
-                             float &outQ0, float &outRho);
-    float EntropyTriggerThreshold(float maxACSentropy) const;
     float ComputeEntropy(const Colony &c) const;
     void ACSCooperativeGameAllocate(std::vector<int> &acsIdx,
                                     std::vector<float> &allocatedBestPher);
@@ -82,17 +77,28 @@ class MultiColonyAntSystem : public SudokuSolver
                                        const std::vector<int> &mmasIdx);
 
 public:
-    // New constructor allowing explicit colony mix {numACS,numMMAS}; defaults to 2 ACS + 1 MMAS
-    MultiColonyAntSystem(int antsPerColony, float q0, float rho, float pher0,
-                         float bestEvap, int migrationInterval, float migrationRate,
-                         int numACS = 2, int numMMAS = 1);
+    MultiColonyAntSystem(int numColonies, int antsPerColony, float q0, float rho, float pher0, float bestEvap, int migrationInterval, float migrationRate)
+        : numColonies(numColonies), antsPerColony(antsPerColony), q0(q0), rho(rho), pher0(pher0), bestEvap(bestEvap),
+          migrationInterval(migrationInterval), migrationRate(migrationRate), globalBestPher(0.0f), globalBestVal(0), solTime(0.0f)
+    {
+        colonies.resize(numColonies);
+        randomDist = std::uniform_real_distribution<float>(0.0f, 1.0f);
+        std::random_device rd;
+        randGen = std::mt19937(rd());
+        // default thresholds (can be tuned):
+        // entropy threshold as a fraction of max entropy; we will compare absolute E(P) against this dynamic target per-iteration
+        entropyThreshold = 0.0f; // use dynamic threshold based on current E_max when checking
+        convThreshold = 0.5f;    // default convergence threshold for MMAS
+    }
 
-    // Legacy constructor taking total number of colonies and splitting half ACS / half MMAS
-    MultiColonyAntSystem(int numColonies, int antsPerColony, float q0, float rho,
-                         float pher0, float bestEvap, int migrationInterval,
-                         float migrationRate);
-
-    ~MultiColonyAntSystem();
+    ~MultiColonyAntSystem()
+    {
+        for (auto &c : colonies)
+        {
+            for (auto *a : c.ants) delete a;
+            if (c.pher) ClearPheromone(c);
+        }
+    }
 
     // SudokuSolver interface
     virtual bool Solve(const Board &puzzle, float maxTime);
@@ -114,10 +120,4 @@ public:
             ref = ref * 0.9f + colonies[colony].tau0 * 0.1f;
         }
     }
-
-    // tunable thresholds
-    void SetEntropyThreshold(float t) { entropyThreshold = t; }
-    float GetEntropyThreshold() const { return entropyThreshold; }
-    void SetConvergenceThreshold(float t) { convThreshold = t; }
-    float GetConvergenceThreshold() const { return convThreshold; }
 };
