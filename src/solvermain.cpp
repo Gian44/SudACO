@@ -109,7 +109,12 @@ int main( int argc, char *argv[] )
     else if ( algorithm == 2 )
     {
         // Multi-colony ACO (ants count is per colony)
-        solver = new MultiColonyAntSystem(colonies, nAnts, q0, rho, 1.0f/board.CellCount(), evap, migrate, mix);
+        // Default behaviour: 2 ACS + 1 MMAS colonies (DCM-ACO mix)
+        if (colonies == 3)
+            solver = new MultiColonyAntSystem(nAnts, q0, rho, 1.0f/board.CellCount(), evap, migrate, mix);
+        else
+            // Legacy mode: split half ACS / half MMAS according to total colonies
+            solver = new MultiColonyAntSystem(colonies, nAnts, q0, rho, 1.0f/board.CellCount(), evap, migrate, mix);
     }
     else
     {
