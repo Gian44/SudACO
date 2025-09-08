@@ -306,7 +306,9 @@ void MultiColonyAntSystem::ACSCooperativeGameAllocate(std::vector<int> &acsIdx,
 #ifndef NDEBUG
     double sumAlloc = 0.0;
     for (int idx : acsIdx) sumAlloc += allocatedBestPher[idx];
-    assert(std::fabs(sumAlloc - b) <= 1e-4 * std::max(1.0, b));
+    // Use parentheses around std::max to avoid conflicts with macro definitions
+    // on some platforms (e.g., Windows headers define max as a macro).
+    assert(std::fabs(sumAlloc - b) <= 1e-4 * (std::max)(1.0, b));
 #endif
 }
 
