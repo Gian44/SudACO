@@ -87,7 +87,7 @@ public:
         randGen = std::mt19937(rd());
         // default thresholds (can be tuned):
         // entropy threshold as a fraction of max entropy; we will compare absolute E(P) against this dynamic target per-iteration
-        entropyThreshold = 4.0f; // use dynamic threshold based on current E_max when checking
+        entropyThreshold = 0.0f; // use dynamic threshold based on current E_max when checking
         convThreshold = 0.8f;    // default convergence threshold for MMAS
     }
 
