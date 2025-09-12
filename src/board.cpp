@@ -215,6 +215,32 @@ string Board::AsString(bool useNumbers, bool showUnfixed )
 	return puzString.str();
 }
 
+// Produce a compact one-line representation of the board suitable for
+// serialization or progress reporting. Fixed cells are encoded using the
+// same character mapping as solver inputs (digits/hex/letters). Unfixed
+// cells are represented by '.'.
+string Board::ToPuzzleString() const
+{
+        string alphabet;
+        if (order == 3)
+                alphabet = string("123456789");
+        else if (order == 4)
+                alphabet = string("0123456789abcdef");
+        else
+                alphabet = string("abcdefghijklmnopqrstuvwxy");
+
+        string out;
+        out.reserve(numCells);
+        for (int i = 0; i < numCells; ++i)
+        {
+                if (cells[i].Fixed())
+                        out += alphabet[cells[i].Index()];
+                else
+                        out += '.';
+        }
+        return out;
+}
+
 void Board::ConstrainCell(int i )
 {
 	if ( cells[i].Empty() || cells[i].Fixed()  )

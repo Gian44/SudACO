@@ -79,17 +79,18 @@ bool SudokuAntSystem::Solve(const Board& puzzle, float maxTime )
 		}
 		float pherToAdd = PherAdd(bestVal);
 
-		if (pherToAdd > bestPher)
-		{
-			// new best
-			bestSol.Copy(antList[iBest]->GetSolution());
-			bestPher = pherToAdd;
-			curBestAnt = bestVal;
-			if (bestVal == numCells)
-			{
-				solved = true;
-				solTime = solutionTimer.Elapsed();
-			}
+                if (pherToAdd > bestPher)
+                {
+                        // new best
+                        bestSol.Copy(antList[iBest]->GetSolution());
+                        bestPher = pherToAdd;
+                        curBestAnt = bestVal;
+                        std::cout << "PROGRESS " << bestSol.ToPuzzleString() << std::endl;
+                        if (bestVal == numCells)
+                        {
+                                solved = true;
+                                solTime = solutionTimer.Elapsed();
+                        }
 		}
 		UpdatePheromone();
 		bestPher *= (1.0f - bestEvap);

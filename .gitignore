@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# Node artifacts
+frontend/node_modules
+frontend/uploads
