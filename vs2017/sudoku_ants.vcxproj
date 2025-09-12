@@ -122,8 +122,10 @@
     <ClCompile Include="..\src\solvermain.cpp" />
     <ClCompile Include="..\src\sudokuant.cpp" />
     <ClCompile Include="..\src\sudokuantsystem.cpp" />
+    <ClCompile Include="..\src\solver_api.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\solver_api.h" />
     <ClInclude Include="..\src\arguments.h" />
     <ClInclude Include="..\src\backtracksearch.h" />
     <ClInclude Include="..\src\board.h" />
