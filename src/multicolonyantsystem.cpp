@@ -141,6 +141,7 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
                 globalBestPher = colonies[c].bestPher;
                 globalBestSol.Copy(colonies[c].bestSol);
                 globalBestVal = colonies[c].bestVal;
+                std::cout << "PROGRESS " << globalBestSol.ToPuzzleString() << std::endl;
                 if (globalBestVal == puzzle.CellCount())
                 {
                     solved = true;

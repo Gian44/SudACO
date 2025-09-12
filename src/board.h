@@ -10,11 +10,14 @@ public:
 	// sudoku board
 	Board(){};
 	Board(const string &puzzleString);
-	Board(const Board &other);
-	~Board();
+        Board(const Board &other);
+        ~Board();
 
-	string AsString(bool useNmbers=false, bool showUnfixed = false);
-	int FixedCellCount(void) const;
+        string AsString(bool useNmbers=false, bool showUnfixed = false);
+        // Return one-line puzzle representation using '.' for unfixed cells
+        // and digits/letters for fixed values.
+        string ToPuzzleString() const;
+        int FixedCellCount(void) const;
 	int InfeasibleCellCount(void) const;
 	void SetCell(int i, const ValueSet &c );
 	const ValueSet &GetCell(int i) const;
