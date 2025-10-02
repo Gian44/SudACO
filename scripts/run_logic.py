@@ -2,6 +2,7 @@
 """Run benchmarks on logic-solvable Sudoku instances."""
 
 import argparse
+from datetime import datetime
 from pathlib import Path
 
 from bench_utils import (
@@ -20,7 +21,11 @@ def main():
     ap.add_argument('--timeout', type=int, default=10, help='Per-run timeout seconds (default: 10)')
     ap.add_argument('--algs', default='0,1,2', help='Comma-separated list of alg ids to run (default: 0,1,2)')
     ap.add_argument('--reps_logic', type=int, default=100, help='Repetitions per instance (default: 100)')
-    ap.add_argument('--outdir', default='scripts', help='Output directory (default: scripts)')
+    ap.add_argument(
+        '--outdir',
+        default='results/run_logic',
+        help='Output directory (default: results/run_logic)'
+    )
     ap.add_argument('--verbose', action='store_true', help='Print progress while running instances')
     args = ap.parse_args()
 
@@ -34,8 +39,10 @@ def main():
 
     headers, rows = run_logic(algs, logic_dir, binary, args.timeout, args.reps_logic, vlog)
     outdir = Path(args.outdir)
-    write_csv(outdir / 'logic-solvable.csv', headers, rows)
-    print(f"Wrote: {outdir / 'logic-solvable.csv'}")
+    timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+    outfile = outdir / f'logic-solvable_{timestamp}.csv'
+    write_csv(outfile, headers, rows)
+    print(f"Wrote: {outfile}")
 
 if __name__ == '__main__':
     main()

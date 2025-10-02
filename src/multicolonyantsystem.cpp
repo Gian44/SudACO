@@ -63,17 +63,18 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
         colonies[c].tau0 = pher0;
         // assign colony type: 2 ACS, 1 MMAS (for DCM-ACO)
         colonies[c].type = (c < nACS ? 0 : 1);
-        // Heterogeneous parameters across colonies (mild spread around base q0/rho)
-        float spread = (numColonies > 1) ? (float)c / (float)(numColonies - 1) : 0.5f;
+        // Parameters per colony type:
+        //  - ACS colonies (first 2): use ACS q0 and rho from Lloyd & Amos ACS style
+        //  - MMAS colony (remaining 1): pure roulette (q0 = 0), rho fixed to 0.1 as per paper
+        if (colonies[c].type == 0)
         {
-            float cq0 = q0 * (0.9f + 0.2f * (spread - 0.5f));
-            if (cq0 < 0.5f) cq0 = 0.5f; else if (cq0 > 0.98f) cq0 = 0.98f;
-            colonyQ0[c] = cq0;
+            colonyQ0[c] = q0;
+            colonyRho[c] = rho;
         }
+        else
         {
-            float crho = rho * (0.85f + 0.3f * (0.5f - spread));
-            if (crho < 0.5f) crho = 0.5f; else if (crho > 0.99f) crho = 0.99f;
-            colonyRho[c] = crho;
+            colonyQ0[c] = 0.0f;
+            colonyRho[c] = 0.1f;
         }
         // initial Max-Min bounds (used by MMAS colonies)
         colonies[c].tauMax = colonies[c].tau0 * 10.0f;
@@ -171,7 +172,7 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
         for (int c : mmasIdx)
         {
             UpdatePheromone(c, colonies[c], colonies[c].bestSol, colonies[c].bestPher);
-            colonies[c].bestPher *= (1.0f - bestEvap);
+            // colonies[c].bestPher *= (1.0f - bestEvap); Do not apply BVE (bestEvap) to MMAS colonies
         }
 
         // Dynamic collaborative mechanism
@@ -297,24 +298,26 @@ void MultiColonyAntSystem::ApplyPheromoneFusion(const std::vector<int> &acsIdx,
     for (int i = 0; i < nc; ++i) delete [] tmp.pher[i];
     delete [] tmp.pher; tmp.pher = nullptr;
 
-    // Determine dynamic entropy threshold: use a fraction (70%) of current max ACS entropy if not preset
+    // Determine entropy threshold as a fraction of current max ACS entropy
     float eMaxACS = 0.0f;
     for (int cidx : acsIdx) eMaxACS = (std::max)(eMaxACS, ComputeEntropy(colonies[cidx]));
-    float eThresh = (entropyThreshold > 0.0f ? entropyThreshold : (0.7f * eMaxACS));
+    float frac = entropyFrac;
+    if (frac < 0.0f) frac = 0.0f; else if (frac > 1.0f) frac = 1.0f;
+    float eThresh = frac * eMaxACS;
 
     for (int cidx : acsIdx)
     {
         float eACS = ComputeEntropy(colonies[cidx]);
         if (eACS < eThresh)
         {
-            // Wi = E(ACS) / (E(ACS) + E(MMAS))
-            float Wi = (eACS + eMMAS > 0.0f ? (eACS / (eACS + eMMAS)) : 0.0f);
-            // ph_i <- (1 - Wi)*ph_i + Wi*ph_mmas_avg
+            // Base mix weight from entropies (paper form): Wi = E(ACS)/(E(ACS)+E(MMAS))
+            float mix = (eACS + eMMAS > 0.0f ? (eACS / (eACS + eMMAS)) : 0.0f);
+            // ph_i <- (1 - mix)*ph_i + mix*ph_mmas_avg
             for (int i = 0; i < nc; ++i)
             {
                 for (int j = 0; j < vp; ++j)
                 {
-                    colonies[cidx].pher[i][j] = (1.0f - Wi) * colonies[cidx].pher[i][j] + Wi * avg[i*vp + j];
+                    colonies[cidx].pher[i][j] = (1.0f - mix) * colonies[cidx].pher[i][j] + mix * avg[i*vp + j];
                 }
             }
         }
@@ -346,15 +349,16 @@ void MultiColonyAntSystem::ApplyPublicPathRecommendation(int iter,
         if (allAgree) publicIdx[cell] = agreeIdx;
     }
 
-    // reinforcement amount: 1 / (n * e^iter)
+    // reinforcement amount: 1 / (n * e^iter) (paper constant)
     float n = (float)nc;
-    float tauPub = std::exp(-(float)iter) / n; // 1/(n*e^iter)
+    float tauPub = std::exp(-(float)iter) / n;
 
     for (int cidx : mmasIdx)
     {
         // convergence rate con_t = iter_opt / iter_t
         float con_t = (iter > 0 ? ((float)colonies[cidx].lastImproveIter / (float)iter) : 1.0f);
-        if (con_t < convThreshold)
+        float threshold = this->convThreshold;
+        if (con_t < threshold)
         {
             for (int cell = 0; cell < nc; ++cell)
             {

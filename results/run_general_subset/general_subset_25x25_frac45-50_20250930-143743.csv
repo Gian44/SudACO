@@ -1,0 +1,3 @@
+alg,puzzle,F%,solution_rate,time_mean,time_std,cycles_mean
+2,25x25,45,98.0,5.731666,13.029935,359.949
+2,25x25,50,99.0,1.767005,8.621812,156.02

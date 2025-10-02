@@ -192,26 +192,46 @@ def run_logic(algs, logic_dir, binary, timeout, reps_logic, vlog):
     return logic_headers, logic_rows
 
 
-def run_general(algs, gen_dir, binary, timeout, vlog):
-    """Run benchmarks on general instances."""
+def run_general(algs, gen_dir, binary, timeout, vlog, group_filter=None, file_filter=None):
+    """Run benchmarks on general instances.
+
+    Args:
+        algs: Iterable of algorithm identifiers to execute.
+        gen_dir: Directory containing general instance files.
+        binary: Path to solver executable.
+        timeout: Per-run timeout seconds.
+        vlog: Verbose logging callback.
+        group_filter: Optional callable(size, frac) -> bool to select groups.
+        file_filter: Optional callable(size, frac, path) -> bool to select files.
+    """
     gen_rows = []
     gen_headers = ['alg', 'puzzle', 'F%', 'solution_rate', 'time_mean', 'time_std', 'cycles_mean']
     groups = scan_general_groups(gen_dir)
     for alg in algs:
         for (size, frac), files in sorted(groups.items()):
-            vlog(f"[general] alg={alg} size={size} F%={frac} files={len(files)}")
+            if group_filter and not group_filter(size, frac):
+                continue
+            if file_filter:
+                selected_files = [fp for fp in files if file_filter(size, frac, fp)]
+            else:
+                selected_files = list(files)
+            if not selected_files:
+                continue
+            total = len(selected_files)
+            vlog(f"[general] alg={alg} size={size} F%={frac} files={total}")
             solved = 0
             times = []
             cycles_solved = []
-            for i, fp in enumerate(files, start=1):
-                vlog(f"  - file {i}/{len(files)}: {fp.name}")
-                _, t, cyc, out = run_solver(binary, fp, alg, timeout)
+            for i, fp in enumerate(selected_files, start=1):
+                __, t, cyc, out = run_solver(binary, fp, alg, timeout)
+                suffix = "" if "solved in" in out.lower() else " (failed)"
+                vlog(f"  - file {i}/{total}: {fp.name}{suffix}")
                 if "solved in" in out.lower():
                     solved += 1
                     times.append(t)
                     if not math.isnan(cyc):
                         cycles_solved.append(cyc)
-            rate = (solved / float(len(files))) * 100.0 if files else 0.0
+            rate = (solved / float(total)) * 100.0
             gen_rows.append([
                 alg,
                 size,
@@ -226,4 +246,5 @@ def run_general(algs, gen_dir, binary, timeout, vlog):
                 f"time_std={round(safe_std(times),6)} cycles_mean={round(safe_mean(cycles_solved),3)}"
             )
     return gen_headers, gen_rows
+
 
