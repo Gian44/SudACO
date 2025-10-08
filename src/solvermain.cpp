@@ -84,12 +84,14 @@ int main( int argc, char *argv[] )
     // Algorithm-specific defaults:
     int nAntsDefault = (algorithm == 2 ? 4 : 10);
     int nAnts = a.GetArg("nAnts", a.GetArg("ants", nAntsDefault));
-    float q0 = a.GetArg("q0", (algorithm == 2 ? 0.9f : 0.9f));
+    float q0 = a.GetArg("q0", 0.9f);
     float rho = a.GetArg("rho", 0.9f);
     float evap = a.GetArg("evap", 0.005f );
-    // DCM-ACO thresholds:
-    float entropyFrac = a.GetArg("entropyFrac", 0.7f);
+    // DCM-ACO parameters:
+    int numColonies = a.GetArg("numColonies", 3);
+    int numACS = a.GetArg("numACS", 2);
     float convThresh  = a.GetArg("convThresh", 0.8f);
+    float entropyThreshold = a.GetArg("entropyThreshold", 4.0f);
     bool blank = a.GetArg("blank", false );
     bool verbose = a.GetArg("verbose", 0);
     bool showInitial = a.GetArg("showinitial", 0);
@@ -106,9 +108,9 @@ int main( int argc, char *argv[] )
     }
     else if ( algorithm == 2 )
     {
-        // Multi-colony ACO (ants count is per colony); colonies fixed to 3
+        // Multi-colony ACO (ants count is per colony)
         solver = new MultiColonyAntSystem(nAnts, q0, rho, 1.0f/board.CellCount(), evap,
-                                          entropyFrac, convThresh);
+                                          numColonies, numACS, convThresh, entropyThreshold);
     }
     else
     {

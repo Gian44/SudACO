@@ -50,7 +50,7 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
     solutionTimer.Reset();
     int iter = 0;
     bool solved = false;
-    const int nACS = (std::min)(2, numColonies);
+    const int nACS = (std::min)(numACS, numColonies);
 
     // init colonies
     colonyQ0.resize(numColonies);
@@ -268,7 +268,7 @@ void MultiColonyAntSystem::ACSCooperativeGameAllocate(std::vector<int> &acsIdx,
     }
 }
 
-// Mix ACS pheromone with MMAS pheromone when ACS entropy below threshold
+// Mix ACS pheromone with MMAS pheromone when ACS entropy below fixed threshold (paper: E(p)* = 4)
 void MultiColonyAntSystem::ApplyPheromoneFusion(const std::vector<int> &acsIdx,
                                                 const std::vector<int> &mmasIdx)
 {
@@ -298,12 +298,8 @@ void MultiColonyAntSystem::ApplyPheromoneFusion(const std::vector<int> &acsIdx,
     for (int i = 0; i < nc; ++i) delete [] tmp.pher[i];
     delete [] tmp.pher; tmp.pher = nullptr;
 
-    // Determine entropy threshold as a fraction of current max ACS entropy
-    float eMaxACS = 0.0f;
-    for (int cidx : acsIdx) eMaxACS = (std::max)(eMaxACS, ComputeEntropy(colonies[cidx]));
-    float frac = entropyFrac;
-    if (frac < 0.0f) frac = 0.0f; else if (frac > 1.0f) frac = 1.0f;
-    float eThresh = frac * eMaxACS;
+    // Use fixed entropy threshold from paper
+    float eThresh = entropyThreshold;
 
     for (int cidx : acsIdx)
     {

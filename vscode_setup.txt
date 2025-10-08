@@ -4,6 +4,8 @@ for cmd:
 
 cmd /k ""C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\VsDevCmd.bat"" -arch=x64
 
+cmd /k ""C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"" -arch=x64
+
 msbuild .\vs2017\sudoku_ants.vcxproj /t:Build /p:Configuration=Release /p:Platform=x64
 
 for powershell (as a one-liner):

@@ -28,6 +28,7 @@ class MultiColonyAntSystem : public SudokuSolver
     };
 
     int numColonies;
+    int numACS;
     int antsPerColony;
     float q0;
     float rho;
@@ -52,8 +53,8 @@ class MultiColonyAntSystem : public SudokuSolver
     std::vector<float> colonyRho;
 
     // DCM-ACO thresholds
-    float entropyFrac;    // fraction of max ACS entropy for fusion trigger
     float convThreshold;  // MMAS public-path convergence trigger
+    float entropyThreshold;  // fixed entropy threshold from paper
 
     // pheromone helpers
     void InitPheromone(Colony &c, int numCells, int valuesPerCell);
@@ -73,12 +74,12 @@ class MultiColonyAntSystem : public SudokuSolver
                                        const std::vector<int> &mmasIdx);
 
 public:
-    // Fixed to 3 colonies (2 ACS, 1 MMAS) as per the paper
+    // Configurable number of colonies and ACS colonies
     MultiColonyAntSystem(int antsPerColony, float q0, float rho, float pher0, float bestEvap,
-                         float entropyFrac, float convThreshold)
-        : numColonies(3), antsPerColony(antsPerColony), q0(q0), rho(rho), pher0(pher0), bestEvap(bestEvap),
+                         int numColonies, int numACS, float convThreshold, float entropyThreshold)
+        : numColonies(numColonies), numACS(numACS), antsPerColony(antsPerColony), q0(q0), rho(rho), pher0(pher0), bestEvap(bestEvap),
           globalBestPher(0.0f), globalBestVal(0), solTime(0.0f),
-          entropyFrac(entropyFrac), convThreshold(convThreshold)
+          convThreshold(convThreshold), entropyThreshold(entropyThreshold)
     {
         colonies.resize(numColonies);
         randomDist = std::uniform_real_distribution<float>(0.0f, 1.0f);
