@@ -71,7 +71,28 @@ const SudokuGrid = ({
 
   // Handle input change
   const handleInputChange = (e, row, col) => {
-    const value = e.target.value.slice(-1); // Take only the last character
+    let value = e.target.value.trim();
+    
+    // For sizes > 9, allow multi-digit numbers
+    if (size > 9) {
+      // Keep only digits
+      value = value.replace(/\D/g, '');
+      // Limit to valid range
+      if (value !== '') {
+        const num = parseInt(value);
+        if (num > size) {
+          value = String(size);
+        } else if (num < 1) {
+          value = '1';
+        } else {
+          value = String(num);
+        }
+      }
+    } else {
+      // For 6x6 and 9x9, take only the last character
+      value = value.slice(-1);
+    }
+    
     handleCellChange(row, col, value);
   };
 
@@ -169,7 +190,7 @@ const SudokuGrid = ({
                   data-row={rowIndex}
                   data-col={colIndex}
                   readOnly={readOnly}
-                  maxLength={1}
+                  maxLength={size > 9 ? 2 : 1}
                   placeholder=""
                   style={{
                     width: cellSize,

@@ -161,6 +161,15 @@ function App() {
                 size={size}
               />
             </div>
+
+            {/* Result Display directly below solver controls */}
+            <div className="flex justify-center">
+              <ResultDisplay
+                result={result}
+                isVisible={!!result}
+                size={size}
+              />
+            </div>
           </div>
 
           {/* Right Column: Load Puzzle, Algorithm, Parameters */}
@@ -183,14 +192,6 @@ function App() {
               onToggleCollapse={() => setIsParametersCollapsed(!isParametersCollapsed)}
             />
           </div>
-        </div>
-
-        {/* Bottom Section: Result Display */}
-        <div className="mb-8">
-          <ResultDisplay
-            result={result}
-            isVisible={!!result}
-          />
         </div>
 
         {/* Bottom Center: Solver Tests - spans full width of puzzle + control panel */}

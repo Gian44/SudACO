@@ -3,6 +3,7 @@
 #include <cstring>
 #include <sstream>
 #include <iomanip>
+#include <limits>
 #include "board.h"
 #include "sudokusolver.h"
 #include "backtracksearch.h"
@@ -79,7 +80,8 @@ char* solve_sudoku(
         
         // Build JSON response
         std::ostringstream jsonStream;
-        jsonStream << std::fixed << std::setprecision(6);
+        // Use maximum precision for time to get exact values
+        jsonStream << std::setprecision(std::numeric_limits<float>::max_digits10);
         jsonStream << "{";
         jsonStream << "\"success\":" << (success ? "true" : "false") << ",";
         jsonStream << "\"solution\":\"" << escapeJson(cleanSolution) << "\",";

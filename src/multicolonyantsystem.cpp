@@ -77,8 +77,20 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
             colonyRho[c] = 0.1f;
         }
         // initial Max-Min bounds (used by MMAS colonies)
-        colonies[c].tauMax = colonies[c].tau0 * 10.0f;
-        colonies[c].tauMin = colonies[c].tau0 * 0.01f;
+        // Initialize with conservative estimate: assume worst case L_gb = numCells (no cells filled)
+        if (colonies[c].type == 1) // MMAS
+        {
+            float rho_mmas = colonyRho[c]; // 0.1 for MMAS
+            float L_gb_init = (float)puzzle.CellCount(); // worst-case initial estimate
+            float n = (float)puzzle.CellCount();
+            colonies[c].tauMax = 1.0f / (rho_mmas * L_gb_init);
+            colonies[c].tauMin = colonies[c].tauMax / (2.0f * n);
+        }
+        else // ACS colonies can keep simple initial bounds
+        {
+            colonies[c].tauMax = colonies[c].tau0 * 10.0f;
+            colonies[c].tauMin = colonies[c].tau0 * 0.01f;
+        }
         colonies[c].lastImproveIter = 0;
         // create ants
         for (int i = 0; i < antsPerColony; i++)
@@ -127,13 +139,21 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
                 colonies[c].bestPher = pherToAdd;
                 colonies[c].bestVal = bestVal;
                 colonies[c].lastImproveIter = iter;
-                // tighten Max-Min bounds with improvement (for MMAS colonies)
+                // Update Max-Min bounds with improvement (for MMAS colonies)
                 if (colonies[c].type == 1)
                 {
-                    float tmax = colonies[c].tau0 * 5.0f;
-                    if (tmax < colonies[c].bestPher) tmax = colonies[c].bestPher;
-                    colonies[c].tauMax = tmax;
-                    colonies[c].tauMin = colonies[c].tauMax * 0.02f; // 2% of max
+                    // Classic MMAS bounds from Stützle & Hoos:
+                    // τ_max = 1/(ρ · L_gb) where L_gb is the cost (penalty) of best solution
+                    // τ_min = τ_max / (2n) where n is the number of decision variables
+                    
+                    // L_gb = cost = number of unfilled cells = (numCells - bestVal)
+                    // Use max(1, cost) to avoid division by zero when solution is complete
+                    float rho_mmas = GetRho(c); // Should be 0.1 for MMAS
+                    float L_gb = (float)(std::max)(1, colonies[c].numCells - bestVal);
+                    float n = (float)colonies[c].numCells; // number of decision variables
+                    
+                    colonies[c].tauMax = 1.0f / (rho_mmas * L_gb);
+                    colonies[c].tauMin = colonies[c].tauMax / (2.0f * n);
                 }
             }
             // update global best

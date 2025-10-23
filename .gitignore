@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+
+# WebAssembly build outputs
+client/src/wasm/sudoku_solver.js
+client/src/wasm/sudoku_solver.wasm
+client/public/sudoku_solver.js
+client/public/sudoku_solver.wasm
+
+# Node modules
+node_modules/

@@ -60,6 +60,11 @@ export async function solveSudoku(puzzleString, algorithm, params) {
     // Parse JSON result
     const result = JSON.parse(resultString);
     
+    // Debug: Log the raw result from WASM
+    console.log('WASM Result:', resultString);
+    console.log('Parsed result:', result);
+    console.log('Time value:', result.time, 'Type:', typeof result.time);
+    
     return result;
     
   } catch (error) {
