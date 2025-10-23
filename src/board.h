@@ -35,7 +35,9 @@ public:
 private:
 	ValueSet *cells = nullptr;
 
-	int order;   // order of puzzle
+	int order;   // order of puzzle (for square grids only, 0 for rectangular)
+	int boxRows; // height of each box (e.g., 2 for 6x6, 3 for 9x9, 3 for 12x12)
+	int boxCols; // width of each box (e.g., 3 for 6x6, 3 for 9x9, 4 for 12x12)
 	int numUnits; // number of units (rows, columns, blocks)
 	int numCells; // numer of cells
 	int numFixedCells; // number of cells with uniquely determined value

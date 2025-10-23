@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 using namespace std;
 
 string ReadFile( string fileName )
@@ -16,29 +17,75 @@ string ReadFile( string fileName )
 	inFile.open(fileName);
 	if ( inFile.is_open() )
 	{
-		int order, idum;
-		inFile >> order;
-		int numCells = order*order*order*order;
+		int firstNumber, idum;
+		inFile >> firstNumber;
 		inFile >> idum;
+		
+		// Read all values into a vector first
+		vector<int> values;
+		int val;
+		while (inFile >> val)
+		{
+			values.push_back(val);
+		}
+		inFile.close();
+		
+		// Determine format based on number of values
+		int numUnits;
+		bool isOldFormat = false;
+		
+		// Old format: firstNumber is order, has order^4 values
+		// New format: firstNumber is size, has size^2 values
+		if (values.size() == firstNumber * firstNumber * firstNumber * firstNumber)
+		{
+			// Old format (9x9, 16x16, 25x25): firstNumber is order
+			isOldFormat = true;
+			numUnits = firstNumber * firstNumber;
+		}
+		else if (values.size() == firstNumber * firstNumber)
+		{
+			// New format (6x6, 12x12): firstNumber is size
+			isOldFormat = false;
+			numUnits = firstNumber;
+		}
+		else
+		{
+			cerr << "Invalid file format: expected " << firstNumber * firstNumber 
+			     << " or " << firstNumber * firstNumber * firstNumber * firstNumber 
+			     << " values, got " << values.size() << endl;
+			return string();
+		}
+		
+		int numCells = numUnits * numUnits;
 		puzString = new char[numCells+1];
+		
 		for (int i = 0; i < numCells; i++)
 		{
-			int val;
-			inFile >> val;
+			val = values[i];
 			if (val == -1)
 				puzString[i] = '.';
-			else if (order == 3)
-				puzString[i] = '1' + (val - 1);
-			else if (order == 4)
+			else if (numUnits == 6)
+				puzString[i] = '1' + (val - 1);  // 1-6 -> '1'-'6'
+			else if (numUnits == 9)
+				puzString[i] = '1' + (val - 1);  // 1-9 -> '1'-'9'
+			else if (numUnits == 12)
+			{
+				if (val <= 10)
+					puzString[i] = '0' + val - 1;  // 1-10 -> '0'-'9'
+				else
+					puzString[i] = 'a' + val - 11;  // 11-12 -> 'a'-'b'
+			}
+			else if (numUnits == 16)
+			{
 				if (val < 11)
 					puzString[i] = '0' + val - 1;
 				else
 					puzString[i] = 'a' + val - 11;
-			else
+			}
+			else  // 25x25 and larger
 				puzString[i] = 'a' + val - 1;
 		}
 		puzString[numCells] = 0;
-		inFile.close();
 		string retVal = string(puzString);
 		delete [] puzString;
 		return retVal;
