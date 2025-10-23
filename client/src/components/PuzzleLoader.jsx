@@ -1,6 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { parseInstanceFile, getInstanceFileFormatDescription } from '../utils/fileParser';
 import { stringToGrid } from '../utils/sudokuUtils';
+import { generatePuzzle } from '../utils/puzzleGenerator';
+import { 
+  getNextPuzzleNumber, 
+  generatePuzzleFilename, 
+  addGeneratedPuzzle,
+  getGeneratedPuzzles,
+  getGenerationAlgorithmOptions,
+  getFillPercentageOptions,
+  getCategoryFromSize
+} from '../utils/fileSystemManager';
+import { 
+  savePuzzleToServer, 
+  loadPuzzlesFromServer, 
+  checkServerHealth,
+  getFallbackMessage 
+} from '../utils/apiClient';
+import { getDefaultParameters } from '../utils/wasmBridge';
 
 function PuzzleLoader({ onPuzzleLoad, onError }) {
   const [categories, setCategories] = useState({});
@@ -9,13 +26,35 @@ function PuzzleLoader({ onPuzzleLoad, onError }) {
   const [selectedFillPercent, setSelectedFillPercent] = useState('');
   const [selectedPuzzle, setSelectedPuzzle] = useState('');
   const [uploadError, setUploadError] = useState('');
+  
+  // Puzzle generation state
+  const [generationAlgorithm, setGenerationAlgorithm] = useState(2);
+  const [generationFillPercent, setGenerationFillPercent] = useState(50);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationMessage, setGenerationMessage] = useState('');
+  const [serverAvailable, setServerAvailable] = useState(false);
 
   useEffect(() => {
-    // Load instance index
-    fetch('/instances/index.json')
-      .then(response => response.json())
-      .then(data => {
-        setCategories(data);
+    // Check server availability and load puzzles
+    const initializePuzzles = async () => {
+      try {
+        // Check if server is available
+        const serverOk = await checkServerHealth();
+        setServerAvailable(serverOk);
+        
+        let data;
+        if (serverOk) {
+          // Load from server (includes generated puzzles)
+          data = await loadPuzzlesFromServer();
+          setCategories(data);
+        } else {
+          // Fallback to loading from file
+          const response = await fetch('/instances/index.json');
+          data = await response.json();
+          setCategories(data);
+        }
+        
+        // Set initial category selection
         const firstCategory = Object.keys(data)[0];
         if (firstCategory) {
           setSelectedCategory(firstCategory);
@@ -36,38 +75,72 @@ function PuzzleLoader({ onPuzzleLoad, onError }) {
             setSelectedPuzzle(data[firstCategory][0]);
           }
         }
-      })
-      .catch(error => {
-        console.error('Error loading instance index:', error);
+      } catch (error) {
+        console.error('Error loading puzzles:', error);
         onError('Failed to load puzzle index');
-      });
+      }
+    };
+    
+    initializePuzzles();
   }, [onError]);
 
   const handleLoadSelectedPuzzle = async () => {
     if (!selectedCategory || !selectedPuzzle) return;
     
     try {
-      // All puzzle files are directly in their category folders
-      const puzzlePath = `/instances/${selectedCategory}/${selectedPuzzle}`;
+      // First check if it's a generated puzzle in local storage
+      const generatedPuzzles = getGeneratedPuzzles();
+      let puzzleString = null;
+      let size = null;
       
-      console.log('Loading puzzle from:', puzzlePath);
-      
-      const response = await fetch(puzzlePath, {
-        headers: {
-          'Accept': 'text/plain, text/*, */*'
+      // Check for generated puzzle
+      if (selectedCategory === 'general' && selectedSize && selectedFillPercent) {
+        const generated = generatedPuzzles.general?.[selectedSize]?.[selectedFillPercent] || [];
+        const puzzle = generated.find(p => p.filename === selectedPuzzle);
+        if (puzzle) {
+          puzzleString = puzzle.puzzleString;
+          size = parseInt(selectedSize.split('x')[0]);
         }
-      });
-      console.log('Response status:', response.status, response.statusText);
-      console.log('Response content-type:', response.headers.get('content-type'));
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch puzzle: ${response.status} ${response.statusText}`);
+      } else if (selectedCategory && generatedPuzzles[selectedCategory]) {
+        const sizeKey = selectedCategory === '6x6' ? '6x6' : selectedCategory === '12x12' ? '12x12' : null;
+        if (sizeKey && generatedPuzzles[selectedCategory][sizeKey]) {
+          Object.keys(generatedPuzzles[selectedCategory][sizeKey]).forEach(percent => {
+            const generated = generatedPuzzles[selectedCategory][sizeKey][percent] || [];
+            const puzzle = generated.find(p => p.filename === selectedPuzzle);
+            if (puzzle) {
+              puzzleString = puzzle.puzzleString;
+              size = parseInt(sizeKey.split('x')[0]);
+            }
+          });
+        }
       }
       
-      const fileContent = await response.text();
-      console.log('File content preview:', fileContent.substring(0, 100));
+      // If not found in local storage, load from file
+      if (!puzzleString) {
+        const puzzlePath = `/instances/${selectedCategory}/${selectedPuzzle}`;
+        
+        console.log('Loading puzzle from:', puzzlePath);
+        
+        const response = await fetch(puzzlePath, {
+          headers: {
+            'Accept': 'text/plain, text/*, */*'
+          }
+        });
+        console.log('Response status:', response.status, response.statusText);
+        console.log('Response content-type:', response.headers.get('content-type'));
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch puzzle: ${response.status} ${response.statusText}`);
+        }
+        
+        const fileContent = await response.text();
+        console.log('File content preview:', fileContent.substring(0, 100));
+        
+        const parsed = parseInstanceFile(fileContent);
+        puzzleString = parsed.puzzleString;
+        size = parsed.size;
+      }
       
-      const { size, puzzleString } = parseInstanceFile(fileContent);
       onPuzzleLoad(puzzleString, size, selectedPuzzle);
       setUploadError('');
     } catch (error) {
@@ -76,6 +149,14 @@ function PuzzleLoader({ onPuzzleLoad, onError }) {
       onError(errorMsg);
     }
   };
+
+  // Auto-load puzzle when selection changes
+  useEffect(() => {
+    if (selectedCategory && selectedPuzzle) {
+      handleLoadSelectedPuzzle();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPuzzle]);
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -95,6 +176,79 @@ function PuzzleLoader({ onPuzzleLoad, onError }) {
       }
     };
     reader.readAsText(file);
+  };
+
+  const handleCreatePuzzle = async () => {
+    if (!selectedCategory) {
+      setGenerationMessage('Please select a category first');
+      return;
+    }
+
+    setIsGenerating(true);
+    setGenerationMessage('');
+
+    try {
+      // Determine puzzle size from category
+      let puzzleSize;
+      if (selectedCategory === '6x6') {
+        puzzleSize = 6;
+      } else if (selectedCategory === '12x12') {
+        puzzleSize = 12;
+      } else if (selectedCategory === 'general') {
+        // For general category, use the selected size
+        if (!selectedSize) {
+          throw new Error('Please select a puzzle size for general category');
+        }
+        puzzleSize = parseInt(selectedSize.split('x')[0]); // Extract size from "9x9" format
+      } else {
+        throw new Error('Puzzle generation not supported for this category');
+      }
+
+      // Get algorithm parameters
+      const defaultParams = getDefaultParameters()[generationAlgorithm];
+
+      // Generate puzzle
+      const result = await generatePuzzle(puzzleSize, generationAlgorithm, generationFillPercent, defaultParams);
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      // Determine category for file storage
+      const fileCategory = getCategoryFromSize(puzzleSize);
+
+      let filename;
+      if (serverAvailable) {
+        // Save to server (which saves to file system and updates index.json)
+        const saveResult = await savePuzzleToServer(fileCategory, puzzleSize, generationFillPercent, result.instanceContent, result.puzzleString);
+        filename = saveResult.filename;
+        
+        // Reload categories from server to include the new puzzle
+        const updatedCategories = await loadPuzzlesFromServer();
+        setCategories(updatedCategories);
+      } else {
+        // Fallback to local storage (only if server is truly unavailable)
+        const nextNumber = getNextPuzzleNumber(fileCategory, puzzleSize, generationFillPercent, categories);
+        filename = generatePuzzleFilename(puzzleSize, generationFillPercent, nextNumber);
+        addGeneratedPuzzle(fileCategory, puzzleSize, generationFillPercent, filename, result.instanceContent, result.puzzleString);
+      }
+
+      // Auto-load the generated puzzle
+      onPuzzleLoad(result.puzzleString, puzzleSize, filename);
+
+      const message = serverAvailable 
+        ? `✓ Puzzle generated and saved to file system! File: ${filename}`
+        : `✓ Puzzle generated and saved to browser storage! File: ${filename}`;
+      setGenerationMessage(message);
+      setUploadError(''); // Clear any previous errors
+
+    } catch (error) {
+      const errorMsg = `Error generating puzzle: ${error.message}`;
+      setGenerationMessage(errorMsg);
+      onError(errorMsg);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -212,10 +366,28 @@ function PuzzleLoader({ onPuzzleLoad, onError }) {
           >
             {(() => {
               let puzzleList = [];
+              
+              // Get puzzles from index.json
               if (selectedCategory === 'general' && selectedSize && selectedFillPercent) {
                 puzzleList = categories.general[selectedSize][selectedFillPercent] || [];
               } else if (selectedCategory && categories[selectedCategory] && Array.isArray(categories[selectedCategory])) {
                 puzzleList = categories[selectedCategory] || [];
+              }
+              
+              // Add generated puzzles from local storage
+              const generatedPuzzles = getGeneratedPuzzles();
+              if (selectedCategory === 'general' && selectedSize && selectedFillPercent) {
+                const generated = generatedPuzzles.general?.[selectedSize]?.[selectedFillPercent] || [];
+                puzzleList = [...puzzleList, ...generated.map(p => p.filename)];
+              } else if (selectedCategory && generatedPuzzles[selectedCategory]) {
+                const sizeKey = selectedCategory === '6x6' ? '6x6' : selectedCategory === '12x12' ? '12x12' : null;
+                if (sizeKey && generatedPuzzles[selectedCategory][sizeKey]) {
+                  // For simple categories, we need to get all generated puzzles
+                  Object.keys(generatedPuzzles[selectedCategory][sizeKey]).forEach(percent => {
+                    const generated = generatedPuzzles[selectedCategory][sizeKey][percent] || [];
+                    puzzleList = [...puzzleList, ...generated.map(p => p.filename)];
+                  });
+                }
               }
               
               return puzzleList.map(puzzle => (
@@ -227,18 +399,6 @@ function PuzzleLoader({ onPuzzleLoad, onError }) {
           </select>
         </div>
 
-        {/* Load Button */}
-        <button
-          onClick={handleLoadSelectedPuzzle}
-          disabled={!selectedCategory || !selectedPuzzle}
-          className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
-            !selectedCategory || !selectedPuzzle
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500'
-          }`}
-        >
-          Load Selected Puzzle
-        </button>
 
         {/* Divider */}
         <div className="relative">
@@ -264,6 +424,99 @@ function PuzzleLoader({ onPuzzleLoad, onError }) {
           <p className="text-xs text-gray-500 mt-1">
             Upload a .txt file in the instance format
           </p>
+        </div>
+
+        {/* Divider */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">Or</span>
+          </div>
+        </div>
+
+        {/* Create Puzzle Section */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Create New Puzzle:
+          </label>
+          
+          <div className="space-y-3">
+            {/* Algorithm Selection */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Algorithm:
+              </label>
+              <select
+                value={generationAlgorithm}
+                onChange={(e) => setGenerationAlgorithm(parseInt(e.target.value))}
+                disabled={isGenerating}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              >
+                {getGenerationAlgorithmOptions().map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Fill Percentage Selection */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Fill Percentage:
+              </label>
+              <select
+                value={generationFillPercent}
+                onChange={(e) => setGenerationFillPercent(parseInt(e.target.value))}
+                disabled={isGenerating}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              >
+                {getFillPercentageOptions().map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Create Button */}
+            <button
+              onClick={handleCreatePuzzle}
+              disabled={isGenerating || !selectedCategory}
+              className={`w-full py-2 px-4 rounded-md font-medium transition-colors text-sm ${
+                isGenerating || !selectedCategory
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500'
+              }`}
+            >
+              {isGenerating ? 'Generating...' : 'Create Puzzle'}
+            </button>
+
+            {/* Generation Message */}
+            {generationMessage && (
+              <div className={`text-xs p-2 rounded ${
+                generationMessage.startsWith('✓') 
+                  ? 'bg-green-50 text-green-700 border border-green-200' 
+                  : 'bg-red-50 text-red-700 border border-red-200'
+              }`}>
+                {generationMessage}
+              </div>
+            )}
+
+            {/* Server Status */}
+            <div className={`text-xs p-2 rounded ${
+              serverAvailable 
+                ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                : 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+            }`}>
+              {serverAvailable 
+                ? '✓ Server connected - Puzzles will be saved to file system' 
+                : '⚠ Server offline - Puzzles will be saved to browser storage only'
+              }
+            </div>
+          </div>
         </div>
 
         {/* Error Display */}

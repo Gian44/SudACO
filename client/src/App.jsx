@@ -83,8 +83,13 @@ function App() {
     setResult(null);
     setError('');
 
+    // First clear any existing solution to start fresh
+    if (originalGrid) {
+      setGrid(originalGrid.map(row => [...row]));
+    }
+
     try {
-      const puzzleString = gridToString(grid, size);
+      const puzzleString = gridToString(originalGrid || grid, size);
       const solveResult = await solveSudoku(puzzleString, algorithm, parameters);
       
       if (solveResult.success && solveResult.solution) {
@@ -100,14 +105,9 @@ function App() {
     } finally {
       setIsSolving(false);
     }
-  }, [grid, size, algorithm, parameters, isSolving]);
+  }, [grid, size, algorithm, parameters, isSolving, originalGrid]);
 
-  // Handle clear grid
-  const handleClear = useCallback(() => {
-    setGrid(createEmptyGrid(size));
-    setResult(null);
-    setError('');
-  }, [size]);
+
 
   // Handle reset parameters
   const handleResetParameters = useCallback(() => {
@@ -128,7 +128,7 @@ function App() {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-3xl font-bold text-gray-900">Sudoku Solver with Multi-Colony DCM-ACO</h1>
-          <p className="mt-2 text-gray-600">WebAssembly-powered Sudoku solver supporting multiple algorithms</p>
+          <p className="mt-2 text-gray-600">Sudoku solver supporting multiple algorithms</p>
         </div>
       </header>
 
@@ -153,7 +153,6 @@ function App() {
             <div className="flex justify-center">
               <SolverControls
                 onSolve={handleSolve}
-                onClear={handleClear}
                 onResetParameters={handleResetParameters}
                 isSolving={isSolving}
                 hasPuzzle={hasPuzzle}

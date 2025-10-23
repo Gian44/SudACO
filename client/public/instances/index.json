@@ -20,12 +20,29 @@
   "6x6": [
     "6x6easy.txt",
     "6x6medium.txt",
-    "6x6hard.txt"
+    "6x6hard.txt",
+    "inst6x6_50_0.txt",
+    "inst6x6_50_1.txt",
+    "inst6x6_50_2.txt",
+    "inst6x6_50_3.txt",
+    "inst6x6_50_4.txt",
+    "inst6x6_5_0.txt",
+    "inst6x6_0_0.txt",
+    "inst6x6_0_1.txt",
+    "inst6x6_0_2.txt",
+    "inst6x6_0_3.txt"
   ],
   "12x12": [
     "12x12easy.txt",
     "12x12med.txt",
-    "12x12hard.txt"
+    "12x12hard.txt",
+    "inst12x12_30_0.txt",
+    "inst12x12_45_0.txt",
+    "inst12x12_45_1.txt",
+    "inst12x12_70_0.txt",
+    "inst12x12_70_1.txt",
+    "inst12x12_50_0.txt",
+    "inst12x12_30_1.txt"
   ],
   "general": {
     "9x9": {
@@ -129,7 +146,12 @@
         "inst9x9_0_96.txt",
         "inst9x9_0_97.txt",
         "inst9x9_0_98.txt",
-        "inst9x9_0_99.txt"
+        "inst9x9_0_99.txt",
+        "inst9x9_0_100.txt",
+        "inst9x9_0_101.txt",
+        "inst9x9_0_102.txt",
+        "inst9x9_0_103.txt",
+        "inst9x9_0_104.txt"
       ],
       "5": [
         "inst9x9_5_0.txt",
@@ -231,7 +253,8 @@
         "inst9x9_5_96.txt",
         "inst9x9_5_97.txt",
         "inst9x9_5_98.txt",
-        "inst9x9_5_99.txt"
+        "inst9x9_5_99.txt",
+        "inst9x9_5_100.txt"
       ],
       "10": [
         "inst9x9_10_0.txt",
@@ -1149,7 +1172,8 @@
         "inst9x9_50_96.txt",
         "inst9x9_50_97.txt",
         "inst9x9_50_98.txt",
-        "inst9x9_50_99.txt"
+        "inst9x9_50_99.txt",
+        "inst9x9_50_100.txt"
       ],
       "55": [
         "inst9x9_55_0.txt",
@@ -2375,7 +2399,8 @@
         "inst16x16_5_96.txt",
         "inst16x16_5_97.txt",
         "inst16x16_5_98.txt",
-        "inst16x16_5_99.txt"
+        "inst16x16_5_99.txt",
+        "inst16x16_5_100.txt"
       ],
       "10": [
         "inst16x16_10_0.txt",

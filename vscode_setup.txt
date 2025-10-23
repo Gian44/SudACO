@@ -25,9 +25,15 @@ for multi-colony:
 
 .\vs2017\x64\Release\sudoku_ants.exe --alg 2 --file instances/6x6/6x6easy.txt --showinitial --verbose
 
+.\vs2017\x64\Release\sudoku_ants.exe --alg 2 --file instances/12x12/12x12hard.txt --showinitial --verbose
+
 to run tests:
 
 python scripts\run_logic.py --algs 0,2 --verbose
 python scripts\run_general.py --algs 0,2 --verbose
 
 python scripts\run_general_subset.py --algs 2 --sizes 25x25 --frac-min 35 --frac-max 50 --verbose 
+
+Whenever you modify any C++ source files, you must rebuild:
+
+.\build_wasm.bat

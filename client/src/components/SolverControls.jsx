@@ -1,6 +1,6 @@
 import React from 'react';
 
-function SolverControls({ onSolve, onClear, onResetParameters, isSolving, hasPuzzle, algorithm, size = 9 }) {
+function SolverControls({ onSolve, onResetParameters, isSolving, hasPuzzle, algorithm, size = 9 }) {
   // Calculate the same total width as SudokuGrid including padding and borders
   // SudokuGrid has p-6 (24px padding on each side = 48px total) + 2px border = 50px extra
   const getTotalWidth = () => {
@@ -51,31 +51,17 @@ function SolverControls({ onSolve, onClear, onResetParameters, isSolving, hasPuz
           {isSolving ? 'Solving...' : 'Solve Sudoku'}
         </button>
         
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={onClear}
-            disabled={isSolving}
-            className={`py-2 px-4 rounded-lg font-medium transition-colors ${
-              isSolving
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-gray-600 text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500'
-            }`}
-          >
-            Clear Grid
-          </button>
-          
-          <button
-            onClick={onResetParameters}
-            disabled={isSolving}
-            className={`py-2 px-4 rounded-lg font-medium transition-colors ${
-              isSolving
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-gray-600 text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500'
-            }`}
-          >
-            Reset Parameters
-          </button>
-        </div>
+        <button
+          onClick={onResetParameters}
+          disabled={isSolving}
+          className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
+            isSolving
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-gray-600 text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500'
+          }`}
+        >
+          Reset Parameters
+        </button>
       </div>
       
       {!hasPuzzle && (
