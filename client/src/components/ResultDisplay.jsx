@@ -3,7 +3,7 @@ import React from 'react';
 function ResultDisplay({ result, isVisible, size = 9 }) {
   if (!isVisible || !result) return null;
 
-  const { success, time, error } = result;
+  const { success, time, iterations, error } = result;
 
   // Calculate the same total width as SudokuGrid and SolverControls
   const getTotalWidth = () => {
@@ -67,6 +67,13 @@ function ResultDisplay({ result, isVisible, size = 9 }) {
             <div className="flex justify-between">
               <span className="font-medium">Time:</span>
               <span>{time} seconds</span>
+            </div>
+          )}
+          
+          {iterations !== undefined && (
+            <div className="flex justify-between">
+              <span className="font-medium">Iterations:</span>
+              <span>{iterations.toLocaleString()}</span>
             </div>
           )}
         </div>

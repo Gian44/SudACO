@@ -40,9 +40,10 @@ class MultiColonyAntSystem : public SudokuSolver
     float globalBestPher;
     int globalBestVal;
 
-    // time / rng
+    // time / rng / iterations
     Timer solutionTimer;
     float solTime;
+    int iterationCount;
     std::mt19937 randGen;
     std::uniform_real_distribution<float> randomDist;
 
@@ -78,7 +79,7 @@ public:
     MultiColonyAntSystem(int antsPerColony, float q0, float rho, float pher0, float bestEvap,
                          int numColonies, int numACS, float convThreshold, float entropyThreshold)
         : numColonies(numColonies), numACS(numACS), antsPerColony(antsPerColony), q0(q0), rho(rho), pher0(pher0), bestEvap(bestEvap),
-          globalBestPher(0.0f), globalBestVal(0), solTime(0.0f),
+          globalBestPher(0.0f), globalBestVal(0), solTime(0.0f), iterationCount(0),
           convThreshold(convThreshold), entropyThreshold(entropyThreshold)
     {
         colonies.resize(numColonies);
@@ -100,6 +101,7 @@ public:
     virtual bool Solve(const Board &puzzle, float maxTime);
     virtual float GetSolutionTime() { return solTime; }
     virtual const Board &GetSolution() { return globalBestSol; }
+    virtual int GetIterationCount() { return iterationCount; }
 
     // helpers for ants
     inline float Getq0() { return q0; }

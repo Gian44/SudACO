@@ -33,13 +33,16 @@ const AlgorithmSelector = ({ selectedAlgorithm, onAlgorithmChange }) => {
           <div key={algorithm.id} className="relative">
             <input
               type="radio"
+              id={`algorithm-${algorithm.id}`}
               name="algorithm"
               value={algorithm.id}
               checked={selectedAlgorithm === algorithm.id}
               onChange={(e) => onAlgorithmChange(parseInt(e.target.value))}
               className="sr-only"
             />
-            <label className={`flex flex-col p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+            <label 
+              htmlFor={`algorithm-${algorithm.id}`}
+              className={`flex flex-col p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
               selectedAlgorithm === algorithm.id
                 ? 'border-blue-500 bg-blue-50'
                 : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50'

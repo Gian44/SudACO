@@ -120,8 +120,8 @@ function App() {
     setError(errorMessage);
   }, []);
 
-  // Check if we have a puzzle
-  const hasPuzzle = grid.some(row => row.some(cell => cell !== ''));
+  // Check if we have a puzzle (a puzzle is loaded if originalGrid exists, even if it's 0% filled)
+  const hasPuzzle = originalGrid !== null;
 
   return (
     <div className="min-h-screen bg-gray-50">

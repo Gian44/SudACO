@@ -210,6 +210,7 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
 
     for (int c = 0; c < numColonies; ++c)
         ClearPheromone(colonies[c]);
+    iterationCount = iter;
     std::cout << "Number of cycles (multi): " << iter << "\n";
     return solved;
 }

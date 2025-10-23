@@ -66,6 +66,7 @@ char* solve_sudoku(
         bool success = solver->Solve(board, timeout);
         Board solution = solver->GetSolution();
         float solTime = solver->GetSolutionTime();
+        int iterations = solver->GetIterationCount();
         
         // Get solution as string (without formatting, just the grid)
         std::string solutionStr = solution.AsString(false, false);
@@ -86,7 +87,8 @@ char* solve_sudoku(
         jsonStream << "\"success\":" << (success ? "true" : "false") << ",";
         jsonStream << "\"solution\":\"" << escapeJson(cleanSolution) << "\",";
         jsonStream << "\"time\":" << solTime << ",";
-        jsonStream << "\"cellsFilled\":" << solution.FixedCellCount();
+        jsonStream << "\"cellsFilled\":" << solution.FixedCellCount() << ",";
+        jsonStream << "\"iterations\":" << iterations;
         jsonStream << "}";
         
         std::string result = jsonStream.str();

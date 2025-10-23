@@ -19,5 +19,6 @@ BacktrackSearch() : solTime(0.0f), stepCount(0), timedOut(false) {}
 	virtual bool Solve(const Board& puzzle, float maxTime);
 	virtual float GetSolutionTime() { return solTime; }
 	virtual const Board& GetSolution() { return solution; }
+	virtual int GetIterationCount() { return stepCount; }
 	int GetStepCount() { return stepCount; }
 };

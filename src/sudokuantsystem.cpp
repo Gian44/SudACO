@@ -105,6 +105,7 @@ bool SudokuAntSystem::Solve(const Board& puzzle, float maxTime )
 		}
 	}
 	ClearPheromone();
+	iterationCount = iter;
 	std::cout << "Number of cycles: " << iter << "\n";
 	return solved;
 	

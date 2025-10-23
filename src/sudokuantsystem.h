@@ -18,6 +18,7 @@ class SudokuAntSystem : public SudokuSolver
 	int bestVal;
 	Timer solutionTimer;
 	float solTime;
+	int iterationCount;
 
 	std::vector<SudokuAnt*> antList;
 	std::mt19937 randGen; 
@@ -48,6 +49,7 @@ public:
 	virtual bool Solve(const Board& puzzle, float maxTime );
 	virtual float GetSolutionTime() { return solTime; }
 	virtual const Board& GetSolution() { return bestSol; }
+	virtual int GetIterationCount() { return iterationCount; }
 	// helpers for ants
 	inline float Getq0() { return q0; }
 	inline float random() { return randomDist(randGen); }
