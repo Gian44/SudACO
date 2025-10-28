@@ -9,7 +9,8 @@
     "dev-server": "node dev-server.js",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-instances": "node scripts/generate-instances.js"
   },
   "dependencies": {
     "react": "^19.1.1",
