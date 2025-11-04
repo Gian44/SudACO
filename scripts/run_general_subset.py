@@ -70,7 +70,8 @@ def main():
     )
     ap.add_argument('--binary', default=default_binary(), help='Path to solver binary (default: auto-detect)')
     ap.add_argument('--instances', default='instances', help='Instances root folder (default: instances)')
-    ap.add_argument('--timeout', type=int, default=120, help='Per-run timeout seconds (default: 120)')
+    ap.add_argument('--timeout', type=int, default=120, help='Fallback timeout seconds (default: 120). Size-specific timeouts are used by default.')
+    ap.add_argument('--per_size_timeouts', action='store_true', default=True, help='Use size-specific timeouts (default: on)')
     ap.add_argument('--algs', default='0,1,2', help='Comma-separated list of alg ids to run (default: 0,1,2)')
     ap.add_argument('--sizes', help='Comma-separated list of grid sizes to include (e.g. 25x25). Default: all sizes')
     ap.add_argument('--frac-min', type=int, help='Minimum filled-percentage filter (inclusive)')
@@ -101,16 +102,6 @@ def main():
         if args.verbose:
             print(*a, **k, flush=True)
 
-    headers, rows = run_general(
-        algs,
-        gen_dir,
-        binary,
-        args.timeout,
-        vlog,
-        group_filter=group_filter,
-        file_filter=file_filter,
-    )
-
     outdir = Path(args.outdir)
     suffix = 'general_subset'
     if size_set:
@@ -118,11 +109,61 @@ def main():
     suffix += range_suffix('frac', args.frac_min, args.frac_max)
     suffix += range_suffix('idx', args.idx_min, args.idx_max)
     timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
-    outfile = outdir / f'{suffix}_{timestamp}.csv'
-    write_csv(outfile, headers, rows)
-    if not rows:
-        print('No matching instances were found; wrote header-only CSV.')
-    print(f"Wrote: {outfile}")
+
+    if not args.per_size_timeouts:
+        headers, rows = run_general(
+            algs,
+            gen_dir,
+            binary,
+            args.timeout,
+            vlog,
+            group_filter=group_filter,
+            file_filter=file_filter,
+        )
+        outfile = outdir / f'{suffix}_{timestamp}.csv'
+        write_csv(outfile, headers, rows)
+        if not rows:
+            print('No matching instances were found; wrote header-only CSV.')
+        print(f"Wrote: {outfile}")
+    else:
+        # Size-specific timeouts
+        TIMEOUT_MAP = {6: 3, 9: 5, 12: 10, 16: 20, 25: 120}
+        def size_to_int(sz):
+            try:
+                return int(sz.split('x', 1)[0]) if 'x' in sz else int(sz)
+            except Exception:
+                return None
+        sizes_iter = sorted(size_set) if size_set else ['6x6','9x9','12x12','16x16','25x25']
+        wrote_any = False
+        for size_str in sizes_iter:
+            size_int = size_to_int(size_str)
+            if not size_int:
+                continue
+            timeout = TIMEOUT_MAP.get(size_int, args.timeout)
+            def group_filter_sized(sz, frac, _s=size_str):
+                base = True
+                if size_set and sz not in size_set:
+                    base = False
+                if args.frac_min is not None and frac < args.frac_min:
+                    base = False
+                if args.frac_max is not None and frac > args.frac_max:
+                    base = False
+                return base and (str(sz) == _s)
+            headers, rows = run_general(
+                algs,
+                gen_dir,
+                binary,
+                timeout,
+                vlog,
+                group_filter=group_filter_sized,
+                file_filter=file_filter,
+            )
+            outfile = outdir / f'{suffix}_{size_int}x{size_int}_{timestamp}.csv'
+            write_csv(outfile, headers, rows)
+            wrote_any = wrote_any or bool(rows)
+            print(f"Wrote: {outfile}")
+        if not wrote_any:
+            print('No matching instances were found; wrote header-only CSVs.')
 
 
 if __name__ == '__main__':

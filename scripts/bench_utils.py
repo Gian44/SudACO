@@ -102,6 +102,41 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
     return success, elapsed, cycles, out
 
 
+def detect_size_from_file(file_path: Path) -> int | None:
+    """Detect Sudoku size by mimicking the C++ reader logic.
+
+    The C++ code reads the first two integers, then reads the rest of the
+    integers into a vector `values`. If len(values) == first^4 -> old format
+    with order=first and size=order^2. If len(values) == first^2 -> new format
+    with size=first.
+    """
+    try:
+        text = Path(file_path).read_text()
+    except Exception:
+        return None
+    import re
+    nums = re.findall(r"-?\d+", text)
+    if len(nums) < 3:
+        return None
+    try:
+        first = int(nums[0])
+    except ValueError:
+        return None
+    # Remaining values after the first two header ints
+    values_count = max(0, len(nums) - 2)
+    if values_count == first * first * first * first:
+        return first * first
+    if values_count == first * first:
+        return first
+    # Fallback: if first is a known size
+    if first in (6, 9, 12, 16, 25):
+        return first
+    # Fallback: if first looks like order (3,4,5)
+    if first in (3, 4, 5):
+        return first * first
+    return None
+
+
 def scan_logic_instances(base):
     """Return a sorted list of logic-solvable instance files."""
     p = Path(base)
@@ -156,11 +191,12 @@ def write_csv(path, headers, rows):
         for r in rows:
             w.writerow(r)
 
-def run_logic(algs, logic_dir, binary, timeout, reps_logic, vlog):
+def run_logic(algs, logic_dir, binary, timeout, reps_logic, vlog, extra_args=None):
     """Run benchmarks on logic-solvable instances."""
     logic_rows = []
     logic_headers = ['alg', 'instance', 'success_%', 'time_mean', 'time_std', 'cycles_mean']
     logic_files = scan_logic_instances(logic_dir)
+    TIMEOUT_MAP = {6: 3, 9: 5, 12: 10, 16: 20, 25: 120}
     for alg in algs:
         for idx, fp in enumerate(logic_files, start=1):
             vlog(f"[logic-solvable] alg={alg} instance {idx}/{len(logic_files)}: {fp.name}")
@@ -169,7 +205,10 @@ def run_logic(algs, logic_dir, binary, timeout, reps_logic, vlog):
             cycles_solved = []
             for r in range(reps_logic):
                 vlog(f"  - rep {r+1}/{reps_logic}")
-                _, t, cyc, out = run_solver(binary, fp, alg, timeout)
+                # Size-specific timeout per file
+                sz = detect_size_from_file(fp)
+                per_timeout = TIMEOUT_MAP.get(sz, timeout)
+                _, t, cyc, out = run_solver(binary, fp, alg, per_timeout, extra_args=extra_args)
                 if "solved in" in out.lower():
                     successes += 1
                     times.append(t)
@@ -192,7 +231,7 @@ def run_logic(algs, logic_dir, binary, timeout, reps_logic, vlog):
     return logic_headers, logic_rows
 
 
-def run_general(algs, gen_dir, binary, timeout, vlog, group_filter=None, file_filter=None):
+def run_general(algs, gen_dir, binary, timeout, vlog, group_filter=None, file_filter=None, extra_args=None):
     """Run benchmarks on general instances.
 
     Args:
@@ -223,7 +262,7 @@ def run_general(algs, gen_dir, binary, timeout, vlog, group_filter=None, file_fi
             times = []
             cycles_solved = []
             for i, fp in enumerate(selected_files, start=1):
-                __, t, cyc, out = run_solver(binary, fp, alg, timeout)
+                __, t, cyc, out = run_solver(binary, fp, alg, timeout, extra_args=extra_args)
                 suffix = "" if "solved in" in out.lower() else " (failed)"
                 vlog(f"  - file {i}/{total}: {fp.name}{suffix}")
                 if "solved in" in out.lower():
