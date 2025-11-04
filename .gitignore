@@ -39,3 +39,4 @@ client/public/sudoku_solver.wasm
 
 # Node modules
 node_modules/
+results/ablation/ablation_raw_runs.csv
