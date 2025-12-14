@@ -40,6 +40,7 @@ def main():
     ap.add_argument('--numACS', type=int, help='Override numACS (int). numColonies will be set to numACS+1')
     ap.add_argument('--convThresh', type=float, help='Override convThresh (float)')
     ap.add_argument('--entropyThreshold', type=float, help='Override entropyThreshold (float)')
+    ap.add_argument('--useACSOnly', action='store_true', help='Use homogeneous ACS-only ablation mode (default: False, uses MMAS)')
     args = ap.parse_args()
 
     binary = args.binary
@@ -72,6 +73,8 @@ def main():
         factor_args += ['--convThresh', str(float(args.convThresh))]
     if args.entropyThreshold is not None:
         factor_args += ['--entropyThreshold', str(float(args.entropyThreshold))]
+    if args.useACSOnly:
+        factor_args += ['--useACSOnly']
 
 
     # Single consolidated CSV output

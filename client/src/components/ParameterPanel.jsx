@@ -1,26 +1,36 @@
 import React, { useState } from 'react';
 import { getDefaultParameters } from '../utils/wasmBridge';
 
-const ParameterPanel = ({ algorithm, parameters, onParametersChange, isCollapsed, onToggleCollapse }) => {
+const ParameterPanel = ({ algorithm, parameters, onParametersChange, isCollapsed, onToggleCollapse, size = 9 }) => {
   const [localParams, setLocalParams] = useState(parameters);
 
-  // Update local state when algorithm changes
+  // Update defaults when algorithm or size changes
   React.useEffect(() => {
-    const defaults = getDefaultParameters()[algorithm];
+    const defaults = getDefaultParameters(size)[algorithm];
     setLocalParams(defaults);
     onParametersChange(defaults);
-  }, [algorithm, onParametersChange]);
+  }, [algorithm, size, onParametersChange]);
+
+  // Keep local state in sync when parameters are updated externally
+  React.useEffect(() => {
+    setLocalParams(parameters);
+  }, [parameters]);
 
   // Handle parameter change
   const handleParameterChange = (key, value) => {
     const newParams = { ...localParams, [key]: value };
+    // Keep numColonies in sync: always numACS + 1 (1 MMAS colony)
+    if (key === 'numACS') {
+      const numACS = Number.isFinite(value) ? value : localParams.numACS;
+      newParams.numColonies = (numACS || 0) + 1;
+    }
     setLocalParams(newParams);
     onParametersChange(newParams);
   };
 
   // Reset to defaults
   const handleReset = () => {
-    const defaults = getDefaultParameters()[algorithm];
+    const defaults = getDefaultParameters(size)[algorithm];
     setLocalParams(defaults);
     onParametersChange(defaults);
   };
@@ -38,7 +48,7 @@ const ParameterPanel = ({ algorithm, parameters, onParametersChange, isCollapsed
           min={min}
           max={max}
           step={step}
-          value={localParams[key] || ''}
+          value={localParams[key] ?? ''}
           onChange={(e) => handleParameterChange(key, parseFloat(e.target.value))}
           className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
         />
@@ -63,7 +73,6 @@ const ParameterPanel = ({ algorithm, parameters, onParametersChange, isCollapsed
     
     if (algorithm === 2) {
       // DCM-ACO specific parameters
-      params.push(renderParameter('numColonies', 'Number of Colonies', 'number', 2, 10, 1));
       params.push(renderParameter('numACS', 'Number of ACS Colonies', 'number', 1, 5, 1));
       params.push(renderParameter('convThresh', 'Convergence Threshold', 'number', 0, 1, 0.01));
       params.push(renderParameter('entropyThresh', 'Entropy Threshold', 'number', 0, 10, 0.1));

@@ -14,7 +14,7 @@ const AlgorithmSelector = ({ selectedAlgorithm, onAlgorithmChange }) => {
     {
       id: 0,
       name: algorithmNames[0],
-      description: 'Single-colony Ant Colony System. Uses pheromone trails to guide search.',
+      description: 'Single-colony Ant Colony Optimization (ACO). Uses pheromone trails to guide search.',
       complexity: 'Metaheuristic, good for medium difficulty puzzles'
     },
     {

@@ -204,8 +204,8 @@ function PuzzleLoader({ onPuzzleLoad, onError }) {
         throw new Error('Puzzle generation not supported for this category');
       }
 
-      // Get algorithm parameters
-      const defaultParams = getDefaultParameters()[generationAlgorithm];
+      // Get algorithm parameters with size-aware timeout
+      const defaultParams = getDefaultParameters(puzzleSize)[generationAlgorithm];
 
       // Generate puzzle
       const result = await generatePuzzle(puzzleSize, generationAlgorithm, generationFillPercent, defaultParams);

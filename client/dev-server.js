@@ -176,6 +176,50 @@ app.get('/api/puzzles', async (req, res) => {
   }
 });
 
+// Save daily puzzle
+app.post('/api/puzzles/save-daily', async (req, res) => {
+  try {
+    const { filename, content, size, difficulty } = req.body;
+    
+    if (!filename || !content) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    // Ensure daily-puzzles directory exists
+    const dailyDir = path.join(INSTANCES_DIR, 'daily-puzzles');
+    await ensureDir(dailyDir);
+    
+    // Save puzzle file
+    const filePath = path.join(dailyDir, filename);
+    await fs.writeFile(filePath, content, 'utf8');
+    
+    // Update index.json to include daily-puzzles category
+    const indexData = await loadIndex();
+    
+    if (!indexData['daily-puzzles']) {
+      indexData['daily-puzzles'] = [];
+    }
+    
+    // Add to index if not already there
+    if (!indexData['daily-puzzles'].includes(filename)) {
+      indexData['daily-puzzles'].push(filename);
+      await saveIndex(indexData);
+    }
+    
+    console.log(`Daily puzzle saved: ${filename}`);
+    
+    res.json({
+      success: true,
+      filename,
+      filePath: filePath.replace(process.cwd(), '')
+    });
+    
+  } catch (error) {
+    console.error('Error saving daily puzzle:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 

@@ -139,6 +139,7 @@ int main( int argc, char *argv[] )
     int numColonies = a.GetArg("numColonies", numACS + 1);  // numACS + 1 (was 3)
     float convThresh  = a.GetArg("convThresh", 0.8f);  // 0.8 (unchanged)
     float entropyThreshold = a.GetArg("entropyThreshold", 4.0f);  // 4.0 (unchanged)
+    bool useACSOnly = a.GetArg("useACSOnly", false);  // Ablation mode: use ACS-only homogeneous system
     bool blank = a.GetArg("blank", false );
     bool verbose = a.GetArg("verbose", 0);
     bool showInitial = a.GetArg("showinitial", 0);
@@ -157,7 +158,7 @@ int main( int argc, char *argv[] )
     {
         // Multi-colony ACO (ants count is per colony)
         solver = new MultiColonyAntSystem(nAnts, q0, rho, 1.0f/board.CellCount(), evap,
-                                          numColonies, numACS, convThresh, entropyThreshold);
+                                          numColonies, numACS, convThresh, entropyThreshold, useACSOnly);
     }
     else
     {

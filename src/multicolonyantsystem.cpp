@@ -61,35 +61,50 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
         colonies[c].bestPher = 0.0f;
         colonies[c].bestVal = 0;
         colonies[c].tau0 = pher0;
-        // assign colony type: 2 ACS, 1 MMAS (for DCM-ACO)
-        colonies[c].type = (c < nACS ? 0 : 1);
-        // Parameters per colony type:
-        //  - ACS colonies (first 2): use ACS q0 and rho from Lloyd & Amos ACS style
-        //  - MMAS colony (remaining 1): pure roulette (q0 = 0), rho fixed to 0.1 as per paper
-        if (colonies[c].type == 0)
+        
+        if (useACSOnlyMode)
         {
+            // Ablation mode: All colonies are ACS (homogeneous system)
+            colonies[c].type = 0;  // All ACS
             colonyQ0[c] = q0;
             colonyRho[c] = rho;
+            // ACS colonies use simple initial bounds
+            colonies[c].tauMax = colonies[c].tau0 * 10.0f;
+            colonies[c].tauMin = colonies[c].tau0 * 0.01f;
         }
         else
         {
-            colonyQ0[c] = 0.0f;
-            colonyRho[c] = 0.1f;
-        }
-        // initial Max-Min bounds (used by MMAS colonies)
-        // Initialize with initial pheromone value
-        if (colonies[c].type == 1) // MMAS
-        {
-            float rho_mmas = colonyRho[c]; // 0.1 for MMAS
-            float best_pheromone_toAdd = pher0; // initial estimate
-            float n = (float)puzzle.GetNumUnits(); // puzzle size (e.g., 9 for 9x9)
-            colonies[c].tauMax = best_pheromone_toAdd / rho_mmas;
-            colonies[c].tauMin = colonies[c].tauMax / (2.0f * n);
-        }
-        else // ACS colonies can keep simple initial bounds
-        {
-            colonies[c].tauMax = colonies[c].tau0 * 10.0f;
-            colonies[c].tauMin = colonies[c].tau0 * 0.01f;
+            // Default mode: Heterogeneous system (ACS + MMAS)
+            // assign colony type: ACS or MMAS (for DCM-ACO)
+            colonies[c].type = (c < nACS ? 0 : 1);
+            // Parameters per colony type:
+            //  - ACS colonies (first nACS): use ACS q0 and rho from Lloyd & Amos ACS style
+            //  - MMAS colony (remaining): pure roulette (q0 = 0), rho fixed to 0.1 as per paper
+            if (colonies[c].type == 0)
+            {
+                colonyQ0[c] = q0;
+                colonyRho[c] = rho;
+            }
+            else
+            {
+                colonyQ0[c] = 0.0f;
+                colonyRho[c] = 0.1f;
+            }
+            // initial Max-Min bounds (used by MMAS colonies)
+            // Initialize with initial pheromone value
+            if (colonies[c].type == 1) // MMAS
+            {
+                float rho_mmas = colonyRho[c]; // 0.1 for MMAS
+                float best_pheromone_toAdd = pher0; // initial estimate
+                float n = (float)puzzle.GetNumUnits(); // puzzle size (e.g., 9 for 9x9)
+                colonies[c].tauMax = best_pheromone_toAdd / rho_mmas;
+                colonies[c].tauMin = colonies[c].tauMax / (2.0f * n);
+            }
+            else // ACS colonies can keep simple initial bounds
+            {
+                colonies[c].tauMax = colonies[c].tau0 * 10.0f;
+                colonies[c].tauMin = colonies[c].tau0 * 0.01f;
+            }
         }
         colonies[c].lastImproveIter = 0;
         // create ants
@@ -139,8 +154,8 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
                 colonies[c].bestPher = pherToAdd;
                 colonies[c].bestVal = bestVal;
                 colonies[c].lastImproveIter = iter;
-                // Update Max-Min bounds with improvement (for MMAS colonies)
-                if (colonies[c].type == 1)
+                // Update Max-Min bounds with improvement (for MMAS colonies in default mode only)
+                if (!useACSOnlyMode && colonies[c].type == 1)
                 {
                     // τ_max = best_pheromone_toAdd / ρ
                     // τ_min = τ_max / (2n) where n is the puzzle size (e.g., 9 for 9x9)
@@ -166,11 +181,25 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
             }
         }
 
-        // partition indices by type
+        // partition indices by type or mode
         std::vector<int> acsIdx; acsIdx.reserve(numColonies);
         std::vector<int> mmasIdx; mmasIdx.reserve(numColonies);
-        for (int c = 0; c < numColonies; ++c)
-            (colonies[c].type == 0 ? acsIdx : mmasIdx).push_back(c);
+        std::vector<int> separatedAcsIdx; separatedAcsIdx.reserve(1);
+        
+        if (useACSOnlyMode)
+        {
+            // Ablation mode: participating ACS colonies [0, numACS-1], separated ACS colony [numACS]
+            for (int c = 0; c < numACS; ++c)
+                acsIdx.push_back(c);
+            if (numACS < numColonies)
+                separatedAcsIdx.push_back(numACS);
+        }
+        else
+        {
+            // Default mode: partition by type (ACS vs MMAS)
+            for (int c = 0; c < numColonies; ++c)
+                (colonies[c].type == 0 ? acsIdx : mmasIdx).push_back(c);
+        }
 
         // Check ACS entropy: if < threshold -> pheromone fusion, else -> cooperative game (paper pseudocode)
         std::vector<float> acsAllocated; acsAllocated.resize(numColonies, 0.0f);
@@ -186,7 +215,12 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
                 }
             }
             if (hasLowEntropy)
-                ApplyPheromoneFusion(acsIdx, mmasIdx);
+            {
+                if (useACSOnlyMode)
+                    ApplyPheromoneFusion(acsIdx, separatedAcsIdx);
+                else
+                    ApplyPheromoneFusion(acsIdx, mmasIdx);
+            }
             else
                 ACSCooperativeGameAllocate(acsIdx, acsAllocated);
         }
@@ -198,14 +232,31 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
             UpdatePheromone(c, colonies[c], colonies[c].bestSol, add);
             colonies[c].bestPher *= (1.0f - bestEvap);
         }
-        for (int c : mmasIdx)
+        
+        if (useACSOnlyMode)
         {
-            UpdatePheromone(c, colonies[c], colonies[c].bestSol, colonies[c].bestPher);
-            // colonies[c].bestPher *= (1.0f - bestEvap); 
+            // Ablation mode: separated ACS colony uses ACS-style updates
+            for (int c : separatedAcsIdx)
+            {
+                UpdatePheromone(c, colonies[c], colonies[c].bestSol, colonies[c].bestPher);
+                colonies[c].bestPher *= (1.0f - bestEvap);
+            }
+        }
+        else
+        {
+            // Default mode: MMAS colonies use MMAS-style updates
+            for (int c : mmasIdx)
+            {
+                UpdatePheromone(c, colonies[c], colonies[c].bestSol, colonies[c].bestPher);
+                // colonies[c].bestPher *= (1.0f - bestEvap); 
+            }
         }
 
         // Public path recommendation (only applied when convergence speed is low, checked inside function)
-        ApplyPublicPathRecommendation(iter, acsIdx, mmasIdx);
+        if (useACSOnlyMode)
+            ApplyPublicPathRecommendation(iter, acsIdx, separatedAcsIdx);
+        else
+            ApplyPublicPathRecommendation(iter, acsIdx, mmasIdx);
 
         ++iter;
         if ((iter % 100) == 0)
@@ -297,35 +348,52 @@ void MultiColonyAntSystem::ACSCooperativeGameAllocate(std::vector<int> &acsIdx,
     }
 }
 
-// Mix ACS pheromone with MMAS pheromone when ACS entropy below fixed threshold (E(p)* = 4)
+// Mix ACS pheromone with MMAS/separated-ACS pheromone when ACS entropy below fixed threshold (E(p)* = 4)
+// Note: In ablation mode, mmasIdx represents separated ACS colony indices
 void MultiColonyAntSystem::ApplyPheromoneFusion(const std::vector<int> &acsIdx,
                                                 const std::vector<int> &mmasIdx)
 {
     if (acsIdx.empty() || mmasIdx.empty()) return;
-    // compute average MMAS entropy and average MMAS pheromone matrix
-    // build average pheromone matrix of MMAS
+    
+    // Get dimensions from first target colony
     int nc = colonies[mmasIdx[0]].numCells;
     int vp = colonies[mmasIdx[0]].valuesPerCell;
-    std::vector<float> avg(nc * vp, 0.0f);
-    for (int cidx : mmasIdx)
+    
+    float eTarget;
+    std::vector<float> targetPher(nc * vp, 0.0f);
+    
+    if (useACSOnlyMode)
     {
+        // Ablation mode: use separated ACS colony pheromone (single colony, not average)
+        int cidx = mmasIdx[0];
         for (int i = 0; i < nc; ++i)
             for (int j = 0; j < vp; ++j)
-                avg[i*vp + j] += colonies[cidx].pher[i][j];
+                targetPher[i*vp + j] = colonies[cidx].pher[i][j];
+        eTarget = ComputeEntropy(colonies[cidx]);
     }
-    for (auto &v : avg) v /= (float)mmasIdx.size();
-    // entropy of averaged MMAS matrix
-    Colony tmp;
-    tmp.pher = new float*[nc];
-    tmp.numCells = nc; tmp.valuesPerCell = vp;
-    for (int i = 0; i < nc; ++i)
+    else
     {
-        tmp.pher[i] = new float[vp];
-        for (int j = 0; j < vp; ++j) tmp.pher[i][j] = avg[i*vp + j];
+        // Default mode: compute average MMAS pheromone matrix
+        for (int cidx : mmasIdx)
+        {
+            for (int i = 0; i < nc; ++i)
+                for (int j = 0; j < vp; ++j)
+                    targetPher[i*vp + j] += colonies[cidx].pher[i][j];
+        }
+        for (auto &v : targetPher) v /= (float)mmasIdx.size();
+        // entropy of averaged target matrix
+        Colony tmp;
+        tmp.pher = new float*[nc];
+        tmp.numCells = nc; tmp.valuesPerCell = vp;
+        for (int i = 0; i < nc; ++i)
+        {
+            tmp.pher[i] = new float[vp];
+            for (int j = 0; j < vp; ++j) tmp.pher[i][j] = targetPher[i*vp + j];
+        }
+        eTarget = ComputeEntropy(tmp);
+        for (int i = 0; i < nc; ++i) delete [] tmp.pher[i];
+        delete [] tmp.pher; tmp.pher = nullptr;
     }
-    float eMMAS = ComputeEntropy(tmp);
-    for (int i = 0; i < nc; ++i) delete [] tmp.pher[i];
-    delete [] tmp.pher; tmp.pher = nullptr;
 
     float eThresh = entropyThreshold;
 
@@ -334,21 +402,22 @@ void MultiColonyAntSystem::ApplyPheromoneFusion(const std::vector<int> &acsIdx,
         float eACS = ComputeEntropy(colonies[cidx]);
         if (eACS < eThresh)
         {
-            // Base mix weight from entropies: Wi = E(ACS)/(E(ACS)+E(MMAS))
-            float mix = (eACS + eMMAS > 0.0f ? (eACS / (eACS + eMMAS)) : 0.0f);
-            // ph_i <- (1 - mix)*ph_i + mix*ph_mmas_avg
+            // Base mix weight from entropies: Wi = E(ACS)/(E(ACS)+E(Target))
+            float mix = (eACS + eTarget > 0.0f ? (eACS / (eACS + eTarget)) : 0.0f);
+            // ph_i <- (1 - mix)*ph_i + mix*ph_target
             for (int i = 0; i < nc; ++i)
             {
                 for (int j = 0; j < vp; ++j)
                 {
-                    colonies[cidx].pher[i][j] = (1.0f - mix) * colonies[cidx].pher[i][j] + mix * avg[i*vp + j];
+                    colonies[cidx].pher[i][j] = (1.0f - mix) * colonies[cidx].pher[i][j] + mix * targetPher[i*vp + j];
                 }
             }
         }
     }
 }
 
-// Recommend public paths from ACS to MMAS when MMAS convergence is slow
+// Recommend public paths from ACS to MMAS/separated-ACS when target convergence is slow
+// Note: In ablation mode, mmasIdx represents separated ACS colony indices
 void MultiColonyAntSystem::ApplyPublicPathRecommendation(int iter,
                                                          const std::vector<int> &acsIdx,
                                                          const std::vector<int> &mmasIdx)
@@ -392,7 +461,9 @@ void MultiColonyAntSystem::ApplyPublicPathRecommendation(int iter,
                     colonies[cidx].pher[cell][idx] += tauPub;
                 }
             }
-            ClampPheromone(colonies[cidx]);
+            // Only clamp for MMAS colonies (not separated ACS in ablation mode)
+            if (!useACSOnlyMode)
+                ClampPheromone(colonies[cidx]);
         }
     }
 }

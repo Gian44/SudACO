@@ -1,34 +1,99 @@
-import React from 'react';
-import { getValidCharacters, getPuzzleSizeName, getBoxDimensions } from '../utils/sudokuUtils';
+import React, { useState, useCallback, useRef } from 'react';
+import { getValidCharacters, getBoxDimensions, findConflicts } from '../utils/sudokuUtils';
 
 const SudokuGrid = ({ 
   grid, 
   onChange, 
   size, 
-  readOnly = false, 
-  highlightChanges = false,
-  originalGrid = null 
+  readOnly = false,
+  originalGrid = null,
+  notes = null,
+  onNotesChange = null,
+  notesMode = false,
+  selectedCell = null,
+  onCellSelect = null,
+  animatingCells = new Set(),
+  isPaused = false
 }) => {
   const validChars = getValidCharacters(size);
   const { boxRows, boxCols } = getBoxDimensions(size);
-
+  const gridRef = useRef(null);
+  
+  // Find all conflicts in the current grid
+  const conflicts = findConflicts(grid, size);
+  
+  // Track recently changed cells for animation
+  const [recentlyChanged, setRecentlyChanged] = useState(new Set());
+  
   // Handle cell change
-  const handleCellChange = (row, col, value) => {
-    if (readOnly) return;
+  const handleCellChange = useCallback((row, col, value) => {
+    if (readOnly || isPaused) return;
+    
+    // Check if this is an original cell
+    if (originalGrid && originalGrid[row] && originalGrid[row][col] !== '') {
+      return; // Can't modify original cells
+    }
 
     // Validate input
     if (value !== '' && !validChars.includes(value)) {
       return; // Invalid character, ignore
     }
 
+    // Add to recently changed for animation
+    setRecentlyChanged(prev => new Set([...prev, `${row}-${col}`]));
+    setTimeout(() => {
+      setRecentlyChanged(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(`${row}-${col}`);
+        return newSet;
+      });
+    }, 300);
+
     onChange(row, col, value);
-  };
+  }, [readOnly, isPaused, originalGrid, validChars, onChange]);
+
+  // Handle notes toggle
+  const handleNoteToggle = useCallback((row, col, value) => {
+    if (readOnly || isPaused || !onNotesChange || !notes) return;
+    
+    // Check if this is an original cell or has a value
+    if (originalGrid && originalGrid[row] && originalGrid[row][col] !== '') {
+      return;
+    }
+    if (grid[row][col] !== '') {
+      return; // Can't add notes to filled cells
+    }
+    
+    const numValue = parseInt(value);
+    if (isNaN(numValue) || numValue < 1 || numValue > size) return;
+    
+    const newNotes = notes.map(r => r.map(c => new Set(c)));
+    if (newNotes[row][col].has(numValue)) {
+      newNotes[row][col].delete(numValue);
+    } else {
+      newNotes[row][col].add(numValue);
+    }
+    onNotesChange(newNotes);
+  }, [readOnly, isPaused, onNotesChange, notes, originalGrid, grid, size]);
 
   // Handle keyboard input
-  const handleKeyDown = (e, row, col) => {
-    if (readOnly) return;
+  const handleKeyDown = useCallback((e, row, col) => {
+    if (readOnly || isPaused) return;
 
     const { key } = e;
+    
+    // Handle number input
+    if (/^[1-9]$/.test(key) || (size > 9 && /^[0-9]$/.test(key))) {
+      e.preventDefault();
+      if (notesMode) {
+        handleNoteToggle(row, col, key);
+      } else {
+        if (parseInt(key) <= size) {
+          handleCellChange(row, col, key);
+        }
+      }
+      return;
+    }
     
     // Handle special keys
     if (key === 'Backspace' || key === 'Delete') {
@@ -40,26 +105,27 @@ const SudokuGrid = ({
     // Handle arrow keys for navigation
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
       e.preventDefault();
-      const currentIndex = row * size + col;
-      let newIndex = currentIndex;
+      let newRow = row;
+      let newCol = col;
 
       switch (key) {
         case 'ArrowUp':
-          newIndex = Math.max(0, currentIndex - size);
+          newRow = Math.max(0, row - 1);
           break;
         case 'ArrowDown':
-          newIndex = Math.min(size * size - 1, currentIndex + size);
+          newRow = Math.min(size - 1, row + 1);
           break;
         case 'ArrowLeft':
-          newIndex = Math.max(0, currentIndex - 1);
+          newCol = Math.max(0, col - 1);
           break;
         case 'ArrowRight':
-          newIndex = Math.min(size * size - 1, currentIndex + 1);
+          newCol = Math.min(size - 1, col + 1);
           break;
       }
 
-      const newRow = Math.floor(newIndex / size);
-      const newCol = newIndex % size;
+      if (onCellSelect) {
+        onCellSelect([newRow, newCol]); // Pass as array
+      }
       
       // Focus the new cell
       setTimeout(() => {
@@ -67,17 +133,17 @@ const SudokuGrid = ({
         if (newCell) newCell.focus();
       }, 0);
     }
-  };
+  }, [readOnly, isPaused, size, notesMode, handleNoteToggle, handleCellChange, onCellSelect]);
 
   // Handle input change
-  const handleInputChange = (e, row, col) => {
+  const handleInputChange = useCallback((e, row, col) => {
+    if (readOnly || isPaused) return;
+    
     let value = e.target.value.trim();
     
     // For sizes > 9, allow multi-digit numbers
     if (size > 9) {
-      // Keep only digits
       value = value.replace(/\D/g, '');
-      // Limit to valid range
       if (value !== '') {
         const num = parseInt(value);
         if (num > size) {
@@ -89,125 +155,186 @@ const SudokuGrid = ({
         }
       }
     } else {
-      // For 6x6 and 9x9, take only the last character
       value = value.slice(-1);
+      if (value && !/^[1-9]$/.test(value)) {
+        return;
+      }
     }
     
-    handleCellChange(row, col, value);
-  };
+    if (notesMode && value !== '') {
+      handleNoteToggle(row, col, value);
+      e.target.value = grid[row][col];
+    } else {
+      handleCellChange(row, col, value);
+    }
+  }, [readOnly, isPaused, size, notesMode, handleNoteToggle, handleCellChange, grid]);
+
+  // Handle cell click
+  const handleCellClick = useCallback((row, col) => {
+    if (onCellSelect) {
+      onCellSelect([row, col]); // Pass as array, not two separate arguments
+    }
+  }, [onCellSelect]);
 
   // Check if cell is original (given)
-  const isOriginalCell = (row, col) => {
+  const isOriginalCell = useCallback((row, col) => {
     return originalGrid && originalGrid[row] && originalGrid[row][col] !== '';
+  }, [originalGrid]);
+
+  // Check if cell is in same row, col, or box as selected
+  const isHighlighted = useCallback((row, col) => {
+    if (!selectedCell || !Array.isArray(selectedCell)) return { row: false, col: false, box: false };
+    
+    const [selRow, selCol] = selectedCell;
+    const boxRowStart = Math.floor(selRow / boxRows) * boxRows;
+    const boxColStart = Math.floor(selCol / boxCols) * boxCols;
+    const cellBoxRowStart = Math.floor(row / boxRows) * boxRows;
+    const cellBoxColStart = Math.floor(col / boxCols) * boxCols;
+    
+    return {
+      row: row === selRow && col !== selCol,
+      col: col === selCol && row !== selRow,
+      box: boxRowStart === cellBoxRowStart && boxColStart === cellBoxColStart && (row !== selRow || col !== selCol)
+    };
+  }, [selectedCell, boxRows, boxCols]);
+
+  // Get cell size based on grid size
+  const getCellSize = useCallback(() => {
+    if (size === 6) return { width: '52px', height: '52px', fontSize: '20px' };
+    if (size === 9) return { width: '48px', height: '48px', fontSize: '20px' };
+    if (size === 12) return { width: '40px', height: '40px', fontSize: '16px' };
+    if (size === 16) return { width: '36px', height: '36px', fontSize: '14px' };
+    return { width: '28px', height: '28px', fontSize: '12px' };
+  }, [size]);
+
+  const cellSize = getCellSize();
+
+  // Render notes for a cell
+  const renderNotes = (rowIndex, colIndex) => {
+    if (!notes || !notes[rowIndex] || !notes[rowIndex][colIndex]) return null;
+    
+    const cellNotes = notes[rowIndex][colIndex];
+    if (cellNotes.size === 0) return null;
+    
+    const gridSize = size <= 9 ? 3 : size <= 12 ? 4 : size <= 16 ? 4 : 5;
+    
+    return (
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
+          gridTemplateRows: `repeat(${Math.ceil(size / gridSize)}, 1fr)`,
+          padding: '2px',
+        }}
+      >
+        {Array.from({ length: size }, (_, i) => i + 1).map(num => (
+          <div 
+            key={num} 
+            className="flex items-center justify-center"
+            style={{ 
+              opacity: cellNotes.has(num) ? 1 : 0,
+              fontSize: size <= 9 ? '9px' : '7px',
+              color: 'var(--color-text-muted)',
+              fontWeight: 500,
+            }}
+          >
+            {num}
+          </div>
+        ))}
+      </div>
+    );
   };
 
-  // Check if cell was changed
-  const isChangedCell = (row, col) => {
-    return highlightChanges && originalGrid && originalGrid[row] && 
-           originalGrid[row][col] === '' && grid[row][col] !== '';
-  };
+  // Blur overlay when paused
+  if (isPaused) {
+    return (
+      <div className="relative">
+        <div className="sudoku-grid blur-md opacity-50" style={{
+          gridTemplateColumns: `repeat(${size}, ${cellSize.width})`,
+        }}>
+          {grid.map((row, rowIndex) =>
+            row.map((cell, colIndex) => (
+              <div
+                key={`${rowIndex}-${colIndex}`}
+                className="sudoku-cell"
+                style={{ width: cellSize.width, height: cellSize.height }}
+              />
+            ))
+          )}
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="card text-center">
+            <svg className="w-12 h-12 mx-auto mb-3 text-[var(--color-primary)]" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <p className="text-lg font-semibold">Game Paused</p>
+            <p className="text-sm text-[var(--color-text-muted)]">Click resume to continue</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">
-          {getPuzzleSizeName(size)} Sudoku
-        </h3>
-        <div className="flex space-x-4 text-sm">
-          <div className="flex items-center">
-            <span className="w-3 h-3 bg-gray-200 border border-gray-400 mr-1"></span>
-            <span className="text-gray-600">Given</span>
-          </div>
-          <div className="flex items-center">
-            <span className="w-3 h-3 bg-blue-100 border border-blue-300 mr-1"></span>
-            <span className="text-gray-600">Solved</span>
-          </div>
-          {highlightChanges && (
-            <div className="flex items-center">
-              <span className="w-3 h-3 bg-green-100 border border-green-300 mr-1"></span>
-              <span className="text-gray-600">Changed</span>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {/* Responsive grid container */}
-      <div className="flex justify-center">
-        <div 
-          className="grid gap-0 border-2 border-gray-800"
-          style={{
-            gridTemplateColumns: `repeat(${size}, 1fr)`,
-            // Dynamic sizing based on size with better proportions
-            width: size === 6 ? 'min(360px, 35vw)' :
-                   size === 9 ? 'min(450px, 40vw)' : 
-                   size === 12 ? 'min(540px, 50vw)' :
-                   size === 16 ? 'min(640px, 60vw)' : 
-                   'min(800px, 70vw)',
-            height: size === 6 ? 'min(360px, 35vw)' :
-                    size === 9 ? 'min(450px, 40vw)' : 
-                    size === 12 ? 'min(540px, 50vw)' :
-                    size === 16 ? 'min(640px, 60vw)' : 
-                    'min(800px, 70vw)',
-            maxWidth: size === 6 ? '360px' :
-                      size === 9 ? '450px' : 
-                      size === 12 ? '540px' :
-                      size === 16 ? '640px' : 
-                      '800px'
-          }}
-        >
-          {grid.map((row, rowIndex) =>
-            row.map((cell, colIndex) => {
-              const isOriginal = isOriginalCell(rowIndex, colIndex);
-              const isChanged = isChangedCell(rowIndex, colIndex);
-              
-              // Dynamic cell sizing
-              const cellSize = size === 6 ? '60px' :
-                              size === 9 ? '50px' : 
-                              size === 12 ? '45px' :
-                              size === 16 ? '40px' : 
-                              '32px';
-              
-              return (
+    <div className="flex flex-col items-center" ref={gridRef}>
+      <div 
+        className="sudoku-grid"
+        style={{
+          gridTemplateColumns: `repeat(${size}, ${cellSize.width})`,
+        }}
+      >
+        {grid.map((row, rowIndex) =>
+          row.map((cell, colIndex) => {
+            const isOriginal = isOriginalCell(rowIndex, colIndex);
+            const hasConflict = conflicts.has(`${rowIndex}-${colIndex}`);
+            const isSelected = selectedCell && selectedCell[0] === rowIndex && selectedCell[1] === colIndex;
+            const highlight = isHighlighted(rowIndex, colIndex);
+            const isAnimating = animatingCells.has(`${rowIndex}-${colIndex}`);
+            const wasRecentlyChanged = recentlyChanged.has(`${rowIndex}-${colIndex}`);
+            const hasNotes = notes && notes[rowIndex] && notes[rowIndex][colIndex] && notes[rowIndex][colIndex].size > 0;
+            const showNotes = hasNotes && cell === '';
+            
+            // Determine box borders
+            const isBoxRight = (colIndex + 1) % boxCols === 0 && colIndex !== size - 1;
+            const isBoxBottom = (rowIndex + 1) % boxRows === 0 && rowIndex !== size - 1;
+            
+            return (
+              <div
+                key={`${rowIndex}-${colIndex}`}
+                className="relative"
+                style={{ width: cellSize.width, height: cellSize.height }}
+              >
                 <input
-                  key={`${rowIndex}-${colIndex}`}
                   type="text"
-                  value={cell}
+                  value={showNotes ? '' : cell}
                   onChange={(e) => handleInputChange(e, rowIndex, colIndex)}
                   onKeyDown={(e) => handleKeyDown(e, rowIndex, colIndex)}
+                  onClick={() => handleCellClick(rowIndex, colIndex)}
                   className={`
-                    text-center font-semibold border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                    ${size <= 9 ? 'text-lg' : size === 12 ? 'text-base' : size === 16 ? 'text-sm' : 'text-xs'}
-                    ${isOriginal 
-                      ? 'bg-gray-200 text-gray-800 font-bold' 
-                      : isChanged 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-blue-100 text-blue-800'
-                    }
-                    ${readOnly ? 'cursor-not-allowed' : 'cursor-text'}
-                    ${(colIndex + 1) % boxCols === 0 && colIndex !== size - 1 ? 'border-r-2 border-gray-800' : ''}
-                    ${(rowIndex + 1) % boxRows === 0 && rowIndex !== size - 1 ? 'border-b-2 border-gray-800' : ''}
+                    sudoku-cell w-full h-full
+                    ${isOriginal ? 'original' : 'user-input'}
+                    ${hasConflict ? 'conflict' : ''}
+                    ${isSelected ? 'selected' : ''}
+                    ${highlight.row || highlight.col || highlight.box ? 'highlight-row' : ''}
+                    ${isBoxRight ? 'box-right' : ''}
+                    ${isBoxBottom ? 'box-bottom' : ''}
+                    ${isAnimating || wasRecentlyChanged ? 'cell-animate' : ''}
                   `}
+                  style={{
+                    fontSize: showNotes ? '0' : cellSize.fontSize,
+                    textAlign: 'center',
+                  }}
                   data-row={rowIndex}
                   data-col={colIndex}
-                  readOnly={readOnly}
+                  readOnly={readOnly || isOriginal}
                   maxLength={size > 9 ? 2 : 1}
-                  placeholder=""
-                  style={{
-                    width: cellSize,
-                    height: cellSize,
-                    minWidth: cellSize,
-                    minHeight: cellSize
-                  }}
                 />
-              );
-            })
-          )}
-        </div>
-      </div>
-      
-      <div className="mt-3 text-sm text-gray-600 space-y-1">
-        <p>Use arrow keys to navigate between cells</p>
-        <p>Valid characters: {validChars.join(', ')}</p>
+                {showNotes && renderNotes(rowIndex, colIndex)}
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );

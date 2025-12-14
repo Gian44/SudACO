@@ -1,6 +1,24 @@
 // WebAssembly bridge for Sudoku solver
 let wasmModule = null;
 
+// Default timeouts per puzzle size (seconds)
+const TIMEOUT_DEFAULTS = {
+  6: 3,
+  9: 5,
+  12: 10,
+  16: 20,
+  25: 120
+};
+
+/**
+ * Get the default timeout for a given puzzle size.
+ * @param {number} size - Puzzle size (6, 9, 12, 16, or 25)
+ * @returns {number} Default timeout in seconds
+ */
+export function getDefaultTimeout(size = 9) {
+  return TIMEOUT_DEFAULTS[size] ?? 10.0;
+}
+
 /**
  * Initialize the WebAssembly module
  * @returns {Promise<Object>} The WASM module instance
@@ -31,6 +49,9 @@ export async function solveSudoku(puzzleString, algorithm, params) {
   const module = await initWasm();
   
   try {
+    const numACS = params.numACS ?? 3;
+    const numColonies = params.numColonies ?? (numACS + 1);
+
     // Call the WASM function
     const resultPtr = module.ccall(
       'solve_sudoku',
@@ -40,8 +61,8 @@ export async function solveSudoku(puzzleString, algorithm, params) {
         puzzleString,
         algorithm,
         params.nAnts || 4,
-        params.numColonies || 3,
-        params.numACS || 2,
+        numColonies,
+        numACS,
         params.q0 || 0.9,
         params.rho || 0.9,
         params.evap || 0.005,
@@ -77,7 +98,7 @@ export async function solveSudoku(puzzleString, algorithm, params) {
  */
 export function getAlgorithmNames() {
   return {
-    0: 'Ant Colony System (ACS)',
+    0: 'Ant Colony Optimization (ACO)',
     1: 'Backtracking Search',
     2: 'Multi-Colony DCM-ACO'
   };
@@ -87,28 +108,32 @@ export function getAlgorithmNames() {
  * Get default parameters for each algorithm
  * @returns {Object} Default parameters for each algorithm
  */
-export function getDefaultParameters() {
+export function getDefaultParameters(size = 9) {
+  const timeout = getDefaultTimeout(size);
+  const defaultNumACS = 3;
+  const defaultNumColonies = defaultNumACS + 1; // n ACS + 1 MMAS
+
   return {
     0: { // ACS
       nAnts: 10,
       q0: 0.9,
       rho: 0.9,
       evap: 0.005,
-      timeout: 10.0
+      timeout
     },
     1: { // Backtracking
-      timeout: 10.0
+      timeout
     },
     2: { // DCM-ACO
       nAnts: 4,
-      numColonies: 3,
-      numACS: 2,
+      numColonies: defaultNumColonies,
+      numACS: defaultNumACS,
       q0: 0.9,
       rho: 0.9,
       evap: 0.005,
       convThresh: 0.8,
       entropyThresh: 4.0,
-      timeout: 10.0
+      timeout
     }
   };
 }

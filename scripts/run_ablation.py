@@ -89,6 +89,7 @@ DEFAULTS = {
     # numColonies = numACS + 1 (exactly 1 MMAS colony)
     "convThresh": 0.8,
     "entropyThreshold": 4.0,
+    "useACSOnly": False,     # Ablation mode: use homogeneous ACS-only system
 }
 
 
@@ -285,6 +286,9 @@ def run_once(
         "--entropyThreshold", str(float(params["entropyThreshold"])) ,
         "--verbose",
     ]
+    # Add useACSOnly flag if enabled
+    if params.get("useACSOnly", False):
+        args.append("--useACSOnly")
     # Algorithm flag tokens (e.g., ["--alg", "2"]) must be present
     args.extend(alg_flag_tokens)
 
@@ -702,6 +706,7 @@ def main() -> None:
     ap.add_argument('--logic_runs', type=int, default=100, help='Repetitions for logic-solvable (default: 100)')
     ap.add_argument('--single_runs', type=int, default=1, help='Repetitions for other folders (default: 1)')
     ap.add_argument('--algorithm_flag', default='--alg 2', help='Algorithm flag string to split into args (default: "--alg 2")')
+    ap.add_argument('--useACSOnly', action='store_true', help='Use homogeneous ACS-only ablation mode (default: False, uses MMAS)')
     ap.add_argument('--include_timeouts_in_mean', action='store_true', default=True, help='Include unsuccessful runs at timeout in mean time (default: true)')
     ap.add_argument('--no-include_timeouts_in_mean', dest='include_timeouts_in_mean', action='store_false')
     ap.add_argument('--verbose', action='store_true', help='Print progress while running instances')
@@ -795,6 +800,9 @@ def main() -> None:
                         # Instantiate params with defaults, override factor
                         params = dict(DEFAULTS)
                         params[factor] = level
+                        # Set useACSOnly from command-line argument
+                        if args.useACSOnly:
+                            params["useACSOnly"] = True
                         # Enforce numColonies rule (derived inside run_once)
                         try:
                             result, argv = run_once(solver, fp, timeout_sec, params, alg_flag_tokens)

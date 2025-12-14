@@ -22,11 +22,11 @@ for multi-colony:
 .\vs2017\x64\Release\sudoku_ants.exe --alg 2 --file instances/logic-solvable/aiescargot.txt --showinitial --verbose 
 .\vs2017\x64\Release\sudoku_ants.exe --alg 2 --file instances/general/inst25x25_45_97.txt --showinitial --verbose
 
-.\vs2017\x64\Release\sudoku_ants.exe --alg 2 --file instances/general/inst25x25_45_97.txt --showinitial --verbose --timeout 120
+.\vs2017\x64\Release\sudoku_ants.exe --alg 2 --file instances/general/inst25x25_45_97.txt --showinitial --useACSOnly --verbose --timeout 120
 
-.\vs2017\x64\Release\sudoku_ants.exe --alg 2 --file instances/6x6/6x6easy.txt --showinitial --verbose
+.\vs2017\x64\Release\sudoku_ants.exe --alg 2 --file instances/logic-solvable/6x6easy.txt --showinitial --verbose
 
-.\vs2017\x64\Release\sudoku_ants.exe --alg 2 --file instances/12x12/12x12hard.txt --showinitial --verbose
+.\vs2017\x64\Release\sudoku_ants.exe --alg 2 --file instances/logic-solvable/12x12hard.txt --showinitial --verbose
 
 to run tests:
 
@@ -36,6 +36,8 @@ python scripts\run_general.py --algs 0,2 --verbose
 python scripts\run_general_subset.py --algs 2 --sizes 25x25 --frac-min 35 --frac-max 50 --verbose 
 
 python scripts\run_all.py --algs 2 --verbose
+
+python scripts\run_all.py --alg 2 --useACSOnly --verbose
 
 python scripts\run_all.py --algs 2 --nAnts 4 --q0 0.9 --rho 0.9 --evap 0.005 --numACS 3 --convThresh 0.8 --entropyThreshold 4 --verbose
 

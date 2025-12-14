@@ -314,3 +314,243 @@ export function countFilledCells(grid) {
   
   return count;
 }
+
+/**
+ * Find all conflicts in the grid
+ * Returns cells that have the same value in their row, column, or box
+ * @param {Array<Array<string>>} grid - 2D array representing the puzzle
+ * @param {number} size - Grid size
+ * @returns {Set<string>} Set of conflicting cell keys in "row-col" format
+ */
+export function findConflicts(grid, size) {
+  const conflicts = new Set();
+  const { boxRows, boxCols } = getBoxDimensions(size);
+  
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      const value = grid[row][col];
+      if (value === '') continue;
+      
+      // Check row
+      for (let c = 0; c < size; c++) {
+        if (c !== col && grid[row][c] === value) {
+          conflicts.add(`${row}-${col}`);
+          conflicts.add(`${row}-${c}`);
+        }
+      }
+      
+      // Check column
+      for (let r = 0; r < size; r++) {
+        if (r !== row && grid[r][col] === value) {
+          conflicts.add(`${row}-${col}`);
+          conflicts.add(`${r}-${col}`);
+        }
+      }
+      
+      // Check box
+      const boxRowStart = Math.floor(row / boxRows) * boxRows;
+      const boxColStart = Math.floor(col / boxCols) * boxCols;
+      
+      for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+        for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+          if ((r !== row || c !== col) && grid[r][c] === value) {
+            conflicts.add(`${row}-${col}`);
+            conflicts.add(`${r}-${c}`);
+          }
+        }
+      }
+    }
+  }
+  
+  return conflicts;
+}
+
+/**
+ * Check if a specific cell has a conflict
+ * @param {Array<Array<string>>} grid - 2D array representing the puzzle
+ * @param {number} row - Row index
+ * @param {number} col - Column index
+ * @param {number} size - Grid size
+ * @returns {boolean} True if cell has a conflict
+ */
+export function hasCellConflict(grid, row, col, size) {
+  const value = grid[row][col];
+  if (value === '') return false;
+  
+  const { boxRows, boxCols } = getBoxDimensions(size);
+  
+  // Check row
+  for (let c = 0; c < size; c++) {
+    if (c !== col && grid[row][c] === value) {
+      return true;
+    }
+  }
+  
+  // Check column
+  for (let r = 0; r < size; r++) {
+    if (r !== row && grid[r][col] === value) {
+      return true;
+    }
+  }
+  
+  // Check box
+  const boxRowStart = Math.floor(row / boxRows) * boxRows;
+  const boxColStart = Math.floor(col / boxCols) * boxCols;
+  
+  for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+    for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+      if ((r !== row || c !== col) && grid[r][c] === value) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
+}
+
+/**
+ * Check if the puzzle is completely and correctly solved
+ * @param {Array<Array<string>>} grid - 2D array representing the puzzle
+ * @param {number} size - Grid size
+ * @returns {boolean} True if puzzle is solved
+ */
+export function isPuzzleSolved(grid, size) {
+  // Check if all cells are filled
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      if (grid[row][col] === '') {
+        return false;
+      }
+    }
+  }
+  
+  // Check for any conflicts
+  const conflicts = findConflicts(grid, size);
+  return conflicts.size === 0;
+}
+
+/**
+ * Count how many of each number are placed in the grid
+ * @param {Array<Array<string>>} grid - 2D array representing the puzzle
+ * @param {number} size - Grid size
+ * @returns {Object} Map of number to count
+ */
+export function countNumbers(grid, size) {
+  const counts = {};
+  for (let i = 1; i <= size; i++) {
+    counts[String(i)] = 0;
+  }
+  
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      const value = grid[row][col];
+      if (value !== '' && counts[value] !== undefined) {
+        counts[value]++;
+      }
+    }
+  }
+  
+  return counts;
+}
+
+/**
+ * Get numbers that have all instances placed (completed)
+ * @param {Array<Array<string>>} grid - 2D array representing the puzzle
+ * @param {number} size - Grid size
+ * @returns {number[]} Array of completed numbers
+ */
+export function getCompletedNumbers(grid, size) {
+  const counts = countNumbers(grid, size);
+  const completed = [];
+  
+  for (let i = 1; i <= size; i++) {
+    if (counts[String(i)] === size) {
+      completed.push(i);
+    }
+  }
+  
+  return completed;
+}
+
+/**
+ * Create empty notes grid
+ * @param {number} size - Grid size
+ * @returns {Array<Array<Set<number>>>} 2D array of Sets for notes
+ */
+export function createEmptyNotesGrid(size) {
+  const notes = [];
+  for (let row = 0; row < size; row++) {
+    notes[row] = [];
+    for (let col = 0; col < size; col++) {
+      notes[row][col] = new Set();
+    }
+  }
+  return notes;
+}
+
+/**
+ * Toggle a note in a cell
+ * @param {Array<Array<Set<number>>>} notes - Notes grid
+ * @param {number} row - Row index
+ * @param {number} col - Column index
+ * @param {number} value - Value to toggle
+ * @returns {Array<Array<Set<number>>>} Updated notes grid
+ */
+export function toggleNote(notes, row, col, value) {
+  const newNotes = notes.map(r => r.map(c => new Set(c)));
+  if (newNotes[row][col].has(value)) {
+    newNotes[row][col].delete(value);
+  } else {
+    newNotes[row][col].add(value);
+  }
+  return newNotes;
+}
+
+/**
+ * Clear notes for a cell
+ * @param {Array<Array<Set<number>>>} notes - Notes grid
+ * @param {number} row - Row index
+ * @param {number} col - Column index
+ * @returns {Array<Array<Set<number>>>} Updated notes grid
+ */
+export function clearCellNotes(notes, row, col) {
+  const newNotes = notes.map(r => r.map(c => new Set(c)));
+  newNotes[row][col].clear();
+  return newNotes;
+}
+
+/**
+ * Remove a value from notes in related cells (same row, column, box)
+ * @param {Array<Array<Set<number>>>} notes - Notes grid
+ * @param {number} row - Row index
+ * @param {number} col - Column index
+ * @param {number} value - Value to remove
+ * @param {number} size - Grid size
+ * @returns {Array<Array<Set<number>>>} Updated notes grid
+ */
+export function removeNoteFromRelatedCells(notes, row, col, value, size) {
+  const newNotes = notes.map(r => r.map(c => new Set(c)));
+  const { boxRows, boxCols } = getBoxDimensions(size);
+  
+  // Remove from row
+  for (let c = 0; c < size; c++) {
+    newNotes[row][c].delete(value);
+  }
+  
+  // Remove from column
+  for (let r = 0; r < size; r++) {
+    newNotes[r][col].delete(value);
+  }
+  
+  // Remove from box
+  const boxRowStart = Math.floor(row / boxRows) * boxRows;
+  const boxColStart = Math.floor(col / boxCols) * boxCols;
+  
+  for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+    for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+      newNotes[r][c].delete(value);
+    }
+  }
+  
+  return newNotes;
+}

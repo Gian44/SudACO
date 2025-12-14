@@ -56,6 +56,9 @@ class MultiColonyAntSystem : public SudokuSolver
     // DCM-ACO thresholds
     float convThreshold;  // MMAS public-path convergence trigger
     float entropyThreshold;  // fixed entropy threshold from paper
+    
+    // Ablation mode flag
+    bool useACSOnlyMode;  // If true, use homogeneous ACS-only system (ablation study)
 
     // pheromone helpers
     void InitPheromone(Colony &c, int numCells, int valuesPerCell);
@@ -68,6 +71,7 @@ class MultiColonyAntSystem : public SudokuSolver
     float ComputeEntropy(const Colony &c) const;
     void ACSCooperativeGameAllocate(std::vector<int> &acsIdx,
                                     std::vector<float> &allocatedBestPher);
+    // Note: In ablation mode (useACSOnlyMode), mmasIdx parameter represents separated ACS colony indices
     void ApplyPheromoneFusion(const std::vector<int> &acsIdx,
                               const std::vector<int> &mmasIdx);
     void ApplyPublicPathRecommendation(int iter,
@@ -77,10 +81,10 @@ class MultiColonyAntSystem : public SudokuSolver
 public:
     // Configurable number of colonies and ACS colonies
     MultiColonyAntSystem(int antsPerColony, float q0, float rho, float pher0, float bestEvap,
-                         int numColonies, int numACS, float convThreshold, float entropyThreshold)
+                         int numColonies, int numACS, float convThreshold, float entropyThreshold, bool useACSOnly = false)
         : numColonies(numColonies), numACS(numACS), antsPerColony(antsPerColony), q0(q0), rho(rho), pher0(pher0), bestEvap(bestEvap),
           globalBestPher(0.0f), globalBestVal(0), solTime(0.0f), iterationCount(0),
-          convThreshold(convThreshold), entropyThreshold(entropyThreshold)
+          convThreshold(convThreshold), entropyThreshold(entropyThreshold), useACSOnlyMode(useACSOnly)
     {
         colonies.resize(numColonies);
         randomDist = std::uniform_real_distribution<float>(0.0f, 1.0f);
