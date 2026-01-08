@@ -1,0 +1,25 @@
+# Exclude large instance files from deployment
+# These are not needed in production as puzzles are stored in KV
+public/instances/
+instances/
+
+# Exclude development files
+node_modules/
+.vscode/
+*.log
+.DS_Store
+
+# Exclude build artifacts
+dist/
+build/
+.vercel/
+
+# Exclude test files
+*.test.js
+*.test.jsx
+*.spec.js
+*.spec.jsx
+
+# Exclude documentation (optional - keep if you want)
+# README.md
+# SETUP.md

@@ -10,7 +10,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate-instances": "node scripts/generate-instances.js"
+    "generate-instances": "node scripts/generate-instances.js",
+    "setup:kv": "node scripts/setup-vercel-kv.js",
+    "set:env": "node scripts/set-env-vars.js"
   },
   "dependencies": {
     "@vercel/kv": "^0.2.1",

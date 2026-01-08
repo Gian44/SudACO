@@ -27,10 +27,12 @@ The application includes automatic daily puzzle generation using Vercel Cron Job
    - Path: `/api/cron/generate-daily`
    - Schedule: `0 0 * * *` (daily at midnight UTC)
 
-2. **Environment Variables** (optional but recommended):
-   - `CRON_SECRET`: Secret token for securing the cron endpoint (optional)
-   - `KV_REST_API_URL`: Vercel KV REST API URL (required for production)
-   - `KV_REST_API_TOKEN`: Vercel KV REST API token (required for production)
+2. **Environment Variables** (required for production):
+   - `KV_REST_API_URL`: Vercel KV REST API URL (get from Vercel Dashboard → Storage → KV → Settings)
+   - `KV_REST_API_TOKEN`: Vercel KV REST API token (get from Vercel Dashboard → Storage → KV → Settings)
+   - `CRON_SECRET`: Secret token for securing the cron endpoint (optional, but recommended)
+   
+   See [SETUP.md](./SETUP.md) for detailed instructions on getting these values.
 
 3. **WASM Files**: Ensure `sudoku_solver.js` and `sudoku_solver.wasm` are available in:
    - `client/src/wasm/` (for development)

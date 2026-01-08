@@ -38,7 +38,9 @@ async function initWasm() {
     try {
       // Try to load WASM from different possible locations
       // Vercel serverless functions have a different file structure
+      // Priority: local wasm directory (for serverless), then other locations
       const possiblePaths = [
+        join(__dirname, 'wasm', 'sudoku_solver.js'), // Best: local to API function
         join(process.cwd(), 'client', 'src', 'wasm', 'sudoku_solver.js'),
         join(process.cwd(), 'client', 'public', 'sudoku_solver.js'),
         join(process.cwd(), 'src', 'wasm', 'sudoku_solver.js'),
@@ -53,7 +55,13 @@ async function initWasm() {
       
       for (const wasmPath of possiblePaths) {
         try {
-          // Use pathToFileURL for proper file:// URL handling (works on Windows too)
+          // For local wasm directory, use relative import (works in Vercel)
+          if (wasmPath.includes('wasm/sudoku_solver.js') && wasmPath.startsWith(join(__dirname))) {
+            wasmModuleFactory = await import('./wasm/sudoku_solver.js');
+            console.log(`✓ Found WASM module at: ${wasmPath} (using relative import)`);
+            break;
+          }
+          // Use pathToFileURL for other paths
           const wasmUrl = pathToFileURL(wasmPath).href;
           wasmModuleFactory = await import(wasmUrl);
           console.log(`✓ Found WASM module at: ${wasmPath}`);
@@ -65,7 +73,7 @@ async function initWasm() {
       }
 
       if (!wasmModuleFactory) {
-        throw new Error(`Could not find WASM module. Last error: ${lastError?.message || 'unknown'}`);
+        throw new Error(`Could not find WASM module. Last error: ${lastError?.message || 'unknown'}. Ensure sudoku_solver.js and sudoku_solver.wasm are in api/cron/wasm/ directory.`);
       }
 
       wasmModule = await wasmModuleFactory.default();
