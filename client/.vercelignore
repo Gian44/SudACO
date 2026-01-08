@@ -1,18 +1,20 @@
 # Exclude large instance .txt files from deployment
-# Keep index.json which is needed for the puzzle library
-# Use specific patterns to exclude only .txt files
+# Keep index.json and logic-solvable puzzles (small set, only 22 files)
+# Use specific patterns to exclude only large .txt file directories
 
-# Exclude all .txt puzzle files (but not index.json)
-public/instances/**/*.txt
-dist/instances/**/*.txt
-.vercel/output/static/instances/**/*.txt
+# Exclude .txt files from large directories only
+public/instances/6x6/**/*.txt
+public/instances/12x12/**/*.txt
+public/instances/general/**/*.txt
+public/instances/daily-puzzles/**/*.txt
+
+# Keep logic-solvable puzzles (small set, useful for production)
+# Don't exclude public/instances/logic-solvable/
 
 # Exclude entire subdirectories that only contain .txt files
-# This is safe because index.json is in the instances root, not in subdirs
 public/instances/6x6/
 public/instances/12x12/
 public/instances/general/
-public/instances/logic-solvable/
 public/instances/daily-puzzles/
 
 # Exclude root instances directory (outside client/)

@@ -117,23 +117,39 @@ function PuzzleLoader({ onPuzzleLoad, onError }) {
       
       // If not found in local storage, load from file
       if (!puzzleString) {
-        const puzzlePath = `/instances/${selectedCategory}/${selectedPuzzle}`;
+        let fileContent = null;
         
-        console.log('Loading puzzle from:', puzzlePath);
-        
-        const response = await fetch(puzzlePath, {
-          headers: {
-            'Accept': 'text/plain, text/*, */*'
+        // Try API endpoint first (for production)
+        try {
+          const apiResponse = await fetch(`/api/puzzles/load?category=${encodeURIComponent(selectedCategory)}&file=${encodeURIComponent(selectedPuzzle)}`);
+          if (apiResponse.ok) {
+            fileContent = await apiResponse.text();
+            console.log('Loaded puzzle from API');
+          } else {
+            // Fallback to direct file fetch (for development)
+            console.log('API failed, trying direct file fetch');
+            const puzzlePath = `/instances/${selectedCategory}/${selectedPuzzle}`;
+            const response = await fetch(puzzlePath, {
+              headers: {
+                'Accept': 'text/plain, text/*, */*'
+              }
+            });
+            
+            if (!response.ok) {
+              throw new Error(`Puzzle file not available. In production, library puzzles are not included. Please use Daily puzzles or upload your own puzzle file.`);
+            }
+            
+            fileContent = await response.text();
+            console.log('Loaded puzzle from direct file');
           }
-        });
-        console.log('Response status:', response.status, response.statusText);
-        console.log('Response content-type:', response.headers.get('content-type'));
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch puzzle: ${response.status} ${response.statusText}`);
+        } catch (fetchErr) {
+          throw new Error(`Failed to load puzzle: ${fetchErr.message}`);
         }
         
-        const fileContent = await response.text();
+        if (!fileContent) {
+          throw new Error('Failed to load puzzle file');
+        }
+        
         console.log('File content preview:', fileContent.substring(0, 100));
         
         const parsed = parseInstanceFile(fileContent);

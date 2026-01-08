@@ -219,14 +219,36 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
     setError('');
     
     try {
-      const puzzlePath = `/instances/${selectedCategory}/${puzzleFile}`;
-      const response = await fetch(puzzlePath);
+      // Try API endpoint first (for production)
+      let fileContent = null;
+      let response = null;
       
-      if (!response.ok) {
-        throw new Error(`Failed to fetch puzzle: ${response.status}`);
+      try {
+        response = await fetch(`/api/puzzles/load?category=${encodeURIComponent(selectedCategory)}&file=${encodeURIComponent(puzzleFile)}`);
+        if (response.ok) {
+          fileContent = await response.text();
+        } else if (response.status === 404) {
+          // Puzzle not available in production
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Puzzle file not available in production. Please use Daily puzzles or upload your own.');
+        }
+      } catch (apiErr) {
+        // Fallback to direct file fetch (for development)
+        console.warn('API failed, trying direct file fetch:', apiErr);
+        const puzzlePath = `/instances/${selectedCategory}/${puzzleFile}`;
+        response = await fetch(puzzlePath);
+        
+        if (!response.ok) {
+          throw new Error(`Puzzle file not available. In production, library puzzles are not included. Please use Daily puzzles or upload your own puzzle file.`);
+        }
+        
+        fileContent = await response.text();
       }
       
-      const fileContent = await response.text();
+      if (!fileContent) {
+        throw new Error('Failed to load puzzle file');
+      }
+      
       const { size, puzzleString } = parseInstanceFile(fileContent);
       const grid = stringToGrid(puzzleString, size);
       const difficulty = calculateDifficulty(puzzleString, size);
