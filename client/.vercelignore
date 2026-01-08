@@ -1,6 +1,10 @@
 # Exclude large instance files from deployment
 # These are not needed in production as puzzles are stored in KV
-public/instances/
+public/instances/**/*.txt
+public/instances/6x6/
+public/instances/12x12/
+public/instances/general/
+public/instances/logic-solvable/
 instances/
 
 # Exclude development files

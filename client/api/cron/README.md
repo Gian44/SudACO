@@ -4,24 +4,13 @@ This cron job automatically generates tomorrow's daily puzzle at midnight UTC.
 
 ## WASM Files Required
 
-For this cron job to work in Vercel, the WASM files must be accessible. You have two options:
+**WASM files are located in `client/wasm/`** (moved from `api/cron/wasm/` to avoid Vercel path conflicts).
 
-### Option 1: Copy WASM files to api directory (Recommended)
+The cron job will automatically find the WASM files in:
+- `client/wasm/sudoku_solver.js`
+- `client/wasm/sudoku_solver.wasm`
 
-Copy the WASM files to the api directory so they're included in the serverless function:
-
-```bash
-# From client directory
-mkdir -p api/cron/wasm
-cp src/wasm/sudoku_solver.js api/cron/wasm/
-cp src/wasm/sudoku_solver.wasm api/cron/wasm/
-```
-
-Then update the import path in `generate-daily.js` to use `./wasm/sudoku_solver.js`.
-
-### Option 2: Use build script
-
-Create a build script that copies WASM files before deployment.
+These files are included in the deployment and accessible to the serverless function.
 
 ## Current Status
 
