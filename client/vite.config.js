@@ -14,7 +14,9 @@ export default defineConfig({
       output: {
         manualChunks: undefined
       }
-    }
+    },
+    // Ensure index.json is copied to dist
+    copyPublicDir: true
   },
   optimizeDeps: {
     exclude: []

@@ -85,8 +85,16 @@ export default async function handler(req, res) {
       }
 
       if (!indexData) {
-        console.error('Error loading puzzles from all file paths:', lastError);
-        throw new Error(`Failed to load puzzle index from filesystem: ${lastError?.message || 'File not found'}`);
+        console.warn('Could not load puzzle index from filesystem, returning empty structure');
+        // Return empty structure instead of throwing error
+        // This allows the app to work even if index.json is missing
+        indexData = {
+          'logic-solvable': [],
+          '6x6': [],
+          '12x12': [],
+          'general': {},
+          'daily-puzzles': []
+        };
       }
     }
     

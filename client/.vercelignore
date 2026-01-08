@@ -1,10 +1,21 @@
-# Exclude large instance files from deployment
-# These are not needed in production as puzzles are stored in KV
+# Exclude large instance .txt files from deployment
+# Keep index.json which is needed for the puzzle library
+# Use specific patterns to exclude only .txt files
+
+# Exclude all .txt puzzle files (but not index.json)
 public/instances/**/*.txt
+dist/instances/**/*.txt
+.vercel/output/static/instances/**/*.txt
+
+# Exclude entire subdirectories that only contain .txt files
+# This is safe because index.json is in the instances root, not in subdirs
 public/instances/6x6/
 public/instances/12x12/
 public/instances/general/
 public/instances/logic-solvable/
+public/instances/daily-puzzles/
+
+# Exclude root instances directory (outside client/)
 instances/
 
 # Exclude development files
@@ -13,8 +24,8 @@ node_modules/
 *.log
 .DS_Store
 
-# Exclude build artifacts
-dist/
+# Exclude build artifacts (but Vercel needs dist/, so be careful)
+# dist/  # Don't exclude - Vercel needs this
 build/
 .vercel/
 
@@ -23,7 +34,3 @@ build/
 *.test.jsx
 *.spec.js
 *.spec.jsx
-
-# Exclude documentation (optional - keep if you want)
-# README.md
-# SETUP.md
