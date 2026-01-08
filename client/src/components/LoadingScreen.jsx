@@ -1,4 +1,5 @@
 import React from 'react';
+import sudacoLogo from '../assets/sudaco-logo.svg';
 
 const LoadingScreen = ({ message = 'Loading...', subMessage = '' }) => {
   return (
@@ -16,8 +17,12 @@ const LoadingScreen = ({ message = 'Loading...', subMessage = '' }) => {
             }}
           />
           {/* Inner logo */}
-          <div className="absolute inset-2 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-3xl">S</span>
+          <div className="absolute inset-2 rounded-xl overflow-hidden shadow-lg">
+            <img 
+              src={sudacoLogo} 
+              alt="SudACO Logo" 
+              className="w-full h-full"
+            />
           </div>
         </div>
         

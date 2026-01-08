@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import DifficultyBadge from './DifficultyBadge';
+import sudacoLogo from '../assets/sudaco-logo.svg';
 
 const GameHeader = ({ 
   isPlaying, 
@@ -70,9 +71,11 @@ const GameHeader = ({
       <div className="flex items-center justify-between mb-4">
         {/* Logo/Title */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-lg">S</span>
-          </div>
+          <img 
+            src={sudacoLogo} 
+            alt="SudACO Logo" 
+            className="w-10 h-10 rounded-xl shadow-lg"
+          />
           <div>
             <h1 className="text-xl font-bold text-gradient">SudACO</h1>
             <p className="text-xs text-[var(--color-text-muted)]">Sudoku Game</p>
