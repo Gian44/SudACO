@@ -227,7 +227,9 @@ async function saveDailyPuzzleToServer(puzzleData) {
         filename: puzzleData.filename,
         content: puzzleData.instanceContent,
         size: puzzleData.size,
-        difficulty: puzzleData.difficulty
+        difficulty: puzzleData.difficulty,
+        puzzleString: puzzleData.puzzleString,
+        date: puzzleData.date
       })
     });
     
@@ -235,7 +237,15 @@ async function saveDailyPuzzleToServer(puzzleData) {
       throw new Error(`Server responded with ${response.status}`);
     }
     
-    return await response.json();
+    const result = await response.json();
+    if (result.storage === 'vercel-kv') {
+      console.log('Daily puzzle saved to Vercel KV database');
+    } else if (result.storage === 'filesystem') {
+      console.log('Daily puzzle saved to filesystem');
+    } else {
+      console.warn('Daily puzzle saved to localStorage only');
+    }
+    return result;
   } catch (error) {
     console.warn('Failed to save daily puzzle to server:', error);
     // Don't throw - saving to server is optional
@@ -249,20 +259,38 @@ async function saveDailyPuzzleToServer(puzzleData) {
  */
 async function loadDailyPuzzleFromServer(dateISO) {
   try {
-    // Try to get the puzzle info for this date
+    // First try to get from KV via API
+    try {
+      const response = await fetch(`/api/puzzles/daily?date=${dateISO}`);
+      if (response.ok) {
+        const puzzleData = await response.json();
+        return {
+          puzzleString: puzzleData.puzzleString,
+          size: puzzleData.size,
+          difficulty: puzzleData.difficulty,
+          filename: puzzleData.filename,
+          date: puzzleData.date,
+          dateCreated: puzzleData.date,
+          source: 'daily',
+          isDaily: true
+        };
+      }
+    } catch (apiErr) {
+      console.warn('KV API not available, trying static files:', apiErr);
+    }
+    
+    // Fallback: Try to fetch from static files
     const date = new Date(dateISO);
     const { size, difficulty } = getRandomSizeAndDifficulty(date);
     const dateStr = getDateString(date);
     const filename = generateDailyFilename(dateStr, size, difficulty);
     
-    // Try to fetch from server
     const puzzlePath = `/instances/daily-puzzles/${filename}`;
     const response = await fetch(puzzlePath);
     
     if (response.ok) {
       const fileContent = await response.text();
       const { size: parsedSize, puzzleString } = parseInstanceFile(fileContent);
-      const grid = stringToGrid(puzzleString, parsedSize);
       
       return {
         puzzleString,
@@ -272,8 +300,7 @@ async function loadDailyPuzzleFromServer(dateISO) {
         date: dateISO,
         dateCreated: dateStr,
         source: 'daily',
-        isDaily: true,
-        grid
+        isDaily: true
       };
     }
   } catch (err) {

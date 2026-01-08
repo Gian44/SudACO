@@ -13,6 +13,7 @@
     "generate-instances": "node scripts/generate-instances.js"
   },
   "dependencies": {
+    "@vercel/kv": "^0.2.1",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "react": "^19.1.1",

@@ -1,6 +1,6 @@
 // Vercel API route: /api/puzzles/save-daily
-// Note: In Vercel, the filesystem is read-only, so this will fail gracefully
-// Daily puzzles are stored in localStorage as a fallback
+// Uses Vercel KV (Redis) for storage since filesystem is read-only
+import { kv } from '@vercel/kv';
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -20,13 +20,52 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { filename, content, size, difficulty } = req.body;
+    const { filename, content, size, difficulty, puzzleString, date } = req.body;
     
     if (!filename || !content) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Try multiple possible paths for the instances directory
+    // Try to save to Vercel KV first (production)
+    try {
+      if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+        // Save puzzle data to KV
+        const puzzleKey = `daily-puzzle:${date || filename}`;
+        const puzzleData = {
+          filename,
+          content,
+          size,
+          difficulty,
+          puzzleString,
+          date: date || new Date().toISOString().split('T')[0],
+          createdAt: new Date().toISOString()
+        };
+        
+        await kv.set(puzzleKey, JSON.stringify(puzzleData));
+        
+        // Add to daily puzzles list
+        const listKey = 'daily-puzzles:list';
+        const existingList = await kv.get(listKey) || [];
+        if (!existingList.includes(filename)) {
+          existingList.push(filename);
+          await kv.set(listKey, existingList);
+        }
+        
+        console.log(`Daily puzzle saved to KV: ${filename}`);
+        
+        res.json({
+          success: true,
+          filename,
+          storage: 'vercel-kv',
+          note: 'Saved to Vercel KV database'
+        });
+        return;
+      }
+    } catch (kvError) {
+      console.warn('KV not available, trying filesystem:', kvError.message);
+    }
+
+    // Fallback: Try filesystem (development mode)
     const possiblePaths = [
       path.join(process.cwd(), 'public', 'instances', 'daily-puzzles'),
       path.join(process.cwd(), 'instances', 'daily-puzzles'),
@@ -38,40 +77,35 @@ export default async function handler(req, res) {
 
     for (const dailyDir of possiblePaths) {
       try {
-        // Ensure directory exists
         await fs.mkdir(dailyDir, { recursive: true });
-        
-        // Save puzzle file
         const filePath = path.join(dailyDir, filename);
         await fs.writeFile(filePath, content, 'utf8');
-        
-        // Update index.json
         await updateIndexJson(filename);
         
         saved = true;
-        console.log(`Daily puzzle saved: ${filename}`);
+        console.log(`Daily puzzle saved to filesystem: ${filename}`);
         
         res.json({
           success: true,
           filename,
           filePath: filePath.replace(process.cwd(), ''),
-          note: 'Saved successfully (development mode only)'
+          storage: 'filesystem',
+          note: 'Saved to filesystem (development mode)'
         });
         return;
       } catch (err) {
         lastError = err;
-        // Try next path
         continue;
       }
     }
 
-    // If all paths failed (e.g., in Vercel with read-only filesystem)
-    // Return a success response but note that it's stored in localStorage only
-    console.warn('Could not save daily puzzle to filesystem (read-only in Vercel):', lastError);
+    // If both KV and filesystem failed
+    console.warn('Could not save daily puzzle to KV or filesystem:', lastError);
     res.json({
       success: true,
       filename,
-      note: 'Filesystem is read-only. Puzzle stored in browser localStorage only.',
+      storage: 'localStorage',
+      note: 'Could not save to server. Puzzle stored in browser localStorage only.',
       localStorageOnly: true
     });
 

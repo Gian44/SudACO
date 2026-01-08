@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getDailyPuzzle, isDailyCompleted, getDifficultyInfo, calculateDifficulty, getDailyPuzzleInfo } from '../utils/dailyPuzzleService';
+import { getDailyPuzzle, getDailyPuzzleForDate, isDailyCompleted, getDifficultyInfo, calculateDifficulty, getDailyPuzzleInfo } from '../utils/dailyPuzzleService';
 import { parseInstanceFile, getInstanceFileFormatDescription } from '../utils/fileParser';
 import { stringToGrid } from '../utils/sudokuUtils';
 import { loadPuzzlesFromServer, checkServerHealth } from '../utils/apiClient';
@@ -23,6 +23,9 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
   // Upload state
   const [uploadError, setUploadError] = useState('');
   const [dragOver, setDragOver] = useState(false);
+  
+  // Previous daily puzzles
+  const [previousDailyPuzzles, setPreviousDailyPuzzles] = useState([]);
 
   // Load daily puzzle info and puzzle index
   useEffect(() => {
@@ -30,6 +33,32 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
       // Get daily puzzle info
       const info = getDailyPuzzleInfo();
       setDailyInfo(info);
+      
+      // Load previous daily puzzles from localStorage
+      const previousPuzzles = [];
+      const today = new Date();
+      for (let i = 1; i <= 30; i++) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateISO = date.toISOString().split('T')[0];
+        const cacheKey = `daily-puzzle-${dateISO}`;
+        try {
+          const cached = localStorage.getItem(cacheKey);
+          if (cached) {
+            const puzzleData = JSON.parse(cached);
+            previousPuzzles.push({
+              date: dateISO,
+              dateDisplay: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+              size: puzzleData.size,
+              difficulty: puzzleData.difficulty,
+              filename: puzzleData.filename
+            });
+          }
+        } catch (e) {
+          // Skip invalid entries
+        }
+      }
+      setPreviousDailyPuzzles(previousPuzzles);
       
       // Load puzzle categories
       try {
@@ -139,6 +168,32 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
     try {
       // Get today's daily puzzle (no parameters - random size/difficulty)
       const puzzleData = await getDailyPuzzle();
+      const grid = stringToGrid(puzzleData.puzzleString, puzzleData.size);
+      
+      onPuzzleSelect({
+        grid,
+        size: puzzleData.size,
+        puzzleString: puzzleData.puzzleString,
+        difficulty: puzzleData.difficulty,
+        isDaily: true,
+        source: puzzleData.source
+      });
+      
+      onClose();
+    } catch (err) {
+      setError(`Failed to load daily puzzle: ${err.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [onPuzzleSelect, onClose]);
+
+  // Handle previous daily puzzle selection
+  const handlePreviousDailySelect = useCallback(async (dateISO) => {
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      const puzzleData = await getDailyPuzzleForDate(dateISO);
       const grid = stringToGrid(puzzleData.puzzleString, puzzleData.size);
       
       onPuzzleSelect({
@@ -366,6 +421,40 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
                 </span>
               )}
             </button>
+            
+            {/* Previous Daily Puzzles */}
+            {previousDailyPuzzles.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-3 text-[var(--color-text-primary)]">
+                  Previous Daily Puzzles
+                </h3>
+                <div className="max-h-60 overflow-y-auto space-y-2 rounded-lg bg-[var(--color-bg-secondary)] p-3">
+                  {previousDailyPuzzles.map((puzzle) => (
+                    <button
+                      key={puzzle.date}
+                      onClick={() => handlePreviousDailySelect(puzzle.date)}
+                      disabled={isLoading}
+                      className="w-full text-left px-4 py-3 rounded-lg bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div>
+                          <div className="font-medium">{puzzle.dateDisplay}</div>
+                          <div className="text-sm text-[var(--color-text-muted)]">
+                            {puzzle.size}×{puzzle.size} • {puzzle.difficulty.charAt(0).toUpperCase() + puzzle.difficulty.slice(1)}
+                          </div>
+                        </div>
+                      </div>
+                      <svg className="w-5 h-5 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-[var(--color-text-muted)] mt-2">
+                  Showing puzzles from your browser cache. Puzzles can be generated on-demand for any date.
+                </p>
+              </div>
+            )}
           </div>
         )}
         
