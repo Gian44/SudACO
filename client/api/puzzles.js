@@ -18,9 +18,34 @@ export default async function handler(req, res) {
   }
 
   try {
-    const indexPath = path.join(process.cwd(), 'public', 'instances', 'index.json');
-    const data = await fs.readFile(indexPath, 'utf8');
-    const indexData = JSON.parse(data);
+    // Try multiple possible paths for the index.json file
+    // In Vercel, the public directory might be at different locations depending on build setup
+    const possiblePaths = [
+      path.join(process.cwd(), 'public', 'instances', 'index.json'),
+      path.join(process.cwd(), 'instances', 'index.json'),
+      path.join(process.cwd(), 'client', 'public', 'instances', 'index.json'),
+      path.join(process.cwd(), '.vercel', 'output', 'static', 'instances', 'index.json'),
+    ];
+
+    let indexData = null;
+    let lastError = null;
+
+    for (const indexPath of possiblePaths) {
+      try {
+        const data = await fs.readFile(indexPath, 'utf8');
+        indexData = JSON.parse(data);
+        break; // Success, exit loop
+      } catch (err) {
+        lastError = err;
+        // Try next path
+        continue;
+      }
+    }
+
+    if (!indexData) {
+      console.error('Error loading puzzles from all file paths:', lastError);
+      throw new Error(`Failed to load puzzle index from filesystem: ${lastError?.message || 'File not found'}`);
+    }
     
     res.json(indexData);
   } catch (error) {

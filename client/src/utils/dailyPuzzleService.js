@@ -5,6 +5,8 @@
 import { generatePuzzle } from './puzzleGenerator';
 import { savePuzzleToServer, checkServerHealth } from './apiClient';
 import { getDefaultParameters } from './wasmBridge';
+import { parseInstanceFile } from './fileParser';
+import { stringToGrid } from './sudokuUtils';
 
 // Available sizes and difficulties
 const SIZES = [6, 9, 12, 16, 25];
@@ -36,6 +38,27 @@ function getTodayDateString() {
 function getTodayISOString() {
   const today = new Date();
   return today.toISOString().split('T')[0];
+}
+
+/**
+ * Get date string in ISO format for a specific date
+ * @param {Date} date - Date object
+ * @returns {string} Date string like "2025-12-14"
+ */
+function getDateISOString(date) {
+  return date.toISOString().split('T')[0];
+}
+
+/**
+ * Get date string in MMDDYYYY format for a specific date
+ * @param {Date} date - Date object
+ * @returns {string} Date string like "12142025"
+ */
+function getDateString(date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${month}${day}${year}`;
 }
 
 /**
@@ -79,11 +102,13 @@ function generateDailyFilename(dateStr, size, difficulty) {
 }
 
 /**
- * Get random size and difficulty for today (deterministic based on date)
+ * Get random size and difficulty for a specific date (deterministic based on date)
+ * @param {Date} date - Date object (defaults to today)
  * @returns {Object} { size, difficulty }
  */
-function getRandomSizeAndDifficulty() {
-  const dateString = getTodayISOString();
+function getRandomSizeAndDifficulty(date = null) {
+  const targetDate = date || new Date();
+  const dateString = getDateISOString(targetDate);
   const seed = stringToSeed(dateString);
   const random = seededRandom(seed);
   
@@ -215,6 +240,125 @@ async function saveDailyPuzzleToServer(puzzleData) {
     console.warn('Failed to save daily puzzle to server:', error);
     // Don't throw - saving to server is optional
   }
+}
+
+/**
+ * Try to load daily puzzle from server/library for a specific date
+ * @param {string} dateISO - Date in ISO format (YYYY-MM-DD)
+ * @returns {Promise<Object|null>} Puzzle data or null if not found
+ */
+async function loadDailyPuzzleFromServer(dateISO) {
+  try {
+    // Try to get the puzzle info for this date
+    const date = new Date(dateISO);
+    const { size, difficulty } = getRandomSizeAndDifficulty(date);
+    const dateStr = getDateString(date);
+    const filename = generateDailyFilename(dateStr, size, difficulty);
+    
+    // Try to fetch from server
+    const puzzlePath = `/instances/daily-puzzles/${filename}`;
+    const response = await fetch(puzzlePath);
+    
+    if (response.ok) {
+      const fileContent = await response.text();
+      const { size: parsedSize, puzzleString } = parseInstanceFile(fileContent);
+      const grid = stringToGrid(puzzleString, parsedSize);
+      
+      return {
+        puzzleString,
+        size: parsedSize,
+        difficulty,
+        filename,
+        date: dateISO,
+        dateCreated: dateStr,
+        source: 'daily',
+        isDaily: true,
+        grid
+      };
+    }
+  } catch (err) {
+    console.warn(`Could not load daily puzzle from server for ${dateISO}:`, err);
+  }
+  
+  return null;
+}
+
+/**
+ * Generate daily puzzle for a specific date (deterministic)
+ * @param {Date|string} date - Date object or ISO date string
+ * @returns {Promise<Object>} Puzzle data
+ */
+export async function getDailyPuzzleForDate(date) {
+  const targetDate = typeof date === 'string' ? new Date(date) : date;
+  const dateISO = getDateISOString(targetDate);
+  
+  // Check if it's today - use cached version if available
+  if (dateISO === getTodayISOString()) {
+    return await getDailyPuzzle();
+  }
+  
+  // Try to load from server/library first
+  const serverPuzzle = await loadDailyPuzzleFromServer(dateISO);
+  if (serverPuzzle) {
+    return serverPuzzle;
+  }
+  
+  // Check localStorage cache for this date
+  const cacheKey = `daily-puzzle-${dateISO}`;
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      const puzzleData = JSON.parse(cached);
+      console.log(`Loaded daily puzzle from cache for ${dateISO}:`, puzzleData.filename);
+      return puzzleData;
+    }
+  } catch (e) {
+    console.warn(`Failed to read daily puzzle from cache for ${dateISO}:`, e);
+  }
+  
+  // Generate on-demand (deterministic based on date)
+  const { size, difficulty } = getRandomSizeAndDifficulty(targetDate);
+  const fillPercent = DIFFICULTY_FILL_PERCENT[difficulty];
+  const dateStr = getDateString(targetDate);
+  const filename = generateDailyFilename(dateStr, size, difficulty);
+  
+  console.log(`Generating daily puzzle for ${dateISO}: ${size}x${size} ${difficulty} (${fillPercent}% filled)`);
+  
+  // Get default parameters for DCM-ACO
+  const params = getDefaultParameters(size)[2]; // 2 = DCM-ACO
+  
+  // Use longer timeout for generation
+  params.timeout = size <= 9 ? 15 : size <= 12 ? 45 : size <= 16 ? 90 : 180;
+  
+  // Generate the puzzle
+  const result = await generatePuzzle(size, 2, fillPercent, params);
+  
+  if (!result.success) {
+    throw new Error(result.error || `Failed to generate daily puzzle for ${dateISO}`);
+  }
+  
+  const puzzleData = {
+    puzzleString: result.puzzleString,
+    solutionString: result.filledString,
+    instanceContent: result.instanceContent,
+    size,
+    difficulty,
+    fillPercent,
+    filename,
+    date: dateISO,
+    dateCreated: dateStr,
+    source: 'daily',
+    isDaily: true
+  };
+  
+  // Cache it
+  try {
+    localStorage.setItem(cacheKey, JSON.stringify(puzzleData));
+  } catch (e) {
+    console.warn('Failed to cache daily puzzle:', e);
+  }
+  
+  return puzzleData;
 }
 
 /**

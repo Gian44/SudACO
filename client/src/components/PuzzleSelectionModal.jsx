@@ -36,14 +36,29 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
         const serverOk = await checkServerHealth();
         let data;
         if (serverOk) {
-          data = await loadPuzzlesFromServer();
+          try {
+            data = await loadPuzzlesFromServer();
+          } catch (apiError) {
+            // If API fails, fall back to static file
+            console.warn('API failed, falling back to static file:', apiError);
+            const response = await fetch('/instances/index.json');
+            if (!response.ok) {
+              throw new Error(`Failed to fetch index: ${response.status}`);
+            }
+            data = await response.json();
+          }
         } else {
           const response = await fetch('/instances/index.json');
+          if (!response.ok) {
+            throw new Error(`Failed to fetch index: ${response.status}`);
+          }
           data = await response.json();
         }
         setCategories(data);
+        setError(''); // Clear any previous errors
       } catch (err) {
         console.error('Failed to load puzzle index:', err);
+        setError(`Failed to load puzzle library: ${err.message}`);
       }
     };
     
@@ -51,6 +66,49 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
       loadData();
     }
   }, [isOpen]);
+
+  // Initialize selected values when categories are loaded
+  useEffect(() => {
+    if (!categories || Object.keys(categories).length === 0) {
+      return;
+    }
+
+    // If selected category doesn't exist, set to first available
+    if (!categories[selectedCategory]) {
+      const firstCategory = Object.keys(categories)[0];
+      setSelectedCategory(firstCategory);
+      
+      // If it's general, initialize size and fill
+      if (firstCategory === 'general' && categories.general) {
+        const sizes = Object.keys(categories.general);
+        if (sizes.length > 0) {
+          setSelectedLibrarySize(sizes[0]);
+          const fills = Object.keys(categories.general[sizes[0]]);
+          if (fills.length > 0) {
+            setSelectedFillPercent(fills[0]);
+          }
+        }
+      }
+    } else if (selectedCategory === 'general' && categories.general) {
+      // Ensure selected size exists
+      const sizes = Object.keys(categories.general);
+      if (sizes.length > 0) {
+        if (!categories.general[selectedLibrarySize]) {
+          setSelectedLibrarySize(sizes[0]);
+          const fills = Object.keys(categories.general[sizes[0]]);
+          if (fills.length > 0) {
+            setSelectedFillPercent(fills[0]);
+          }
+        } else {
+          // Ensure selected fill exists for current size
+          const fills = Object.keys(categories.general[selectedLibrarySize]);
+          if (fills.length > 0 && !categories.general[selectedLibrarySize][selectedFillPercent]) {
+            setSelectedFillPercent(fills[0]);
+          }
+        }
+      }
+    }
+  }, [categories, selectedCategory, selectedLibrarySize, selectedFillPercent]);
 
   // Update puzzle list when category/size/fill changes
   useEffect(() => {
@@ -62,7 +120,12 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
         setPuzzleList([]);
       }
     } else if (categories[selectedCategory]) {
-      setPuzzleList(categories[selectedCategory]);
+      // Handle array-based categories (like logic-solvable)
+      if (Array.isArray(categories[selectedCategory])) {
+        setPuzzleList(categories[selectedCategory]);
+      } else {
+        setPuzzleList([]);
+      }
     } else {
       setPuzzleList([]);
     }
