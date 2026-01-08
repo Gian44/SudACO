@@ -151,19 +151,24 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
       return;
     }
 
-    // If selected category doesn't exist, set to first available
-    if (!categories[selectedCategory]) {
-      const firstCategory = Object.keys(categories)[0];
-      setSelectedCategory(firstCategory);
-      
-      // If it's general, initialize size and fill
-      if (firstCategory === 'general' && categories.general) {
-        const sizes = Object.keys(categories.general);
-        if (sizes.length > 0) {
-          setSelectedLibrarySize(sizes[0]);
-          const fills = Object.keys(categories.general[sizes[0]]);
-          if (fills.length > 0) {
-            setSelectedFillPercent(fills[0]);
+    // Filter out daily-puzzles from available categories
+    const availableCategories = Object.keys(categories).filter(cat => cat !== 'daily-puzzles');
+
+    // If selected category doesn't exist or is daily-puzzles, set to first available
+    if (!categories[selectedCategory] || selectedCategory === 'daily-puzzles') {
+      if (availableCategories.length > 0) {
+        const firstCategory = availableCategories[0];
+        setSelectedCategory(firstCategory);
+        
+        // If it's general, initialize size and fill
+        if (firstCategory === 'general' && categories.general) {
+          const sizes = Object.keys(categories.general);
+          if (sizes.length > 0) {
+            setSelectedLibrarySize(sizes[0]);
+            const fills = Object.keys(categories.general[sizes[0]]);
+            if (fills.length > 0) {
+              setSelectedFillPercent(fills[0]);
+            }
           }
         }
       }
@@ -523,11 +528,6 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
                               <span>•</span>
                               <span className="capitalize">{puzzle.difficulty}</span>
                             </div>
-                            {puzzle.filename && (
-                              <div className="text-xs text-[var(--color-text-muted)] mt-1 truncate" title={puzzle.filename}>
-                                {puzzle.filename.replace(/\.txt$/, '')}
-                              </div>
-                            )}
                           </div>
                         </div>
                         <svg className="w-5 h-5 text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -565,11 +565,13 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="select w-full"
                 >
-                  {Object.keys(categories).map(cat => (
-                    <option key={cat} value={cat}>
-                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                    </option>
-                  ))}
+                  {Object.keys(categories)
+                    .filter(cat => cat !== 'daily-puzzles')
+                    .map(cat => (
+                      <option key={cat} value={cat}>
+                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      </option>
+                    ))}
                 </select>
               </div>
               
