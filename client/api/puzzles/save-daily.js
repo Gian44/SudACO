@@ -42,7 +42,9 @@ export default async function handler(req, res) {
             filename: parsed.filename || filename,
             storage: 'vercel-kv',
             note: 'Daily puzzle already exists for this date',
-            alreadyExists: true
+            alreadyExists: true,
+            // Return the existing puzzle data so client can use it
+            puzzleData: parsed
           });
           return;
         }

@@ -32,12 +32,13 @@ export async function generateFilledBoard(size, algorithm, params) {
 /**
  * Fisher-Yates shuffle algorithm for proper randomization
  * @param {Array} array - Array to shuffle
+ * @param {Function} randomFn - Random function (0-1), defaults to Math.random
  * @returns {Array} Shuffled array
  */
-function fisherYatesShuffle(array) {
+function fisherYatesShuffle(array, randomFn = Math.random) {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(randomFn() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
@@ -48,9 +49,10 @@ function fisherYatesShuffle(array) {
  * @param {string} filledString - Completely filled puzzle string
  * @param {number} size - Grid size
  * @param {number} fillPercentage - Percentage of cells to keep filled (0-100)
+ * @param {Function} randomFn - Optional seeded random function for deterministic generation
  * @returns {string} Puzzle string with cells removed
  */
-export function removeCellsRandomly(filledString, size, fillPercentage) {
+export function removeCellsRandomly(filledString, size, fillPercentage, randomFn = Math.random) {
   const totalCells = size * size;
   const cellsToKeep = Math.floor((totalCells * fillPercentage) / 100);
   const cellsToRemove = totalCells - cellsToKeep;
@@ -61,8 +63,8 @@ export function removeCellsRandomly(filledString, size, fillPercentage) {
   // Create array of all cell indices
   const cellIndices = Array.from({ length: totalCells }, (_, i) => i);
   
-  // Use Fisher-Yates shuffle for proper randomization
-  const shuffledIndices = fisherYatesShuffle(cellIndices);
+  // Use Fisher-Yates shuffle for proper randomization (with optional seeded random)
+  const shuffledIndices = fisherYatesShuffle(cellIndices, randomFn);
   const indicesToRemove = shuffledIndices.slice(0, cellsToRemove);
   
   // Remove selected cells (replace with dots)
@@ -139,15 +141,16 @@ export function gridToInstanceFormat(puzzleString, size) {
  * @param {number} algorithm - Algorithm to use
  * @param {number} fillPercentage - Percentage of cells to keep filled
  * @param {Object} params - Algorithm parameters
+ * @param {Function} randomFn - Optional seeded random function for deterministic generation
  * @returns {Promise<Object>} Generated puzzle data
  */
-export async function generatePuzzle(size, algorithm, fillPercentage, params) {
+export async function generatePuzzle(size, algorithm, fillPercentage, params, randomFn = null) {
   try {
     // Generate filled board
     const filledString = await generateFilledBoard(size, algorithm, params);
     
-    // Remove cells to create puzzle
-    const puzzleString = removeCellsRandomly(filledString, size, fillPercentage);
+    // Remove cells to create puzzle (use seeded random if provided for deterministic generation)
+    const puzzleString = removeCellsRandomly(filledString, size, fillPercentage, randomFn);
     
     // Convert to instance format
     const instanceContent = gridToInstanceFormat(puzzleString, size);

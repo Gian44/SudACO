@@ -166,6 +166,7 @@ async function generateAndSaveDailyPuzzle() {
   const { size, difficulty } = getRandomSizeAndDifficulty();
   const fillPercent = DIFFICULTY_FILL_PERCENT[difficulty];
   const dateStr = getTodayDateString();
+  const dateISO = getTodayISOString();
   const filename = generateDailyFilename(dateStr, size, difficulty);
   
   console.log(`Generating daily puzzle: ${size}x${size} ${difficulty} (${fillPercent}% filled)`);
@@ -176,8 +177,13 @@ async function generateAndSaveDailyPuzzle() {
   // Use longer timeout for generation
   params.timeout = size <= 9 ? 15 : size <= 12 ? 45 : size <= 16 ? 90 : 180;
   
-  // Generate the puzzle using the same method as puzzleGenerator
-  const result = await generatePuzzle(size, 2, fillPercent, params);
+  // Create seeded random function for deterministic puzzle generation based on date
+  // This ensures the same date always generates the same puzzle
+  const seed = stringToSeed(dateISO);
+  const seededRandomFn = seededRandom(seed);
+  
+  // Generate the puzzle using the same method as puzzleGenerator (with seeded random)
+  const result = await generatePuzzle(size, 2, fillPercent, params, seededRandomFn);
   
   if (!result.success) {
     throw new Error(result.error || 'Failed to generate daily puzzle');
@@ -202,7 +208,16 @@ async function generateAndSaveDailyPuzzle() {
     const serverOk = await checkServerHealth();
     if (serverOk) {
       // Save to daily-puzzles category
-      await saveDailyPuzzleToServer(puzzleData);
+      const saveResult = await saveDailyPuzzleToServer(puzzleData);
+      
+      // If puzzle already existed, use the existing puzzle data instead
+      if (saveResult && saveResult.existingPuzzle) {
+        console.log(`Using existing daily puzzle from server: ${saveResult.existingPuzzle.filename}`);
+        // Cache the existing puzzle
+        cacheDailyPuzzle(saveResult.existingPuzzle);
+        return saveResult.existingPuzzle;
+      }
+      
       console.log(`Daily puzzle saved to server: ${filename}`);
     }
   } catch (e) {
@@ -238,6 +253,27 @@ async function saveDailyPuzzleToServer(puzzleData) {
     }
     
     const result = await response.json();
+    
+    // If puzzle already exists, use the existing puzzle data from server response
+    if (result.alreadyExists && result.puzzleData) {
+      console.log('Daily puzzle already exists on server, using existing puzzle');
+      const existingPuzzle = {
+        puzzleString: result.puzzleData.puzzleString,
+        solutionString: result.puzzleData.filledString || null,
+        instanceContent: result.puzzleData.content,
+        size: result.puzzleData.size,
+        difficulty: result.puzzleData.difficulty,
+        fillPercent: DIFFICULTY_FILL_PERCENT[result.puzzleData.difficulty],
+        filename: result.puzzleData.filename,
+        date: result.puzzleData.date,
+        dateCreated: result.puzzleData.date,
+        source: 'daily',
+        isDaily: true
+      };
+      // Return the existing puzzle data instead of the newly generated one
+      return { ...result, existingPuzzle };
+    }
+    
     if (result.storage === 'vercel-kv') {
       console.log('Daily puzzle saved to Vercel KV database');
     } else if (result.storage === 'filesystem') {
@@ -357,8 +393,13 @@ export async function getDailyPuzzleForDate(date) {
   // Use longer timeout for generation
   params.timeout = size <= 9 ? 15 : size <= 12 ? 45 : size <= 16 ? 90 : 180;
   
-  // Generate the puzzle
-  const result = await generatePuzzle(size, 2, fillPercent, params);
+  // Create seeded random function for deterministic puzzle generation based on date
+  // This ensures the same date always generates the same puzzle
+  const seed = stringToSeed(dateISO);
+  const seededRandomFn = seededRandom(seed);
+  
+  // Generate the puzzle (with seeded random for deterministic generation)
+  const result = await generatePuzzle(size, 2, fillPercent, params, seededRandomFn);
   
   if (!result.success) {
     throw new Error(result.error || `Failed to generate daily puzzle for ${dateISO}`);
@@ -394,13 +435,32 @@ export async function getDailyPuzzleForDate(date) {
  * @returns {Promise<Object>} Puzzle data
  */
 export async function getDailyPuzzle() {
-  // Check if we already have today's puzzle
+  // Check if we already have today's puzzle in cache
   const cached = getCachedDailyPuzzle();
   if (cached) {
     console.log('Loaded daily puzzle from cache:', cached.filename);
     return cached;
   }
   
+  // IMPORTANT: Check if today's puzzle already exists on the server/KV FIRST
+  // This prevents multiple users from generating different puzzles for the same date
+  const todayISO = getTodayISOString();
+  try {
+    const serverOk = await checkServerHealth();
+    if (serverOk) {
+      const serverPuzzle = await loadDailyPuzzleFromServer(todayISO);
+      if (serverPuzzle) {
+        console.log('Loaded daily puzzle from server:', serverPuzzle.filename);
+        // Cache it for future use
+        cacheDailyPuzzle(serverPuzzle);
+        return serverPuzzle;
+      }
+    }
+  } catch (e) {
+    console.warn('Could not check server for existing puzzle:', e);
+  }
+  
+  // Only generate if no puzzle exists on server
   // Generate new daily puzzle
   console.log('Generating new daily puzzle...');
   const puzzleData = await generateAndSaveDailyPuzzle();
