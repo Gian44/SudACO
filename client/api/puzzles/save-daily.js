@@ -29,26 +29,49 @@ export default async function handler(req, res) {
     // Try to save to Vercel KV first (production)
     try {
       if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+        const puzzleDate = date || new Date().toISOString().split('T')[0];
+        const puzzleKey = `daily-puzzle:${puzzleDate}`;
+        
+        // Check if puzzle for this date already exists - prevent duplicates
+        const existingPuzzle = await kv.get(puzzleKey);
+        if (existingPuzzle) {
+          console.log(`Daily puzzle for ${puzzleDate} already exists, skipping save`);
+          const parsed = typeof existingPuzzle === 'string' ? JSON.parse(existingPuzzle) : existingPuzzle;
+          res.json({
+            success: true,
+            filename: parsed.filename || filename,
+            storage: 'vercel-kv',
+            note: 'Daily puzzle already exists for this date',
+            alreadyExists: true
+          });
+          return;
+        }
+        
         // Save puzzle data to KV
-        const puzzleKey = `daily-puzzle:${date || filename}`;
         const puzzleData = {
           filename,
           content,
           size,
           difficulty,
           puzzleString,
-          date: date || new Date().toISOString().split('T')[0],
+          date: puzzleDate,
           createdAt: new Date().toISOString()
         };
         
         await kv.set(puzzleKey, JSON.stringify(puzzleData));
         
-        // Add to daily puzzles list
+        // Add to daily puzzles list (with deduplication)
         const listKey = 'daily-puzzles:list';
         const existingList = await kv.get(listKey) || [];
-        if (!existingList.includes(filename)) {
-          existingList.push(filename);
-          await kv.set(listKey, existingList);
+        
+        // Check if filename already exists in the list
+        const filenameExists = existingList.includes(filename);
+        
+        if (!filenameExists) {
+          // Deduplicate the list before adding (cleanup any existing duplicates)
+          const uniqueList = [...new Set(existingList)];
+          uniqueList.push(filename);
+          await kv.set(listKey, uniqueList);
         }
         
         console.log(`Daily puzzle saved to KV: ${filename}`);

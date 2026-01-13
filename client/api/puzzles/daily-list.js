@@ -26,10 +26,14 @@ export default async function handler(req, res) {
     const listKey = 'daily-puzzles:list';
     const filenames = await kv.get(listKey) || [];
     
+    // Deduplicate filenames (in case of race conditions during save)
+    const uniqueFilenames = [...new Set(filenames)];
+    
     // Parse dates from filenames and get puzzle metadata
     const puzzles = [];
+    const seenDates = new Set(); // Track dates to avoid duplicates
     
-    for (const filename of filenames) {
+    for (const filename of uniqueFilenames) {
       try {
         // Extract date from filename (format: MMDDYYYY_size_difficulty.txt)
         // e.g., "01082026_12x12_hard.txt" -> date: "2026-01-08"
@@ -37,6 +41,13 @@ export default async function handler(req, res) {
         if (match) {
           const [, month, day, year] = match;
           const dateISO = `${year}-${month}-${day}`;
+          
+          // Skip if we already have a puzzle for this date (prevents duplicates)
+          if (seenDates.has(dateISO)) {
+            console.log(`Skipping duplicate puzzle for date ${dateISO}: ${filename}`);
+            continue;
+          }
+          seenDates.add(dateISO);
           
           // Try to get puzzle data from KV
           const puzzleKey = `daily-puzzle:${dateISO}`;
