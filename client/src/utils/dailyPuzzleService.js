@@ -77,17 +77,22 @@ function seededRandom(seed) {
 
 /**
  * Generate a seed from a string
+ * Uses a more robust hash to ensure uniqueness
  * @param {string} str - Input string
  * @returns {number} Seed value
  */
 function stringToSeed(str) {
   let hash = 0;
+  // Use a better hash algorithm to ensure different dates produce different seeds
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
+    hash = hash & hash; // Convert to 32-bit integer
+    // Add rotation to improve distribution
+    hash = (hash << 13) | (hash >>> 19);
   }
-  return Math.abs(hash);
+  // Add a large prime multiplier to ensure uniqueness
+  return Math.abs((hash * 2654435761) >>> 0);
 }
 
 /**

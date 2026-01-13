@@ -1,18 +1,39 @@
 // Puzzle generation utilities for creating Sudoku puzzles
 import { solveSudoku, getDefaultParameters } from './wasmBridge';
-import { createEmptyGrid, gridToString, stringToGrid } from './sudokuUtils';
+import { createEmptyGrid, gridToString, stringToGrid, getBoxDimensions } from './sudokuUtils';
 
 /**
  * Generate a completely filled Sudoku board using the specified algorithm
  * @param {number} size - Grid size (6, 9, 12, 16, or 25)
  * @param {number} algorithm - Algorithm to use (0=ACS, 1=Backtrack, 2=DCM-ACO)
  * @param {Object} params - Algorithm parameters
+ * @param {Function} randomFn - Optional seeded random function for date-specific pre-filling
  * @returns {Promise<string>} Filled puzzle string
  */
-export async function generateFilledBoard(size, algorithm, params) {
+export async function generateFilledBoard(size, algorithm, params, randomFn = null) {
   try {
     // Create empty grid
     const emptyGrid = createEmptyGrid(size);
+    
+    // Pre-fill a few cells based on date seed to ensure uniqueness per date
+    // This ensures different dates produce different filled boards
+    if (randomFn) {
+      // Pre-fill 2-4 cells in the first box to create a unique starting state
+      const numPreFills = Math.floor(randomFn() * 3) + 2; // 2-4 cells
+      const { boxRows, boxCols } = getBoxDimensions(size);
+      
+      for (let i = 0; i < numPreFills; i++) {
+        const row = Math.floor(randomFn() * boxRows);
+        const col = Math.floor(randomFn() * boxCols);
+        const value = Math.floor(randomFn() * size) + 1; // 1 to size
+        
+        // Only fill if cell is empty
+        if (emptyGrid[row][col] === '') {
+          emptyGrid[row][col] = String(value);
+        }
+      }
+    }
+    
     const emptyString = gridToString(emptyGrid, size);
     
     // Use solver to fill the empty board
@@ -146,8 +167,8 @@ export function gridToInstanceFormat(puzzleString, size) {
  */
 export async function generatePuzzle(size, algorithm, fillPercentage, params, randomFn = null) {
   try {
-    // Generate filled board
-    const filledString = await generateFilledBoard(size, algorithm, params);
+    // Generate filled board (pass randomFn to ensure date-specific uniqueness)
+    const filledString = await generateFilledBoard(size, algorithm, params, randomFn);
     
     // Remove cells to create puzzle (use seeded random if provided for deterministic generation)
     const puzzleString = removeCellsRandomly(filledString, size, fillPercentage, randomFn);
