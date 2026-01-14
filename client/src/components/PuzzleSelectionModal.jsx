@@ -376,13 +376,13 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content w-full max-w-2xl" onClick={e => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gradient">Select Puzzle</h2>
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gradient">Select Puzzle</h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-[var(--color-bg-elevated)] transition-colors"
+            className="p-1.5 sm:p-2 rounded-lg hover:bg-[var(--color-bg-elevated)] transition-colors flex-shrink-0"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -394,33 +394,33 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
             className={`tab ${activeTab === 'daily' ? 'active' : ''}`}
             onClick={() => setActiveTab('daily')}
           >
-            <span className="flex items-center gap-2">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <span className="flex items-center gap-1 sm:gap-2">
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
               </svg>
-              Daily
+              <span className="text-xs sm:text-sm">Daily</span>
             </span>
           </button>
           <button
             className={`tab ${activeTab === 'library' ? 'active' : ''}`}
             onClick={() => setActiveTab('library')}
           >
-            <span className="flex items-center gap-2">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <span className="flex items-center gap-1 sm:gap-2">
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
               </svg>
-              Library
+              <span className="text-xs sm:text-sm">Library</span>
             </span>
           </button>
           <button
             className={`tab ${activeTab === 'upload' ? 'active' : ''}`}
             onClick={() => setActiveTab('upload')}
           >
-            <span className="flex items-center gap-2">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <span className="flex items-center gap-1 sm:gap-2">
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
               </svg>
-              Upload
+              <span className="text-xs sm:text-sm">Upload</span>
             </span>
           </button>
         </div>
@@ -434,41 +434,41 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
         
         {/* Daily Tab */}
         {activeTab === 'daily' && (
-          <div className="space-y-6">
-            <p className="text-[var(--color-text-secondary)]">
+          <div className="space-y-4 sm:space-y-6">
+            <p className="text-sm sm:text-base text-[var(--color-text-secondary)]">
               Play today's daily puzzle! A new random puzzle is generated each day.
             </p>
             
             {/* Today's Puzzle Info */}
-            <div className="p-6 rounded-xl bg-gradient-to-br from-purple-500/10 to-cyan-500/10 border border-purple-500/30">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <div className="p-4 sm:p-6 rounded-xl bg-gradient-to-br from-purple-500/10 to-cyan-500/10 border border-purple-500/30">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-3 sm:mb-4">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold">Today's Challenge</h3>
-                    <p className="text-sm text-[var(--color-text-muted)]">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-base sm:text-lg font-bold">Today's Challenge</h3>
+                    <p className="text-xs sm:text-sm text-[var(--color-text-muted)] truncate">
                       {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                     </p>
                   </div>
                 </div>
                 {dailyInfo?.isCompleted && (
-                  <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-success)]/20 text-[var(--color-success)]">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-[var(--color-success)]/20 text-[var(--color-success)] flex-shrink-0">
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    <span className="text-sm font-medium">Completed</span>
+                    <span className="text-xs sm:text-sm font-medium">Completed</span>
                   </div>
                 )}
               </div>
               
               {dailyInfo && (
-                <div className="flex items-center gap-4">
-                  <div className="px-4 py-2 rounded-lg bg-[var(--color-bg-elevated)]">
-                    <span className="text-2xl font-bold">{dailyInfo.size}×{dailyInfo.size}</span>
+                <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+                  <div className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-[var(--color-bg-elevated)]">
+                    <span className="text-xl sm:text-2xl font-bold">{dailyInfo.size}×{dailyInfo.size}</span>
                   </div>
                   {difficultyInfo && (
                     <DifficultyBadge difficulty={dailyInfo.difficulty} />
@@ -481,7 +481,7 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
             <button
               onClick={handleDailySelect}
               disabled={isLoading}
-              className="btn btn-primary w-full py-4 text-lg"
+              className="btn btn-primary w-full py-3 sm:py-4 text-sm sm:text-lg"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
@@ -499,52 +499,52 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
             </button>
             
             {/* Daily Puzzles Collection */}
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-3 text-[var(--color-text-primary)]">
+            <div className="mt-4 sm:mt-6">
+              <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-[var(--color-text-primary)]">
                 Daily Puzzles Collection
               </h3>
               {previousDailyPuzzles.length > 0 ? (
                 <>
-                  <div className="max-h-96 overflow-y-auto space-y-2 rounded-lg bg-[var(--color-bg-secondary)] p-3">
+                  <div className="max-h-80 sm:max-h-96 overflow-y-auto space-y-1.5 sm:space-y-2 rounded-lg bg-[var(--color-bg-secondary)] p-2 sm:p-3">
                     {previousDailyPuzzles.map((puzzle) => (
                       <button
                         key={puzzle.date}
                         onClick={() => handlePreviousDailySelect(puzzle.date)}
                         disabled={isLoading}
-                        className="w-full text-left px-4 py-3 rounded-lg bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors flex items-center justify-between group"
+                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors flex items-center justify-between group gap-2"
                       >
-                        <div className="flex items-center gap-3 flex-1">
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center flex-shrink-0">
-                            <svg className="w-5 h-5 text-[var(--color-primary)]" fill="currentColor" viewBox="0 0 20 20">
+                        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-primary)]" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                             </svg>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-[var(--color-text-primary)] truncate">
+                            <div className="font-medium text-sm sm:text-base text-[var(--color-text-primary)] truncate">
                               {puzzle.dateDisplay}
                             </div>
-                            <div className="text-sm text-[var(--color-text-muted)] flex items-center gap-2 flex-wrap">
+                            <div className="text-xs sm:text-sm text-[var(--color-text-muted)] flex items-center gap-1.5 sm:gap-2 flex-wrap">
                               <span>{puzzle.size}×{puzzle.size}</span>
                               <span>•</span>
                               <span className="capitalize">{puzzle.difficulty}</span>
                             </div>
                           </div>
                         </div>
-                        <svg className="w-5 h-5 text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </button>
                     ))}
                   </div>
-                  <p className="text-xs text-[var(--color-text-muted)] mt-2">
+                  <p className="text-xs text-[var(--color-text-muted)] mt-2 px-1">
                     {previousDailyPuzzles.filter(p => p.source === 'server').length > 0 
                       ? `Showing ${previousDailyPuzzles.length} daily puzzles from server and local cache.`
                       : 'Showing puzzles from your browser cache. Puzzles can be generated on-demand for any date.'}
                   </p>
                 </>
               ) : (
-                <div className="p-6 rounded-lg bg-[var(--color-bg-secondary)] text-center">
-                  <p className="text-[var(--color-text-muted)]">
+                <div className="p-4 sm:p-6 rounded-lg bg-[var(--color-bg-secondary)] text-center">
+                  <p className="text-sm sm:text-base text-[var(--color-text-muted)]">
                     No previous daily puzzles found. Play today's puzzle to get started!
                   </p>
                 </div>
@@ -555,15 +555,15 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
         
         {/* Library Tab */}
         {activeTab === 'library' && (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {/* Category and Size Selection */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Category</label>
+                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2">Category</label>
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="select w-full"
+                  className="select w-full text-sm"
                 >
                   {Object.keys(categories)
                     .filter(cat => cat !== 'daily-puzzles')
@@ -578,11 +578,11 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
               {selectedCategory === 'general' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Size</label>
+                    <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2">Size</label>
                     <select
                       value={selectedLibrarySize}
                       onChange={(e) => setSelectedLibrarySize(e.target.value)}
-                      className="select w-full"
+                      className="select w-full text-sm"
                     >
                       {categories.general && Object.keys(categories.general).map(size => (
                         <option key={size} value={size}>{size}</option>
@@ -590,12 +590,12 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
                     </select>
                   </div>
                   
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium mb-2">Fill %</label>
+                  <div className="col-span-1 sm:col-span-2">
+                    <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2">Fill %</label>
                     <select
                       value={selectedFillPercent}
                       onChange={(e) => setSelectedFillPercent(e.target.value)}
-                      className="select w-full"
+                      className="select w-full text-sm"
                     >
                       {categories.general && categories.general[selectedLibrarySize] && 
                         Object.keys(categories.general[selectedLibrarySize]).map(fill => (
@@ -609,26 +609,26 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
             </div>
             
             {/* Puzzle List */}
-            <div className="max-h-60 overflow-y-auto space-y-2 rounded-lg bg-[var(--color-bg-secondary)] p-3">
+            <div className="max-h-60 sm:max-h-80 overflow-y-auto space-y-1.5 sm:space-y-2 rounded-lg bg-[var(--color-bg-secondary)] p-2 sm:p-3">
               {puzzleList.length === 0 ? (
-                <p className="text-center text-[var(--color-text-muted)] py-4">No puzzles found</p>
+                <p className="text-center text-[var(--color-text-muted)] py-4 text-sm">No puzzles found</p>
               ) : (
                 puzzleList.slice(0, 50).map((puzzle) => (
                   <button
                     key={puzzle}
                     onClick={() => handleLibrarySelect(puzzle)}
                     disabled={isLoading}
-                    className="w-full text-left px-4 py-3 rounded-lg bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors flex items-center justify-between"
+                    className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors flex items-center justify-between gap-2"
                   >
-                    <span className="font-medium">{puzzle}</span>
-                    <svg className="w-5 h-5 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <span className="font-medium text-sm sm:text-base truncate flex-1 min-w-0">{puzzle}</span>
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-text-muted)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
                 ))
               )}
               {puzzleList.length > 50 && (
-                <p className="text-center text-[var(--color-text-muted)] text-sm pt-2">
+                <p className="text-center text-[var(--color-text-muted)] text-xs sm:text-sm pt-2">
                   Showing first 50 of {puzzleList.length} puzzles
                 </p>
               )}
@@ -638,8 +638,8 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
         
         {/* Upload Tab */}
         {activeTab === 'upload' && (
-          <div className="space-y-4">
-            <p className="text-[var(--color-text-secondary)]">
+          <div className="space-y-3 sm:space-y-4">
+            <p className="text-sm sm:text-base text-[var(--color-text-secondary)]">
               Upload a custom puzzle file in .txt format.
             </p>
             
@@ -651,11 +651,11 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
               onDrop={handleDrop}
               onClick={() => document.getElementById('file-input').click()}
             >
-              <svg className="w-12 h-12 mx-auto mb-4 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
-              <p className="text-lg font-medium mb-1">Drop your puzzle file here</p>
-              <p className="text-sm text-[var(--color-text-muted)]">or click to browse</p>
+              <p className="text-base sm:text-lg font-medium mb-1">Drop your puzzle file here</p>
+              <p className="text-xs sm:text-sm text-[var(--color-text-muted)]">or click to browse</p>
               <input
                 id="file-input"
                 type="file"
@@ -667,13 +667,13 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
             
             {/* Upload error */}
             {uploadError && (
-              <div className="p-4 rounded-lg bg-[var(--color-error)]/20 border border-[var(--color-error)]/50">
-                <p className="text-[var(--color-error)] font-medium mb-2">{uploadError}</p>
-                <details className="text-sm">
+              <div className="p-3 sm:p-4 rounded-lg bg-[var(--color-error)]/20 border border-[var(--color-error)]/50">
+                <p className="text-sm sm:text-base text-[var(--color-error)] font-medium mb-2">{uploadError}</p>
+                <details className="text-xs sm:text-sm">
                   <summary className="cursor-pointer text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
                     Show expected format
                   </summary>
-                  <pre className="mt-2 text-xs p-3 rounded bg-[var(--color-bg-secondary)] overflow-x-auto">
+                  <pre className="mt-2 text-xs p-2 sm:p-3 rounded bg-[var(--color-bg-secondary)] overflow-x-auto">
                     {getInstanceFileFormatDescription()}
                   </pre>
                 </details>
@@ -681,11 +681,11 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
             )}
             
             {/* Format help */}
-            <details className="text-sm">
+            <details className="text-xs sm:text-sm">
               <summary className="cursor-pointer text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
                 What format should my file be in?
               </summary>
-              <pre className="mt-2 text-xs p-3 rounded bg-[var(--color-bg-secondary)] overflow-x-auto">
+              <pre className="mt-2 text-xs p-2 sm:p-3 rounded bg-[var(--color-bg-secondary)] overflow-x-auto">
                 {getInstanceFileFormatDescription()}
               </pre>
             </details>

@@ -264,7 +264,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center px-4 py-6">
+    <div className="min-h-screen flex flex-col items-center px-2 sm:px-4 py-3 sm:py-6 w-full max-w-full overflow-x-hidden">
       {/* Game Header */}
       <GameHeader
         isPlaying={isPlaying}
@@ -280,23 +280,25 @@ function App() {
       />
       
       {/* Main Game Area */}
-      <main className="flex flex-col items-center flex-1">
+      <main className="flex flex-col items-center flex-1 w-full max-w-full overflow-x-hidden">
         {/* Sudoku Grid */}
-        <div className="relative">
-          <SudokuGrid
-            grid={grid}
-            onChange={handleCellChange}
-            size={size}
-            readOnly={!isPlaying || showCompletionModal}
-            originalGrid={originalGrid}
-            notes={notes}
-            onNotesChange={setNotes}
-            notesMode={notesMode}
-            selectedCell={selectedCell}
-            onCellSelect={setSelectedCell}
-            animatingCells={animatingCells}
-            isPaused={isPaused}
-          />
+        <div className="relative w-full flex justify-center px-2 sm:px-4">
+          <div className="w-full max-w-full overflow-x-auto">
+            <SudokuGrid
+              grid={grid}
+              onChange={handleCellChange}
+              size={size}
+              readOnly={!isPlaying || showCompletionModal}
+              originalGrid={originalGrid}
+              notes={notes}
+              onNotesChange={setNotes}
+              notesMode={notesMode}
+              selectedCell={selectedCell}
+              onCellSelect={setSelectedCell}
+              animatingCells={animatingCells}
+              isPaused={isPaused}
+            />
+          </div>
         </div>
         
         {/* Number Pad */}
@@ -359,10 +361,11 @@ function App() {
       />
       
       {/* Footer */}
-      <footer className="mt-8 text-center text-sm text-[var(--color-text-muted)]">
-        <p>
-          Built with React + WebAssembly | 
-          Supports 6×6, 9×9, 12×12, 16×16, and 25×25 puzzles
+      <footer className="mt-4 sm:mt-8 mb-2 sm:mb-0 text-center text-xs sm:text-sm text-[var(--color-text-muted)] px-2">
+        <p className="leading-relaxed">
+          <span className="block sm:inline">Built with React + WebAssembly</span>
+          <span className="hidden sm:inline"> | </span>
+          <span className="block sm:inline">Supports 6×6, 9×9, 12×12, 16×16, and 25×25 puzzles</span>
         </p>
       </footer>
     </div>

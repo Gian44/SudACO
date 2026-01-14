@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { getValidCharacters, getBoxDimensions, findConflicts } from '../utils/sudokuUtils';
 
 const SudokuGrid = ({ 
@@ -18,6 +18,18 @@ const SudokuGrid = ({
   const validChars = getValidCharacters(size);
   const { boxRows, boxCols } = getBoxDimensions(size);
   const gridRef = useRef(null);
+  
+  // Track window size for responsive design
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   // Find all conflicts in the current grid
   const conflicts = findConflicts(grid, size);
@@ -198,14 +210,64 @@ const SudokuGrid = ({
     };
   }, [selectedCell, boxRows, boxCols]);
 
-  // Get cell size based on grid size
+  // Get cell size based on grid size and viewport width
   const getCellSize = useCallback(() => {
+    const isMobile = windowWidth < 768;
+    const isSmallMobile = windowWidth < 480;
+    
+    // For mobile, use viewport-based calculations
+    if (isMobile) {
+      // Calculate available width (accounting for padding ~32px total)
+      const availableWidth = windowWidth - 32;
+      
+      if (size === 6) {
+        const cellSize = isSmallMobile ? Math.floor(availableWidth / 7) : Math.floor(availableWidth / 8);
+        return { 
+          width: `${cellSize}px`, 
+          height: `${cellSize}px`, 
+          fontSize: isSmallMobile ? '16px' : '18px' 
+        };
+      }
+      if (size === 9) {
+        const cellSize = isSmallMobile ? Math.floor(availableWidth / 10) : Math.floor(availableWidth / 11);
+        return { 
+          width: `${cellSize}px`, 
+          height: `${cellSize}px`, 
+          fontSize: isSmallMobile ? '14px' : '16px' 
+        };
+      }
+      if (size === 12) {
+        const cellSize = isSmallMobile ? Math.floor(availableWidth / 13) : Math.floor(availableWidth / 14);
+        return { 
+          width: `${cellSize}px`, 
+          height: `${cellSize}px`, 
+          fontSize: isSmallMobile ? '10px' : '12px' 
+        };
+      }
+      if (size === 16) {
+        const cellSize = isSmallMobile ? Math.floor(availableWidth / 17) : Math.floor(availableWidth / 18);
+        return { 
+          width: `${cellSize}px`, 
+          height: `${cellSize}px`, 
+          fontSize: isSmallMobile ? '8px' : '10px' 
+        };
+      }
+      // 25x25 grid
+      const cellSize = isSmallMobile ? Math.floor(availableWidth / 26) : Math.floor(availableWidth / 27);
+      return { 
+        width: `${cellSize}px`, 
+        height: `${cellSize}px`, 
+        fontSize: isSmallMobile ? '6px' : '8px' 
+      };
+    }
+    
+    // Desktop sizes (unchanged)
     if (size === 6) return { width: '52px', height: '52px', fontSize: '20px' };
     if (size === 9) return { width: '48px', height: '48px', fontSize: '20px' };
     if (size === 12) return { width: '40px', height: '40px', fontSize: '16px' };
     if (size === 16) return { width: '36px', height: '36px', fontSize: '14px' };
     return { width: '28px', height: '28px', fontSize: '12px' };
-  }, [size]);
+  }, [size, windowWidth]);
 
   const cellSize = getCellSize();
 
@@ -217,6 +279,20 @@ const SudokuGrid = ({
     if (cellNotes.size === 0) return null;
     
     const gridSize = size <= 9 ? 3 : size <= 12 ? 4 : size <= 16 ? 4 : 5;
+    const isMobile = windowWidth < 768;
+    const isSmallMobile = windowWidth < 480;
+    
+    // Calculate note font size based on screen size and puzzle size
+    let noteFontSize = '9px';
+    if (size > 16) {
+      noteFontSize = isSmallMobile ? '4px' : isMobile ? '5px' : '6px';
+    } else if (size > 12) {
+      noteFontSize = isSmallMobile ? '6px' : isMobile ? '7px' : '8px';
+    } else if (size > 9) {
+      noteFontSize = isSmallMobile ? '7px' : isMobile ? '8px' : '9px';
+    } else {
+      noteFontSize = isSmallMobile ? '8px' : isMobile ? '9px' : '10px';
+    }
     
     return (
       <div 
@@ -225,7 +301,7 @@ const SudokuGrid = ({
           display: 'grid',
           gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
           gridTemplateRows: `repeat(${Math.ceil(size / gridSize)}, 1fr)`,
-          padding: '2px',
+          padding: isMobile ? '1px' : '2px',
         }}
       >
         {Array.from({ length: size }, (_, i) => i + 1).map(num => (
@@ -234,7 +310,7 @@ const SudokuGrid = ({
             className="flex items-center justify-center"
             style={{ 
               opacity: cellNotes.has(num) ? 1 : 0,
-              fontSize: size <= 9 ? '9px' : '7px',
+              fontSize: noteFontSize,
               color: 'var(--color-text-muted)',
               fontWeight: 500,
             }}
@@ -249,9 +325,11 @@ const SudokuGrid = ({
   // Blur overlay when paused
   if (isPaused) {
     return (
-      <div className="relative">
+      <div className="relative w-full max-w-full">
         <div className="sudoku-grid blur-md opacity-50" style={{
           gridTemplateColumns: `repeat(${size}, ${cellSize.width})`,
+          maxWidth: '100%',
+          margin: '0 auto',
         }}>
           {grid.map((row, rowIndex) =>
             row.map((cell, colIndex) => (
@@ -277,11 +355,13 @@ const SudokuGrid = ({
   }
 
   return (
-    <div className="flex flex-col items-center" ref={gridRef}>
+    <div className="flex flex-col items-center w-full max-w-full" ref={gridRef}>
       <div 
         className="sudoku-grid"
         style={{
           gridTemplateColumns: `repeat(${size}, ${cellSize.width})`,
+          maxWidth: '100%',
+          margin: '0 auto',
         }}
       >
         {grid.map((row, rowIndex) =>
