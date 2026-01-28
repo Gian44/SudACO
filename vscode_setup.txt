@@ -28,16 +28,16 @@ for multi-colony:
 
 to run tests:
 
-python scripts\run_logic.py --algs 0,2 --verbose
-python scripts\run_general.py --algs 0,2 --verbose
+python scripts\run_9x9.py --alg 0 --verbose
+python scripts\run_9x9.py --alg 2 --verbose
 
-python scripts\run_general_subset.py --algs 2 --sizes 25x25 --frac-min 35 --frac-max 50 --verbose 
+python scripts\run_16x16.py --alg 0 --verbose
+python scripts\run_16x16.py --alg 2 --verbose
 
-python scripts\run_all.py --algs 2 --verbose
+python scripts\run_25x25.py --alg 0 --verbose
+python scripts\run_25x25.py --alg 2 --verbose
 
-python scripts\run_all.py --alg 2 --useACSOnly --verbose
-
-python scripts\run_all.py --algs 2 --nAnts 4 --q0 0.9 --rho 0.9 --evap 0.005 --numACS 3 --convThresh 0.8 --entropyThreshold 4 --verbose
+python scripts\run_25x25.py --alg 2 --nAnts 4 --q0 0.9 --rho 0.9 --evap 0.005 --numACS 3 --convThresh 0.8 --entropyThreshold 4 --verbose
 
 Whenever you modify any C++ source files, you must rebuild:
 
