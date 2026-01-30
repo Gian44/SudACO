@@ -14,6 +14,10 @@ automatically resumes from where it stopped if the output file already exists.
 Example usage:
   python scripts/run_16x16.py --alg 0 --verbose          # Run CP-ACS
   python scripts/run_16x16.py --alg 2 --verbose          # Run CP-DCM-ACO
+
+Multiple runs (separate result files for run 1, 2, ... 5):
+  python scripts/run_16x16.py --alg 0 --run 1 --verbose   # results_16x16_CP-ACS.csv (default)
+  python scripts/run_16x16.py --alg 0 --run 2 --verbose   # results_16x16_CP-ACS_run2.csv
 """
 
 import argparse
@@ -172,6 +176,7 @@ def main():
     ap.add_argument('--timeout', type=int, default=20, help='Per-run timeout seconds (default: 20)')
     ap.add_argument('--outdir', default='results/16x16', help='Output directory (default: results/16x16)')
     ap.add_argument('--reps', type=int, default=100, help='Repetitions per instance (default: 100)')
+    ap.add_argument('--run', type=int, default=1, help='Run index (1=default; 2+ use results_*_runN.csv for separate runs)')
     ap.add_argument('--verbose', action='store_true', help='Print progress while running instances')
     # Factor overrides (optional)
     ap.add_argument('--nAnts', type=int, help='Override nAnts (int)')
@@ -182,6 +187,8 @@ def main():
     ap.add_argument('--convThresh', type=float, help='Override convThresh (float)')
     ap.add_argument('--entropyThreshold', type=float, help='Override entropyThreshold (float)')
     args = ap.parse_args()
+    if args.run < 1:
+        ap.error('--run must be >= 1')
 
     binary = args.binary
     instances_dir = Path(args.instances)
@@ -195,11 +202,12 @@ def main():
         if args.verbose:
             print(*a, **k, flush=True)
 
-    # Fixed output filename - automatically resumes if file exists
-    outfile = outdir / f'results_16x16_{alg_name}.csv'
-    progress_file = outdir / f'progress_16x16_{alg_name}.csv'
+    # Output filenames: run 1 = legacy names; run 2+ = results_*_runN.csv
+    run_suffix = f'_run{args.run}' if args.run > 1 else ''
+    outfile = outdir / f'results_16x16_{alg_name}{run_suffix}.csv'
+    progress_file = outdir / f'progress_16x16_{alg_name}{run_suffix}.csv'
     vlog(f"Output file: {outfile}")
-    vlog(f"Progress file: {progress_file}")
+    vlog(f"Progress file: {progress_file} (temporary; deleted when all instances complete)")
 
     # Read existing summary + per-rep progress
     completed_instances = _read_completed_instances_from_summary(outfile)
@@ -335,6 +343,14 @@ def main():
             f"[Saved]"
         )
         progress[fp.name] = rep_map
+
+    # Delete progress file when fully done (no longer needed)
+    if len(completed_instances) == total_instances and progress_file.exists():
+        try:
+            progress_file.unlink()
+            print(f"Progress file removed: {progress_file}")
+        except OSError as e:
+            print(f"Could not remove progress file: {e}")
 
     # Summary
     print(f"\n{'='*70}")
