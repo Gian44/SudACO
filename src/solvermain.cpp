@@ -4,10 +4,12 @@
 #include "backtracksearch.h"
 #include "board.h"
 #include "arguments.h"
+#include "constraintpropagation.h"
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
+#include <iomanip>
 using namespace std;
 
 string ReadFile( string fileName )
@@ -124,6 +126,7 @@ int main( int argc, char *argv[] )
 			exit(0);
 		}
 	}
+	ResetCPTiming();
 	Board board(puzzleString);
 
     int algorithm = a.GetArg("alg", 0);
@@ -139,7 +142,6 @@ int main( int argc, char *argv[] )
     int numColonies = a.GetArg("numColonies", numACS + 1);  // numACS + 1 (was 3)
     float convThresh  = a.GetArg("convThresh", 0.8f);  // 0.8 (unchanged)
     float entropyThreshold = a.GetArg("entropyThreshold", 4.0f);  // 4.0 (unchanged)
-    bool useACSOnly = a.GetArg("useACSOnly", false);  // Ablation mode: use ACS-only homogeneous system
     bool blank = a.GetArg("blank", false );
     bool verbose = a.GetArg("verbose", 0);
     bool showInitial = a.GetArg("showinitial", 0);
@@ -158,7 +160,7 @@ int main( int argc, char *argv[] )
     {
         // Multi-colony ACO (ants count is per colony)
         solver = new MultiColonyAntSystem(nAnts, q0, rho, 1.0f/board.CellCount(), evap,
-                                          numColonies, numACS, convThresh, entropyThreshold, useACSOnly);
+                                          numColonies, numACS, convThresh, entropyThreshold);
     }
     else
     {
@@ -177,7 +179,12 @@ int main( int argc, char *argv[] )
 	solution = solver->GetSolution();
 	solTime = solver->GetSolutionTime();
 
-	// sanity chack the solution:
+	float initialCPTime = GetInitialCPTime();
+	float antCPTime = GetAntCPTime();
+	int cpCallCount = GetCPCallCount();
+	solTime += initialCPTime;
+
+	// sanity check the solution:
 	if ( success && !board.CheckSolution(solution) )
 	{
 		cout << "solution not valid" << a.GetArg("file",string()) << " " << algorithm << endl;
@@ -189,7 +196,25 @@ int main( int argc, char *argv[] )
 		success = false;
 	}
 	if ( !verbose )
+	{
 		cout << !success << endl << solTime << endl;
+		cout << fixed << setprecision(6);
+		cout << "cp_initial: " << initialCPTime << endl;
+		cout << "cp_ant: " << antCPTime << endl;
+		cout << "cp_calls: " << cpCallCount << endl;
+		cout << "cp_total: " << (initialCPTime + antCPTime) << endl;
+		if ( algorithm == 2 )
+		{
+			MultiColonyAntSystem* mcas = dynamic_cast<MultiColonyAntSystem*>(solver);
+			if ( mcas )
+			{
+				cout << "dcm_aco: " << mcas->GetDCMAcoTime() << endl;
+				cout << "cooperative_game: " << mcas->GetCooperativeGameTime() << endl;
+				cout << "pheromone_fusion: " << mcas->GetPheromoneFusionTime() << endl;
+				cout << "public_path: " << mcas->GetPublicPathRecommendationTime() << endl;
+			}
+		}
+	}
 	else
 	{
 		if ( !success )
@@ -202,6 +227,21 @@ int main( int argc, char *argv[] )
 			string outString = solution.AsString( true );
 			cout << outString << endl;
 			cout << "solved in " << solTime << endl;
+		}
+		cout << fixed << setprecision(6);
+		cout << "cp_initial: " << initialCPTime << endl;
+		cout << "cp_ant: " << antCPTime << endl;
+		cout << "cp_calls: " << cpCallCount << endl;
+		cout << "cp_total: " << (initialCPTime + antCPTime) << endl;
+		if ( algorithm == 2 )
+		{
+			if ( MultiColonyAntSystem* mcas = dynamic_cast<MultiColonyAntSystem*>(solver) )
+			{
+				cout << "dcm_aco: " << mcas->GetDCMAcoTime() << endl;
+				cout << "cooperative_game: " << mcas->GetCooperativeGameTime() << endl;
+				cout << "pheromone_fusion: " << mcas->GetPheromoneFusionTime() << endl;
+				cout << "public_path: " << mcas->GetPublicPathRecommendationTime() << endl;
+			}
 		}
 	}
 }

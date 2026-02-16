@@ -1,8 +1,8 @@
 CC=g++
 CFLAGS=-c -O3 -std=c++0x
 
-sudokusolver : board.o sudokuant.o sudokuantsystem.o colonyant.o multicolonyantsystem.o backtracksearch.o solvermain.o 
-	$(CC) -o sudokusolver obj/board.o obj/sudokuant.o obj/sudokuantsystem.o obj/colonyant.o obj/multicolonyantsystem.o obj/backtracksearch.o obj/solvermain.o
+sudokusolver : board.o sudokuant.o sudokuantsystem.o colonyant.o multicolonyantsystem.o constraintpropagation.o backtracksearch.o solvermain.o 
+	$(CC) -o sudokusolver obj/board.o obj/sudokuant.o obj/sudokuantsystem.o obj/colonyant.o obj/multicolonyantsystem.o obj/constraintpropagation.o obj/backtracksearch.o obj/solvermain.o
 board.o: src/board.cpp
 	$(CC) $(CFLAGS) src/board.cpp -o obj/board.o
 sudokuant.o: src/sudokuant.cpp
@@ -13,6 +13,8 @@ colonyant.o: src/colonyant.cpp
 	$(CC) $(CFLAGS) src/colonyant.cpp -o obj/colonyant.o
 multicolonyantsystem.o: src/multicolonyantsystem.cpp
 	$(CC) $(CFLAGS) src/multicolonyantsystem.cpp -o obj/multicolonyantsystem.o
+constraintpropagation.o: src/constraintpropagation.cpp
+	$(CC) $(CFLAGS) src/constraintpropagation.cpp -o obj/constraintpropagation.o
 backtracksearch.o: src/backtracksearch.cpp
 	$(CC) $(CFLAGS) src/backtracksearch.cpp -o obj/backtracksearch.o
 solvermain.o: src/solvermain.cpp

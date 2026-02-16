@@ -1,5 +1,6 @@
 #include "colonyant.h"
 #include "multicolonyantsystem.h"
+#include "constraintpropagation.h"
 
 void ColonyAnt::InitSolution(const Board &puzzle, int startCell)
 {
@@ -44,7 +45,7 @@ void ColonyAnt::StepSolution()
                 }
                 choice <<= 1;
             }
-            sol.SetCell(iCell, best);
+            SetCellAndPropagate(sol, iCell, best);
             // local pheromone update
             parent->LocalPheromoneUpdate(colonyIndex, iCell, best.Index());
         }
@@ -71,7 +72,7 @@ void ColonyAnt::StepSolution()
             {
                 if (roulette[i] > rouletteVal)
                 {
-                    sol.SetCell(iCell, rouletteVals[i]);
+                    SetCellAndPropagate(sol, iCell, rouletteVals[i]);
                     // local pheromone update
                     parent->LocalPheromoneUpdate(colonyIndex, iCell, rouletteVals[i].Index());
                     break;
