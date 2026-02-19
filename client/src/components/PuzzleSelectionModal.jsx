@@ -3,6 +3,10 @@ import { getDailyPuzzle, getDailyPuzzleForDate, isDailyCompleted, getDifficultyI
 import { parseInstanceFile, getInstanceFileFormatDescription } from '../utils/fileParser';
 import { stringToGrid } from '../utils/sudokuUtils';
 import { loadPuzzlesFromServer, checkServerHealth } from '../utils/apiClient';
+import { generatePuzzle } from '../utils/puzzleGenerator';
+import { getDefaultParameters } from '../utils/wasmBridge';
+import { getGenerationAlgorithmOptions } from '../utils/fileSystemManager';
+import { getUserCreatedPuzzles, saveUserCreatedPuzzle, deleteUserCreatedPuzzle } from '../utils/userCreatedPuzzles';
 import DifficultyBadge from './DifficultyBadge';
 
 const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
@@ -30,6 +34,18 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
   
   // Previous daily puzzles
   const [previousDailyPuzzles, setPreviousDailyPuzzles] = useState([]);
+
+  // Create puzzle state
+  const SIZES = [6, 9, 12, 16, 25];
+  const RANDOM_FILL_PERCENTS = [35, 45, 55]; // hard, medium, easy
+  const [createSize, setCreateSize] = useState(9);
+  const [createAlgorithm, setCreateAlgorithm] = useState(2);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [createError, setCreateError] = useState('');
+  const [generatedPuzzle, setGeneratedPuzzle] = useState(null);
+
+  // My puzzles state
+  const [myPuzzles, setMyPuzzles] = useState([]);
 
   // Load daily puzzle info and puzzle index
   useEffect(() => {
@@ -91,7 +107,7 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
             const puzzleData = JSON.parse(cached);
             allPuzzles.push({
               date: dateISO,
-              dateDisplay: date.toLocaleDateString('en-US', { 
+              dateDisplay: past.toLocaleDateString('en-US', { 
                 weekday: 'short', 
                 month: 'short', 
                 day: 'numeric',
@@ -116,6 +132,9 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
       const filtered = allPuzzles.filter(p => p.date <= todayISO);
       
       setPreviousDailyPuzzles(filtered);
+
+      // Load user-created puzzles (My puzzles)
+      setMyPuzzles(getUserCreatedPuzzles());
       
       // Load puzzle categories
       try {
@@ -377,6 +396,90 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
     }
   }, [handleFileUpload]);
 
+  // Generate puzzle (Create tab)
+  const handleGeneratePuzzle = useCallback(async () => {
+    setCreateError('');
+    setGeneratedPuzzle(null);
+    setIsGenerating(true);
+    try {
+      const fillPercent = RANDOM_FILL_PERCENTS[Math.floor(Math.random() * RANDOM_FILL_PERCENTS.length)];
+      const params = getDefaultParameters(createSize)[createAlgorithm];
+      const result = await generatePuzzle(createSize, createAlgorithm, fillPercent, params, null);
+      if (!result.success) throw new Error(result.error || 'Generation failed');
+      const difficulty = calculateDifficulty(result.puzzleString, createSize);
+      setGeneratedPuzzle({
+        puzzleString: result.puzzleString,
+        size: createSize,
+        difficulty,
+        fillPercentage: fillPercent,
+        algorithmUsed: createAlgorithm
+      });
+    } catch (err) {
+      setCreateError(err.message || 'Failed to generate puzzle');
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [createSize, createAlgorithm]);
+
+  const selectCreatedPuzzle = useCallback((puzzleData) => {
+    const grid = stringToGrid(puzzleData.puzzleString, puzzleData.size);
+    onPuzzleSelect({
+      grid,
+      size: puzzleData.size,
+      puzzleString: puzzleData.puzzleString,
+      difficulty: puzzleData.difficulty,
+      isDaily: false,
+      source: 'created'
+    });
+    setGeneratedPuzzle(null);
+    onClose();
+  }, [onPuzzleSelect, onClose]);
+
+  const handleCreatePlay = useCallback(() => {
+    if (!generatedPuzzle) return;
+    selectCreatedPuzzle(generatedPuzzle);
+  }, [generatedPuzzle, selectCreatedPuzzle]);
+
+  const handleCreateSaveAndPlay = useCallback(() => {
+    if (!generatedPuzzle) return;
+    saveUserCreatedPuzzle({
+      size: generatedPuzzle.size,
+      puzzleString: generatedPuzzle.puzzleString,
+      difficulty: generatedPuzzle.difficulty,
+      algorithmUsed: generatedPuzzle.algorithmUsed,
+      fillPercentage: generatedPuzzle.fillPercentage
+    });
+    setMyPuzzles(getUserCreatedPuzzles());
+    selectCreatedPuzzle(generatedPuzzle);
+  }, [generatedPuzzle, selectCreatedPuzzle]);
+
+  // My puzzles: play or delete
+  const handleMyPuzzlePlay = useCallback((puzzle) => {
+    const grid = stringToGrid(puzzle.puzzleString, puzzle.size);
+    onPuzzleSelect({
+      grid,
+      size: puzzle.size,
+      puzzleString: puzzle.puzzleString,
+      difficulty: puzzle.difficulty,
+      isDaily: false,
+      source: 'my-puzzles'
+    });
+    onClose();
+  }, [onPuzzleSelect, onClose]);
+
+  const handleMyPuzzleDelete = useCallback((id, e) => {
+    e.stopPropagation();
+    deleteUserCreatedPuzzle(id);
+    setMyPuzzles(getUserCreatedPuzzles());
+  }, []);
+
+  // Refresh My puzzles when switching to that tab
+  useEffect(() => {
+    if (isOpen && activeTab === 'mypuzzles') {
+      setMyPuzzles(getUserCreatedPuzzles());
+    }
+  }, [isOpen, activeTab]);
+
   if (!isOpen) return null;
 
   const difficultyInfo = dailyInfo ? getDifficultyInfo(dailyInfo.difficulty) : null;
@@ -430,6 +533,28 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
                 <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
               </svg>
               <span className="text-xs sm:text-sm">Upload</span>
+            </span>
+          </button>
+          <button
+            className={`tab ${activeTab === 'create' ? 'active' : ''}`}
+            onClick={() => { setActiveTab('create'); setCreateError(''); setGeneratedPuzzle(null); }}
+          >
+            <span className="flex items-center gap-1 sm:gap-2">
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+              <span className="text-xs sm:text-sm">Create</span>
+            </span>
+          </button>
+          <button
+            className={`tab ${activeTab === 'mypuzzles' ? 'active' : ''}`}
+            onClick={() => setActiveTab('mypuzzles')}
+          >
+            <span className="flex items-center gap-1 sm:gap-2">
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+              </svg>
+              <span className="text-xs sm:text-sm">My puzzles</span>
             </span>
           </button>
         </div>
@@ -735,6 +860,162 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
                 {getInstanceFileFormatDescription()}
               </pre>
             </details>
+          </div>
+        )}
+
+        {/* Create Tab */}
+        {activeTab === 'create' && (
+          <div className="space-y-3 sm:space-y-4">
+            <p className="text-sm sm:text-base text-[var(--color-text-secondary)]">
+              Choose size and algorithm. A random difficulty (fill %) will be used. Generation runs in your browser.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div>
+                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2">Size</label>
+                <select
+                  value={createSize}
+                  onChange={(e) => { setCreateSize(Number(e.target.value)); setGeneratedPuzzle(null); }}
+                  className="select w-full text-sm"
+                  disabled={isGenerating}
+                >
+                  {SIZES.map((s) => (
+                    <option key={s} value={s}>{s}×{s}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2">Algorithm</label>
+                <select
+                  value={createAlgorithm}
+                  onChange={(e) => { setCreateAlgorithm(Number(e.target.value)); setGeneratedPuzzle(null); }}
+                  className="select w-full text-sm"
+                  disabled={isGenerating}
+                >
+                  {getGenerationAlgorithmOptions().map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            {(createSize >= 16) && (
+              <p className="text-xs text-[var(--color-text-muted)]">
+                Large sizes (16×16, 25×25) may take a minute or more to generate.
+              </p>
+            )}
+            {createError && (
+              <div className="p-3 rounded-lg bg-[var(--color-error)]/20 border border-[var(--color-error)]/50 text-[var(--color-error)] text-sm">
+                {createError}
+              </div>
+            )}
+            {!generatedPuzzle ? (
+              <button
+                type="button"
+                onClick={handleGeneratePuzzle}
+                disabled={isGenerating}
+                className="btn btn-primary w-full py-3 sm:py-4 text-sm sm:text-base"
+              >
+                {isGenerating ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="spinner" />
+                    Generating…
+                  </span>
+                ) : (
+                  'Generate puzzle'
+                )}
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <div className="p-3 sm:p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)] flex items-center gap-3 flex-wrap">
+                  <span className="font-bold text-lg">{generatedPuzzle.size}×{generatedPuzzle.size}</span>
+                  <DifficultyBadge difficulty={generatedPuzzle.difficulty} />
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCreatePlay}
+                    className="btn btn-primary flex-1 py-3"
+                  >
+                    Play
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCreateSaveAndPlay}
+                    className="btn border border-[var(--color-border)] hover:border-[var(--color-primary)] flex-1 py-3"
+                  >
+                    Save to My puzzles & Play
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setGeneratedPuzzle(null)}
+                  className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+                >
+                  Generate another
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* My Puzzles Tab */}
+        {activeTab === 'mypuzzles' && (
+          <div className="space-y-3 sm:space-y-4">
+            <p className="text-sm sm:text-base text-[var(--color-text-secondary)]">
+              Puzzles you created and saved. Stored in this browser only.
+            </p>
+            {myPuzzles.length > 0 ? (
+              <div className="max-h-80 sm:max-h-96 overflow-y-auto space-y-1.5 sm:space-y-2 rounded-lg bg-[var(--color-bg-secondary)] p-2 sm:p-3">
+                {myPuzzles.map((puzzle) => (
+                  <div
+                    key={puzzle.id}
+                    className="flex items-center justify-between gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[var(--color-bg-elevated)] border border-[var(--color-border)]"
+                  >
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-[var(--color-bg-secondary)] flex items-center justify-center flex-shrink-0">
+                        <span className="text-sm font-bold">{puzzle.size}×{puzzle.size}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs sm:text-sm text-[var(--color-text-muted)]">
+                          {new Date(puzzle.createdAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
+                        <DifficultyBadge difficulty={puzzle.difficulty} />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleMyPuzzlePlay(puzzle)}
+                        className="px-2 sm:px-3 py-1.5 rounded-lg text-sm font-medium bg-[var(--color-primary)] text-white hover:opacity-90"
+                      >
+                        Play
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => handleMyPuzzleDelete(puzzle.id, e)}
+                        className="p-1.5 rounded-lg text-[var(--color-text-muted)] hover:bg-[var(--color-error)]/20 hover:text-[var(--color-error)]"
+                        title="Delete"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-4 sm:p-6 rounded-lg bg-[var(--color-bg-secondary)] text-center">
+                <p className="text-sm sm:text-base text-[var(--color-text-muted)]">
+                  No puzzles yet. Create one in the Create tab.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
