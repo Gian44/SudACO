@@ -144,17 +144,15 @@ export function validateInstanceFile(fileContent) {
  */
 export function getInstanceFileFormatDescription() {
   return `Expected format:
-Line 1: Size or order number
-  - For 6×6 or 12×12: use size (6 or 12)
-  - For 9×9, 16×16, 25×25: use order (3, 4, or 5)
+Line 1: Order number (3 for 9×9, 4 for 16×16, 5 for 25×25)
 Line 2: Unused integer (can be any number)
 Lines 3+: Tab or space-separated values per row
 - Use -1 for empty cells
 - Use 1 to N for filled cells (where N is the grid size)
-- Example for 6×6:
-  6
+- Example for 9×9:
+  3
   1
-  -1 4 -1 2 -1 -1
-  2 -1 5 -1 -1 -1
+  -1 4 -1 2 -1 -1 7 -1 9
+  2 -1 5 -1 -1 -1 -1 1 -1
   ...`;
 }

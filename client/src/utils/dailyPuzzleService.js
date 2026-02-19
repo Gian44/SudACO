@@ -9,7 +9,7 @@ import { parseInstanceFile } from './fileParser';
 import { stringToGrid } from './sudokuUtils';
 
 // Available sizes and difficulties
-const SIZES = [6, 9, 12, 16, 25];
+const SIZES = [9, 16, 25];
 const DIFFICULTIES = ['easy', 'medium', 'hard'];
 
 // Fill percentages for each difficulty

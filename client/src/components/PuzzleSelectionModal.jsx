@@ -36,7 +36,7 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
   const [previousDailyPuzzles, setPreviousDailyPuzzles] = useState([]);
 
   // Create puzzle state
-  const SIZES = [6, 9, 12, 16, 25];
+  const SIZES = [9, 16, 25];
   const RANDOM_FILL_PERCENTS = [35, 45, 55]; // hard, medium, easy
   const [createSize, setCreateSize] = useState(9);
   const [createAlgorithm, setCreateAlgorithm] = useState(2);
@@ -352,16 +352,22 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
     }
   }, [selectedCategory, onPuzzleSelect, onClose]);
 
-  // Handle file upload
+  // Handle file upload (only 9×9, 16×16, 25×25; saved to My puzzles)
   const handleFileUpload = useCallback(async (file) => {
     setUploadError('');
     
     try {
       const content = await file.text();
       const { size, puzzleString } = parseInstanceFile(content);
+      if (![9, 16, 25].includes(size)) {
+        setUploadError(`Only 9×9, 16×16, and 25×25 puzzles are supported. Your file is ${size}×${size}.`);
+        return;
+      }
       const grid = stringToGrid(puzzleString, size);
       const difficulty = calculateDifficulty(puzzleString, size);
-      
+      saveUserCreatedPuzzle({ size, puzzleString, difficulty });
+      setMyPuzzles(getUserCreatedPuzzles());
+
       onPuzzleSelect({
         grid,
         size,
