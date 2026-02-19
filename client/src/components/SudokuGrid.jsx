@@ -387,6 +387,8 @@ const SudokuGrid = ({
               >
                 <input
                   type="text"
+                  inputMode="none"
+                  autoComplete="off"
                   value={showNotes ? '' : cell}
                   onChange={(e) => handleInputChange(e, rowIndex, colIndex)}
                   onKeyDown={(e) => handleKeyDown(e, rowIndex, colIndex)}
@@ -407,7 +409,7 @@ const SudokuGrid = ({
                   }}
                   data-row={rowIndex}
                   data-col={colIndex}
-                  readOnly={readOnly || isOriginal}
+                  readOnly
                   maxLength={size > 9 ? 2 : 1}
                 />
                 {showNotes && renderNotes(rowIndex, colIndex)}

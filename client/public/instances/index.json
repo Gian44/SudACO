@@ -304,5 +304,8 @@
     "inst25x25_50_93.txt",
     "inst25x25_50_94.txt",
     "inst25x25_50_99.txt"
+  ],
+  "daily-puzzles": [
+    "02192026_9x9_hard.txt"
   ]
 }

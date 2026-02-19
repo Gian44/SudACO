@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getDailyPuzzle, getDailyPuzzleForDate, isDailyCompleted, getDifficultyInfo, calculateDifficulty, getDailyPuzzleInfo, getTodayISOString } from '../utils/dailyPuzzleService';
 import { parseInstanceFile, getInstanceFileFormatDescription } from '../utils/fileParser';
 import { stringToGrid } from '../utils/sudokuUtils';
@@ -19,6 +19,10 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
   const [selectedLibrarySize, setSelectedLibrarySize] = useState('9x9');
   const [selectedFillPercent, setSelectedFillPercent] = useState('50');
   const [puzzleList, setPuzzleList] = useState([]);
+  const [libraryPage, setLibraryPage] = useState(1);
+  const libraryListRef = useRef(null);
+
+  const LIBRARY_PAGE_SIZE = 50;
   
   // Upload state
   const [uploadError, setUploadError] = useState('');
@@ -199,6 +203,7 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
 
   // Update puzzle list when category/size/fill changes
   useEffect(() => {
+    setLibraryPage(1);
     if (selectedCategory === 'general' && categories.general) {
       const sizeData = categories.general[selectedLibrarySize];
       if (sizeData && sizeData[selectedFillPercent]) {
@@ -613,30 +618,67 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
             </div>
             
             {/* Puzzle List */}
-            <div className="max-h-60 sm:max-h-80 overflow-y-auto space-y-1.5 sm:space-y-2 rounded-lg bg-[var(--color-bg-secondary)] p-2 sm:p-3">
-              {puzzleList.length === 0 ? (
-                <p className="text-center text-[var(--color-text-muted)] py-4 text-sm">No puzzles found</p>
-              ) : (
-                puzzleList.slice(0, 50).map((puzzle) => (
-                  <button
-                    key={puzzle}
-                    onClick={() => handleLibrarySelect(puzzle)}
-                    disabled={isLoading}
-                    className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors flex items-center justify-between gap-2"
-                  >
-                    <span className="font-medium text-sm sm:text-base truncate flex-1 min-w-0">{puzzle}</span>
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-text-muted)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                ))
-              )}
-              {puzzleList.length > 50 && (
-                <p className="text-center text-[var(--color-text-muted)] text-xs sm:text-sm pt-2">
-                  Showing first 50 of {puzzleList.length} puzzles
-                </p>
-              )}
-            </div>
+            {(() => {
+              const totalPages = Math.max(1, Math.ceil(puzzleList.length / LIBRARY_PAGE_SIZE));
+              const start = (libraryPage - 1) * LIBRARY_PAGE_SIZE;
+              const paginatedList = puzzleList.slice(start, start + LIBRARY_PAGE_SIZE);
+              const startNum = puzzleList.length === 0 ? 0 : start + 1;
+              const endNum = Math.min(start + LIBRARY_PAGE_SIZE, puzzleList.length);
+              return (
+                <>
+                  <div ref={libraryListRef} className="max-h-60 sm:max-h-80 overflow-y-auto space-y-1.5 sm:space-y-2 rounded-lg bg-[var(--color-bg-secondary)] p-2 sm:p-3">
+                    {puzzleList.length === 0 ? (
+                      <p className="text-center text-[var(--color-text-muted)] py-4 text-sm">No puzzles found</p>
+                    ) : (
+                      paginatedList.map((puzzle) => (
+                        <button
+                          key={puzzle}
+                          onClick={() => handleLibrarySelect(puzzle)}
+                          disabled={isLoading}
+                          className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors flex items-center justify-between gap-2"
+                        >
+                          <span className="font-medium text-sm sm:text-base truncate flex-1 min-w-0">{puzzle}</span>
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-text-muted)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                  {puzzleList.length > LIBRARY_PAGE_SIZE && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2">
+                      <p className="text-center sm:text-left text-[var(--color-text-muted)] text-xs sm:text-sm order-2 sm:order-1">
+                        Showing {startNum}–{endNum} of {puzzleList.length} puzzles
+                      </p>
+                      <div className="flex items-center gap-2 order-1 sm:order-2">
+                        <button
+                          type="button"
+                          onClick={() => setLibraryPage(p => Math.max(1, p - 1))}
+                          disabled={libraryPage <= 1}
+                          className="px-3 py-1.5 rounded-lg text-sm font-medium bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-[var(--color-border)] transition-colors"
+                        >
+                          Previous
+                        </button>
+                        <span className="text-sm text-[var(--color-text-muted)] min-w-[6rem] text-center">
+                          Page {libraryPage} of {totalPages}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLibraryPage(p => Math.min(totalPages, p + 1));
+                            libraryListRef.current?.scrollTo(0, 0);
+                          }}
+                          disabled={libraryPage >= totalPages}
+                          className="px-3 py-1.5 rounded-lg text-sm font-medium bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-[var(--color-border)] transition-colors"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
         )}
         
