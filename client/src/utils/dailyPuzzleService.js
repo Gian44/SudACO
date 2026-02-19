@@ -450,43 +450,38 @@ export async function getDailyPuzzleForDate(date) {
 
 /**
  * Get today's daily puzzle
- * Creates one if it doesn't exist, otherwise returns cached version
+ * Always tries server first so replaced/updated puzzles (e.g. after size change) are used, not stale cache.
  * @returns {Promise<Object>} Puzzle data
  */
 export async function getDailyPuzzle() {
-  // Check if we already have today's puzzle in cache
-  const cached = getCachedDailyPuzzle();
-  if (cached) {
-    console.log('Loaded daily puzzle from cache:', cached.filename);
-    return cached;
-  }
-  
-  // IMPORTANT: Check if today's puzzle already exists on the server/KV FIRST
-  // This prevents multiple users from generating different puzzles for the same date
   const todayISO = getTodayISOString();
+
+  // Always try server first for today's puzzle so we get the latest (e.g. after admin replace)
   try {
     const serverOk = await checkServerHealth();
     if (serverOk) {
       const serverPuzzle = await loadDailyPuzzleFromServer(todayISO);
       if (serverPuzzle) {
         console.log('Loaded daily puzzle from server:', serverPuzzle.filename);
-        // Cache it for future use
         cacheDailyPuzzle(serverPuzzle);
         return serverPuzzle;
       }
     }
   } catch (e) {
-    console.warn('Could not check server for existing puzzle:', e);
+    console.warn('Could not load today\'s puzzle from server:', e);
   }
-  
-  // Only generate if no puzzle exists on server
-  // Generate new daily puzzle
+
+  // Fallback to cache (e.g. offline or server error)
+  const cached = getCachedDailyPuzzle();
+  if (cached) {
+    console.log('Loaded daily puzzle from cache:', cached.filename);
+    return cached;
+  }
+
+  // No server puzzle and no cache: generate and save
   console.log('Generating new daily puzzle...');
   const puzzleData = await generateAndSaveDailyPuzzle();
-  
-  // Cache it
   cacheDailyPuzzle(puzzleData);
-  
   return puzzleData;
 }
 
