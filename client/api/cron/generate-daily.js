@@ -448,6 +448,29 @@ function getDefaultParameters(size) {
 }
 
 /**
+ * Generate puzzle for a specific date with given size and difficulty (for replace-daily-size API).
+ */
+export async function generatePuzzleForDate(dateISO, size, difficulty) {
+  const fillPercent = DIFFICULTY_FILL_PERCENT[difficulty];
+  const params = getDefaultParameters(size)[2];
+  params.timeout = size <= 9 ? 15 : size <= 12 ? 45 : size <= 16 ? 90 : 180;
+  const result = await generatePuzzle(size, 2, fillPercent, params, dateISO);
+  if (!result.success) throw new Error(result.error);
+  const [y, m, d] = dateISO.split('-');
+  const dateStr = `${m}${d}${y}`;
+  const filename = generateDailyFilename(dateStr, size, difficulty);
+  return {
+    filename,
+    content: result.instanceContent,
+    puzzleString: result.puzzleString,
+    size,
+    difficulty,
+    date: dateISO,
+    instanceContent: result.instanceContent
+  };
+}
+
+/**
  * Main handler
  */
 export default async function handler(req, res) {
@@ -492,7 +515,8 @@ export default async function handler(req, res) {
         const has = await kv.get(`daily-puzzle:${pastISO}`);
         if (!has) missing.push(pastISO);
       }
-      const toFill = missing.slice(0, MAX_BACKFILL_PER_RUN);
+      // Fill oldest missing first (so e.g. Jan 15 is created before more recent gaps)
+      const toFill = missing.slice(-MAX_BACKFILL_PER_RUN);
       for (const fillISO of toFill) {
         const fillDate = new Date(fillISO + 'T12:00:00.000Z');
         const { size: s, difficulty: diff } = getRandomSizeAndDifficulty(fillDate);
