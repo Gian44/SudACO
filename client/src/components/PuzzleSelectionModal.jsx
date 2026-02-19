@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getDailyPuzzle, getDailyPuzzleForDate, isDailyCompleted, getDifficultyInfo, calculateDifficulty, getDailyPuzzleInfo, getTodayISOString } from '../utils/dailyPuzzleService';
 import { parseInstanceFile, getInstanceFileFormatDescription } from '../utils/fileParser';
-import { stringToGrid } from '../utils/sudokuUtils';
+import { stringToGrid, getBoxDimensions } from '../utils/sudokuUtils';
 import { loadPuzzlesFromServer, checkServerHealth } from '../utils/apiClient';
 import { generatePuzzle } from '../utils/puzzleGenerator';
 import { getDefaultParameters } from '../utils/wasmBridge';
@@ -442,11 +442,6 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
   }, [onPuzzleSelect, onClose]);
 
   const handleCreatePlay = useCallback(() => {
-    if (!generatedPuzzle) return;
-    selectCreatedPuzzle(generatedPuzzle);
-  }, [generatedPuzzle, selectCreatedPuzzle]);
-
-  const handleCreateSaveAndPlay = useCallback(() => {
     if (!generatedPuzzle) return;
     saveUserCreatedPuzzle({
       size: generatedPuzzle.size,
@@ -930,34 +925,72 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
                 )}
               </button>
             ) : (
-              <div className="space-y-3">
-                <div className="p-3 sm:p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)] flex items-center gap-3 flex-wrap">
-                  <span className="font-bold text-lg">{generatedPuzzle.size}×{generatedPuzzle.size}</span>
-                  <DifficultyBadge difficulty={generatedPuzzle.difficulty} />
+              <div className="space-y-4">
+                <div className="p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)]">
+                  <p className="text-xs sm:text-sm font-medium text-[var(--color-text-muted)] mb-2">Generated puzzle</p>
+                  <div className="flex items-center gap-3 flex-wrap mb-3">
+                    <span className="font-bold text-xl">{generatedPuzzle.size}×{generatedPuzzle.size}</span>
+                    <DifficultyBadge difficulty={generatedPuzzle.difficulty} />
+                  </div>
+                  <p className="text-xs text-[var(--color-text-muted)] mb-2">Preview</p>
+                  <div className="flex justify-center">
+                    <div
+                      className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)]"
+                      style={{ width: 'fit-content' }}
+                    >
+                      {(() => {
+                        const grid = stringToGrid(generatedPuzzle.puzzleString, generatedPuzzle.size);
+                        const { boxRows, boxCols } = getBoxDimensions(generatedPuzzle.size);
+                        const maxSide = 200;
+                        const cellPx = Math.floor(maxSide / generatedPuzzle.size);
+                        return (
+                          <div
+                            className="grid p-0.5"
+                            style={{
+                              gridTemplateColumns: `repeat(${generatedPuzzle.size}, ${cellPx}px)`,
+                              gridTemplateRows: `repeat(${generatedPuzzle.size}, ${cellPx}px)`,
+                              fontSize: cellPx <= 10 ? '8px' : cellPx <= 14 ? '10px' : '12px'
+                            }}
+                          >
+                            {grid.map((row, ri) =>
+                              row.map((cell, ci) => (
+                                <div
+                                  key={`${ri}-${ci}`}
+                                  className="flex items-center justify-center border border-[var(--color-border)]/60"
+                                  style={{
+                                    borderRightWidth: (ci + 1) % boxCols === 0 ? '2px' : '1px',
+                                    borderBottomWidth: (ri + 1) % boxRows === 0 ? '2px' : '1px',
+                                    backgroundColor: cell ? 'var(--color-bg-secondary)' : 'transparent'
+                                  }}
+                                >
+                                  {cell || ''}
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex flex-col gap-2">
                   <button
                     type="button"
                     onClick={handleCreatePlay}
-                    className="btn btn-primary flex-1 py-3"
+                    className="btn btn-primary w-full py-3 sm:py-3.5 text-sm font-medium"
                   >
                     Play
                   </button>
+                </div>
+                <div className="pt-1 border-t border-[var(--color-border)]">
                   <button
                     type="button"
-                    onClick={handleCreateSaveAndPlay}
-                    className="btn border border-[var(--color-border)] hover:border-[var(--color-primary)] flex-1 py-3"
+                    onClick={() => setGeneratedPuzzle(null)}
+                    className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
                   >
-                    Save to My puzzles & Play
+                    Generate another
                   </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setGeneratedPuzzle(null)}
-                  className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
-                >
-                  Generate another
-                </button>
               </div>
             )}
           </div>

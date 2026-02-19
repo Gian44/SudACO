@@ -170,8 +170,8 @@ export async function generatePuzzle(size, algorithm, fillPercentage, params, ra
     // Generate filled board (pass randomFn to ensure date-specific uniqueness)
     const filledString = await generateFilledBoard(size, algorithm, params, randomFn);
     
-    // Remove cells to create puzzle (use seeded random if provided for deterministic generation)
-    const puzzleString = removeCellsRandomly(filledString, size, fillPercentage, randomFn);
+    // Remove cells to create puzzle (use seeded random if provided; null/undefined => Math.random)
+    const puzzleString = removeCellsRandomly(filledString, size, fillPercentage, randomFn ?? Math.random);
     
     // Convert to instance format
     const instanceContent = gridToInstanceFormat(puzzleString, size);

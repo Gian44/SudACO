@@ -230,15 +230,13 @@ export function updateIndexJson(indexData, category, size, fillPercent, filename
 }
 
 /**
- * Get algorithm options for puzzle generation
+ * Get algorithm options for puzzle generation (ACO and DCM-ACO only)
  * @returns {Array} Array of algorithm options
  */
 export function getGenerationAlgorithmOptions() {
-  const algorithms = getAlgorithmNames();
   return [
-    { value: 2, label: algorithms[2] + ' (Recommended)' }, // DCM-ACO
-    { value: 1, label: algorithms[1] }, // Backtracking
-    { value: 0, label: algorithms[0] }, // ACS
+    { value: 2, label: 'DCM-ACO (Recommended)' }, // Multi-Colony DCM-ACO
+    { value: 0, label: 'ACO' }, // Ant Colony Optimization (ACO)
   ];
 }
 
