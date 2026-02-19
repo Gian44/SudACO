@@ -239,7 +239,7 @@ function seededRandom(seed) {
 /**
  * Get random size and difficulty for a specific date (deterministic)
  */
-function getRandomSizeAndDifficulty(date) {
+export function getRandomSizeAndDifficulty(date) {
   const dateString = getDateISOString(date);
   const seed = stringToSeed(dateString);
   const random = seededRandom(seed);
