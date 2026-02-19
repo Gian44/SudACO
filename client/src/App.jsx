@@ -222,9 +222,10 @@ function App() {
   const handleSolutionComplete = useCallback((result) => {
     setShowAlgorithmModal(false);
     if (result && result.success) {
-      // Store the solve time to display in header
-      if (result.solveTime !== undefined) {
-        setAlgorithmSolveTime(result.solveTime);
+      // Store the solve time in ms (WASM returns time in seconds)
+      const ms = result.time != null ? result.time * 1000 : undefined;
+      if (ms !== undefined) {
+        setAlgorithmSolveTime(ms);
       }
       setTimeout(() => {
         setShowCompletionModal(true);
@@ -354,6 +355,7 @@ function App() {
         onClose={() => setShowCompletionModal(false)}
         onPlayAgain={handlePlayAgain}
         timeSeconds={timerRef.current}
+        algorithmSolveTimeMs={algorithmSolveTime}
         puzzleSize={size}
         difficulty={difficulty}
         isDaily={isDaily}

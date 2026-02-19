@@ -6,6 +6,7 @@ const CompletionModal = ({
   onClose, 
   onPlayAgain,
   timeSeconds,
+  algorithmSolveTimeMs = null,
   puzzleSize,
   difficulty,
   isDaily,
@@ -13,11 +14,22 @@ const CompletionModal = ({
 }) => {
   const [confetti, setConfetti] = useState([]);
 
-  // Format time as MM:SS
+  // Format time as MM:SS (for player solve time)
   const formatTime = (totalSeconds) => {
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Format algorithm solve time for display (input in ms)
+  const formatAlgorithmTime = (ms) => {
+    if (ms == null) return '—';
+    if (ms < 1) return `${ms.toFixed(2)} ms`;
+    if (ms < 1000) return `${ms.toFixed(2)} ms`;
+    if (ms < 60000) return `${(ms / 1000).toFixed(2)} s`;
+    const mins = Math.floor(ms / 60000);
+    const secs = ((ms % 60000) / 1000).toFixed(0);
+    return `${mins}:${secs.padStart(2, '0')}`;
   };
 
   // Generate confetti on open
@@ -73,7 +85,7 @@ const CompletionModal = ({
         <div className="mb-6">
           {wasAlgorithmSolved ? (
             <div className="w-20 h-20 mx-auto rounded-full bg-[var(--color-secondary)]/20 flex items-center justify-center">
-              <span className="text-4xl">🤖</span>
+              <span className="text-4xl">🐜</span>
             </div>
           ) : (
             <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center animate-pulse">
@@ -101,7 +113,9 @@ const CompletionModal = ({
         <div className="grid grid-cols-2 gap-4 mb-8">
           <div className="p-4 rounded-xl bg-[var(--color-bg-elevated)] border border-[var(--color-border)]">
             <div className="text-2xl font-bold text-[var(--color-primary)]">
-              {formatTime(timeSeconds)}
+              {wasAlgorithmSolved && algorithmSolveTimeMs != null
+                ? formatAlgorithmTime(algorithmSolveTimeMs)
+                : formatTime(timeSeconds ?? 0)}
             </div>
             <div className="text-sm text-[var(--color-text-muted)]">Time</div>
           </div>

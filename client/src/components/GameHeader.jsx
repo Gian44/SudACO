@@ -52,12 +52,14 @@ const GameHeader = ({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }, []);
 
-  // Format algorithm solve time
+  // Format algorithm solve time (input in milliseconds)
   const formatAlgorithmTime = useCallback((milliseconds) => {
-    if (milliseconds < 1000) {
-      return `${milliseconds.toFixed(0)}ms`;
+    if (milliseconds < 1) {
+      return `${milliseconds.toFixed(2)} ms`;
+    } else if (milliseconds < 1000) {
+      return `${milliseconds.toFixed(2)} ms`;
     } else if (milliseconds < 60000) {
-      return `${(milliseconds / 1000).toFixed(2)}s`;
+      return `${(milliseconds / 1000).toFixed(2)} s`;
     } else {
       const mins = Math.floor(milliseconds / 60000);
       const secs = ((milliseconds % 60000) / 1000).toFixed(0);
