@@ -19,30 +19,44 @@ const DIFFICULTY_FILL_PERCENT = {
   hard: 35     // 35% filled - harder puzzle
 };
 
+// Philippines Standard Time (UTC+8) - all daily puzzle dates use this timezone
+const PHILIPPINES_UTC_OFFSET_MS = 8 * 60 * 60 * 1000;
+
 /**
- * Get today's date string in MMDDYYYY format for filename
+ * Get the calendar date (YYYY-MM-DD) for a given moment in Philippines time.
+ * @param {Date} date - Date object (typically new Date())
+ * @returns {string} Date string like "2025-12-14"
+ */
+function getDateInPhilippines(date) {
+  const ph = new Date(date.getTime() + PHILIPPINES_UTC_OFFSET_MS);
+  const year = ph.getUTCFullYear();
+  const month = String(ph.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(ph.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Get today's date string in MMDDYYYY format for filename (Philippines time).
  * @returns {string} Date string like "12142025"
  */
 function getTodayDateString() {
-  const today = new Date();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  const year = today.getFullYear();
-  return `${month}${day}${year}`;
+  const todayISO = getDateInPhilippines(new Date());
+  const [y, m, d] = todayISO.split('-');
+  return `${m}${d}${y}`;
 }
 
 /**
- * Get today's date in ISO format for cache key
+ * Get today's date in ISO format (Philippines Standard Time).
+ * All daily puzzle "today" logic uses Philippines time, not the user's local time.
  * @returns {string} Date string like "2025-12-14"
  */
-function getTodayISOString() {
-  const today = new Date();
-  return today.toISOString().split('T')[0];
+export function getTodayISOString() {
+  return getDateInPhilippines(new Date());
 }
 
 /**
- * Get date string in ISO format for a specific date
- * @param {Date} date - Date object
+ * Get date string in ISO format for a specific date (UTC calendar date for API/storage).
+ * @param {Date} date - Date object (e.g. from new Date("2026-02-19"))
  * @returns {string} Date string like "2025-12-14"
  */
 function getDateISOString(date) {

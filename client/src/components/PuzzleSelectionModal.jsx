@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getDailyPuzzle, getDailyPuzzleForDate, isDailyCompleted, getDifficultyInfo, calculateDifficulty, getDailyPuzzleInfo } from '../utils/dailyPuzzleService';
+import { getDailyPuzzle, getDailyPuzzleForDate, isDailyCompleted, getDifficultyInfo, calculateDifficulty, getDailyPuzzleInfo, getTodayISOString } from '../utils/dailyPuzzleService';
 import { parseInstanceFile, getInstanceFileFormatDescription } from '../utils/fileParser';
 import { stringToGrid } from '../utils/sudokuUtils';
 import { loadPuzzlesFromServer, checkServerHealth } from '../utils/apiClient';
@@ -68,12 +68,12 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
         console.warn('Server check failed:', err);
       }
       
-      // Also load from localStorage (for puzzles generated on client)
-      const today = new Date();
+      // Also load from localStorage (for puzzles generated on client). Use Philippines date.
+      const todayPhilippines = getTodayISOString(); // YYYY-MM-DD in Philippines
+      const [ty, tm, td] = todayPhilippines.split('-').map(Number);
       for (let i = 0; i <= 30; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        const dateISO = date.toISOString().split('T')[0];
+        const past = new Date(ty, tm - 1, td - i);
+        const dateISO = `${past.getFullYear()}-${String(past.getMonth() + 1).padStart(2, '0')}-${String(past.getDate()).padStart(2, '0')}`;
         const cacheKey = `daily-puzzle-${dateISO}`;
         
         // Skip if already loaded from server
@@ -107,7 +107,11 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
       // Sort by date (newest first)
       allPuzzles.sort((a, b) => new Date(b.date) - new Date(a.date));
       
-      setPreviousDailyPuzzles(allPuzzles);
+      // Only show puzzles on or before today (local date) - hide future-dated puzzles
+      const todayISO = getTodayISOString();
+      const filtered = allPuzzles.filter(p => p.date <= todayISO);
+      
+      setPreviousDailyPuzzles(filtered);
       
       // Load puzzle categories
       try {

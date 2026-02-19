@@ -131,17 +131,17 @@ int main( int argc, char *argv[] )
 
     int algorithm = a.GetArg("alg", 0);
     int timeOutSecs = a.GetArg("timeout", 10);
-    // Algorithm-specific defaults (updated based on ablation study):
-    int nAntsDefault = (algorithm == 2 ? 4 : 10);  // DCM-ACO: 10 (was 4)
+    // Algorithm-specific defaults:
+    int nAntsDefault = (algorithm == 2 ? 3 : 10);  // DCM-ACO: 10 (was 4)
     int nAnts = a.GetArg("nAnts", a.GetArg("ants", nAntsDefault));
-    float q0 = a.GetArg("q0", 0.9f);  // 0.9 (unchanged)
-    float rho = a.GetArg("rho", 0.9f);  // 0.8 (was 0.9)
-    float evap = a.GetArg("evap", 0.005f );  // 0.01 (was 0.005)
-    // DCM-ACO parameters (updated based on ablation study):
-    int numACS = a.GetArg("numACS", 3);  // 3 (was 2)
-    int numColonies = a.GetArg("numColonies", numACS + 1);  // numACS + 1 (was 3)
-    float convThresh  = a.GetArg("convThresh", 0.8f);  // 0.8 (unchanged)
-    float entropyThreshold = a.GetArg("entropyThreshold", 4.0f);  // 4.0 (unchanged)
+    float q0 = a.GetArg("q0", 0.9f);  // 0.9 
+    float rho = a.GetArg("rho", 0.9f);  // 0.9
+    float evap = a.GetArg("evap", 0.005f );  // 0.005
+    // DCM-ACO parameters :
+    int numACS = a.GetArg("numACS", 2);  // number of ACS colonies
+    int numColonies = a.GetArg("numColonies", numACS + 1);  // number of colonies
+    float convThresh  = a.GetArg("convThresh", 0.8f);  // convergence threshold
+    float entropyThreshold = a.GetArg("entropythreshold", 1.45f);  // threshold for pheromone fusion 
     bool blank = a.GetArg("blank", false );
     bool verbose = a.GetArg("verbose", 0);
     bool showInitial = a.GetArg("showinitial", 0);

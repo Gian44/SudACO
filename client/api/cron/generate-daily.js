@@ -121,6 +121,79 @@ async function solveSudoku(puzzleString, algorithm, params) {
   }
 }
 
+// Philippines Standard Time (UTC+8) - daily puzzle dates use this timezone
+const PHILIPPINES_UTC_OFFSET_MS = 8 * 60 * 60 * 1000;
+
+/**
+ * Get the calendar date (YYYY-MM-DD) in Philippines time for a given moment.
+ */
+function getDateInPhilippines(date) {
+  const ph = new Date(date.getTime() + PHILIPPINES_UTC_OFFSET_MS);
+  const year = ph.getUTCFullYear();
+  const month = String(ph.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(ph.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Get tomorrow's date (YYYY-MM-DD) in Philippines time.
+ */
+function getTomorrowInPhilippines() {
+  const now = new Date();
+  const ph = new Date(now.getTime() + PHILIPPINES_UTC_OFFSET_MS);
+  const next = new Date(Date.UTC(ph.getUTCFullYear(), ph.getUTCMonth(), ph.getUTCDate() + 1));
+  const year = next.getUTCFullYear();
+  const month = String(next.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(next.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Get date N days before a given YYYY-MM-DD string (calendar date).
+ */
+function getDateDaysBefore(dateISO, days) {
+  const [y, m, d] = dateISO.split('-').map(Number);
+  const date = new Date(y, m - 1, d - days);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Move a puzzle from fromDate to toDate in KV (auto-correct wrongly dated puzzles).
+ */
+async function movePuzzleDate(fromDate, toDate) {
+  const fromKey = `daily-puzzle:${fromDate}`;
+  const toKey = `daily-puzzle:${toDate}`;
+  const existing = await kv.get(fromKey);
+  if (!existing) return false;
+  const parsed = typeof existing === 'string' ? JSON.parse(existing) : existing;
+  const [y, m, d] = toDate.split('-');
+  const dateStr = `${m}${d}${y}`;
+  const size = parsed.size || 9;
+  const difficulty = parsed.difficulty || 'medium';
+  const newFilename = `${dateStr}_${size}x${size}_${difficulty}.txt`;
+  const puzzleData = {
+    filename: newFilename,
+    content: parsed.content,
+    size: parsed.size,
+    difficulty: parsed.difficulty,
+    puzzleString: parsed.puzzleString,
+    date: toDate,
+    createdAt: parsed.createdAt || new Date().toISOString()
+  };
+  await kv.set(toKey, JSON.stringify(puzzleData));
+  const listKey = 'daily-puzzles:list';
+  let list = (await kv.get(listKey)) || [];
+  const oldFilename = parsed.filename;
+  if (oldFilename && list.includes(oldFilename)) list = list.filter(f => f !== oldFilename);
+  if (!list.includes(newFilename)) list.push(newFilename);
+  await kv.set(listKey, list);
+  await kv.del(fromKey);
+  return true;
+}
+
 /**
  * Get date string in ISO format
  */
@@ -396,20 +469,60 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Generate puzzle for tomorrow
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    
-    const dateISO = getDateISOString(tomorrow);
-    const { size, difficulty } = getRandomSizeAndDifficulty(tomorrow);
+    // Generate puzzle for "today" in Philippines Standard Time (UTC+8).
+    const dateISO = getDateInPhilippines(new Date());
+    const today = new Date(dateISO + 'T12:00:00.000Z'); // noon UTC so getDateISOString/getDateString give this date
+    const { size, difficulty } = getRandomSizeAndDifficulty(today);
     const fillPercent = DIFFICULTY_FILL_PERCENT[difficulty];
-    const dateStr = getDateString(tomorrow);
+    const dateStr = getDateString(today);
     const filename = generateDailyFilename(dateStr, size, difficulty);
     
-    console.log(`Generating daily puzzle for ${dateISO}: ${size}x${size} ${difficulty} (${fillPercent}% filled)`);
+    console.log(`Generating daily puzzle for ${dateISO} (Philippines): ${size}x${size} ${difficulty} (${fillPercent}% filled)`);
     
-    // Check if puzzle already exists
+    // Daily puzzles start on this date (no puzzles before this).
+    const DAILY_PUZZLE_START_DATE = '2026-01-10';
+    // Backfill: fill up to 3 missing puzzles from the last 60 days (Philippines), but only on or after start date
+    const MAX_BACKFILL_PER_RUN = 3;
+    const BACKFILL_DAYS = 60;
+    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+      const missing = [];
+      for (let i = 1; i <= BACKFILL_DAYS; i++) {
+        const pastISO = getDateDaysBefore(dateISO, i);
+        if (pastISO < DAILY_PUZZLE_START_DATE) continue; // don't create puzzles before start date
+        const has = await kv.get(`daily-puzzle:${pastISO}`);
+        if (!has) missing.push(pastISO);
+      }
+      const toFill = missing.slice(0, MAX_BACKFILL_PER_RUN);
+      for (const fillISO of toFill) {
+        const fillDate = new Date(fillISO + 'T12:00:00.000Z');
+        const { size: s, difficulty: diff } = getRandomSizeAndDifficulty(fillDate);
+        const fillPct = DIFFICULTY_FILL_PERCENT[diff];
+        const [fy, fm, fd] = fillISO.split('-');
+        const fillDateStr = `${fm}${fd}${fy}`;
+        const fillFilename = generateDailyFilename(fillDateStr, s, diff);
+        const fillParams = getDefaultParameters(s)[2];
+        fillParams.timeout = s <= 9 ? 15 : s <= 12 ? 45 : s <= 16 ? 90 : 180;
+        const fillResult = await generatePuzzle(s, 2, fillPct, fillParams, fillISO);
+        if (fillResult.success) {
+          const fillData = {
+            filename: fillFilename,
+            content: fillResult.instanceContent,
+            size: s,
+            difficulty: diff,
+            puzzleString: fillResult.puzzleString,
+            date: fillISO,
+            createdAt: new Date().toISOString()
+          };
+          await kv.set(`daily-puzzle:${fillISO}`, JSON.stringify(fillData));
+          let list = (await kv.get('daily-puzzles:list')) || [];
+          if (!list.includes(fillFilename)) list.push(fillFilename);
+          await kv.set('daily-puzzles:list', list);
+          console.log(`Backfill: created puzzle for ${fillISO} (${s}x${s} ${diff})`);
+        }
+      }
+    }
+
+    // Check if puzzle already exists; if not, auto-correct if "tomorrow" was created by mistake
     if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
       const puzzleKey = `daily-puzzle:${dateISO}`;
       const existing = await kv.get(puzzleKey);
@@ -421,6 +534,21 @@ export default async function handler(req, res) {
           filename,
           date: dateISO
         });
+      }
+      // Auto-adjust: if today is missing but tomorrow's puzzle exists (wrong date), move it to today
+      const tomorrowISO = getTomorrowInPhilippines();
+      const tomorrowPuzzle = await kv.get(`daily-puzzle:${tomorrowISO}`);
+      if (tomorrowPuzzle) {
+        const moved = await movePuzzleDate(tomorrowISO, dateISO);
+        if (moved) {
+          console.log(`Auto-adjusted: moved puzzle from ${tomorrowISO} to ${dateISO} (Philippines)`);
+          return res.json({
+            success: true,
+            message: `Puzzle date auto-adjusted from ${tomorrowISO} to ${dateISO}`,
+            date: dateISO,
+            adjusted: true
+          });
+        }
       }
     }
     
