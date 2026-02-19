@@ -11,8 +11,8 @@ if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
   process.exit(1);
 }
 
-const url = new URL('https://sud-aco.vercel.app/api/puzzles/ensure-daily');
-const postData = JSON.stringify({ date });
+const url = new URL('https://sud-aco.vercel.app/api/puzzles/admin');
+const postData = JSON.stringify({ action: 'ensure', date });
 
 const options = {
   hostname: url.hostname,

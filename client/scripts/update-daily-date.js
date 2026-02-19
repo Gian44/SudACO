@@ -15,8 +15,8 @@ if (!fromDate || !toDate) {
   process.exit(1);
 }
 
-const url = new URL('https://sud-aco.vercel.app/api/puzzles/update-daily-date');
-const postData = JSON.stringify({ fromDate, toDate });
+const url = new URL('https://sud-aco.vercel.app/api/puzzles/admin');
+const postData = JSON.stringify({ action: 'update-date', fromDate, toDate });
 
 console.log(`Moving daily puzzle from ${fromDate} to ${toDate}...`);
 

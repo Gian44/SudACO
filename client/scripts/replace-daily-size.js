@@ -8,8 +8,8 @@ import https from 'https';
 const fromDate = process.argv[2] || '2026-01-10';
 const toDate = process.argv[3] || '2026-02-19';
 
-const url = new URL('https://sud-aco.vercel.app/api/puzzles/replace-daily-size');
-const postData = JSON.stringify({ fromDate, toDate });
+const url = new URL('https://sud-aco.vercel.app/api/puzzles/admin');
+const postData = JSON.stringify({ action: 'replace-size', fromDate, toDate });
 
 console.log(`Replacing 6x6 and 12x12 with 9x9/16x16/25x25 from ${fromDate} to ${toDate}...`);
 
