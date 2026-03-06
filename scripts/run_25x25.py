@@ -259,6 +259,7 @@ def main():
     ap.add_argument('--numACS', type=int, help='Override numACS (int)')
     ap.add_argument('--convThresh', type=float, help='Override convThresh (float)')
     ap.add_argument('--entropyThreshold', type=float, help='Override entropyThreshold (float)')
+    ap.add_argument('--xi', type=float, help='Override xi / local pheromone update rate (float)')
     args = ap.parse_args()
     if args.worker_id < 0 or args.worker_id >= args.num_workers:
         ap.error('--worker-id must be in 0..num-workers-1')
@@ -312,6 +313,8 @@ def main():
         factor_args += ['--convThresh', str(float(args.convThresh))]
     if args.entropyThreshold is not None:
         factor_args += ['--entropyThreshold', str(float(args.entropyThreshold))]
+    if args.xi is not None:
+        factor_args += ['--xi', str(float(args.xi))]
 
     # Scan instances
     instance_files = scan_instances(instances_dir)

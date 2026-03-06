@@ -35,6 +35,7 @@ class MultiColonyAntSystem : public SudokuSolver
     float rho;
     float pher0;
     float bestEvap;
+    float xi;
 
     // global best
     Board globalBestSol;
@@ -85,9 +86,10 @@ class MultiColonyAntSystem : public SudokuSolver
 public:
     // Configurable number of colonies and ACS colonies
     MultiColonyAntSystem(int antsPerColony, float q0, float rho, float pher0, float bestEvap,
-                        int numColonies, int numACS, float convThreshold, float entropyThreshold)
+                        int numColonies, int numACS, float convThreshold, float entropyThreshold,
+                        float xi = 0.1f)
        : numColonies(numColonies), numACS(numACS), antsPerColony(antsPerColony), q0(q0), rho(rho), pher0(pher0), bestEvap(bestEvap),
-          globalBestPher(0.0f), globalBestVal(0), solTime(0.0f), iterationCount(0),
+          xi(xi), globalBestPher(0.0f), globalBestVal(0), solTime(0.0f), iterationCount(0),
           convThreshold(convThreshold), entropyThreshold(entropyThreshold),
           cooperativeGameTime(0.0f), pheromoneFusionTime(0.0f), publicPathRecommendationTime(0.0f)
     {
@@ -130,7 +132,7 @@ public:
         if (colonies[colony].type == 0)
         {
             float &ref = colonies[colony].pher[iCell][iChoice];
-            ref = ref * 0.9f + colonies[colony].tau0 * 0.1f;
+            ref = ref * (1.0f - xi) + colonies[colony].tau0 * xi;
         }
     }
 };

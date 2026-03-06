@@ -13,6 +13,7 @@ class SudokuAntSystem : public SudokuSolver
 	float rho;
 	float pher0;
 	float bestEvap;
+	float xi;
 	Board bestSol;
 	float bestPher;
 	int bestVal;
@@ -32,8 +33,8 @@ class SudokuAntSystem : public SudokuSolver
 	float PherAdd(int numCellsFixed);
 
 public:
-	SudokuAntSystem(int numAnts, float q0, float rho, float pher0, float bestEvap) : 
-		numAnts(numAnts), q0(q0), rho(rho), pher0(pher0), bestEvap(bestEvap)
+	SudokuAntSystem(int numAnts, float q0, float rho, float pher0, float bestEvap, float xi = 0.1f) : 
+		numAnts(numAnts), q0(q0), rho(rho), pher0(pher0), bestEvap(bestEvap), xi(xi)
 	{
 		for ( int i = 0; i < numAnts; i++ )
 			antList.push_back(new SudokuAnt(this));

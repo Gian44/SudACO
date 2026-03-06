@@ -132,16 +132,17 @@ int main( int argc, char *argv[] )
     int algorithm = a.GetArg("alg", 0);
     int timeOutSecs = a.GetArg("timeout", 10);
     // Algorithm-specific defaults:
-    int nAntsDefault = (algorithm == 2 ? 3 : 10);  // DCM-ACO: 10 (was 4)
+    int nAntsDefault = (algorithm == 2 ? 3 : 10);  // DCM-ACO: 10 (was 3)
     int nAnts = a.GetArg("nAnts", a.GetArg("ants", nAntsDefault));
     float q0 = a.GetArg("q0", 0.9f);  // 0.9 
     float rho = a.GetArg("rho", 0.9f);  // 0.9
     float evap = a.GetArg("evap", 0.005f );  // 0.005
+    float xi = a.GetArg("xi", 0.1f);  // local pheromone update rate
     // DCM-ACO parameters :
     int numACS = a.GetArg("numACS", 2);  // number of ACS colonies
     int numColonies = a.GetArg("numColonies", numACS + 1);  // number of colonies
     float convThresh  = a.GetArg("convThresh", 0.8f);  // convergence threshold
-    float entropyThreshold = a.GetArg("entropythreshold", 1.45f);  // threshold for pheromone fusion 
+    float entropyThreshold = a.GetArg("entropythreshold", 1.47f);  // threshold for pheromone fusion 
     bool blank = a.GetArg("blank", false );
     bool verbose = a.GetArg("verbose", 0);
     bool showInitial = a.GetArg("showinitial", 0);
@@ -154,13 +155,13 @@ int main( int argc, char *argv[] )
     if ( algorithm == 0 )
     {
         // Single-colony Ant Colony System
-        solver = new SudokuAntSystem( nAnts, q0, rho, 1.0f/board.CellCount(), evap);
+        solver = new SudokuAntSystem( nAnts, q0, rho, 1.0f/board.CellCount(), evap, xi);
     }
     else if ( algorithm == 2 )
     {
         // Multi-colony ACO (ants count is per colony)
         solver = new MultiColonyAntSystem(nAnts, q0, rho, 1.0f/board.CellCount(), evap,
-                                          numColonies, numACS, convThresh, entropyThreshold);
+                                          numColonies, numACS, convThresh, entropyThreshold, xi);
     }
     else
     {

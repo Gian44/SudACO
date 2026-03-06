@@ -38,7 +38,7 @@ void SudokuAntSystem::UpdatePheromone()
 
 void SudokuAntSystem::LocalPheromoneUpdate(int iCell, int iChoice)
 {
-	pher[iCell][iChoice] = pher[iCell][iChoice] * 0.9f + pher0*0.1f;
+	pher[iCell][iChoice] = pher[iCell][iChoice] * (1.0f - xi) + pher0 * xi;
 }
 
 bool SudokuAntSystem::Solve(const Board& puzzle, float maxTime )

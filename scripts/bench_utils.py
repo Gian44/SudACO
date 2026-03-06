@@ -11,6 +11,7 @@ import math
 import os
 import re
 import subprocess
+import json
 from pathlib import Path
 from statistics import mean, pstdev
 
@@ -39,48 +40,137 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
     except subprocess.CalledProcessError as e:
         out = e.output
 
-    # Parse output: expected two lines at the end: success_flag (0=success), time
-    # Be robust to extra prints and scientific notation times like 5e-05.
+    # region agent log
+    try:
+        with open("debug-860227.log", "a", encoding="utf-8") as _f:
+            _f.write(json.dumps({
+                "sessionId": "860227",
+                "runId": "pre-fix",
+                "hypothesisId": "A",
+                "location": "bench_utils.py:38",
+                "message": "run_solver raw output",
+                "data": {
+                    "args": args,
+                    "out_head": out[:500]
+                },
+                "timestamp": __import__("time").time()
+            }) + "\n")
+    except Exception:
+        pass
+    # endregion
+
+    # Parse output. Verbose format:
+    #   - "Number of cycles (multi): N" then either "failed in time X" or "Solution:" + grid + "solved in X", then cp_* lines.
+    # Old format: success flag 0/1 on one line, time float on next.
     lines = [ln.strip() for ln in out.splitlines() if ln.strip() != '']
     success = False
     elapsed = math.nan
     cycles = math.nan
-    
-    # Keep a copy for cycle parsing before we mutate the list
-    all_lines = list(lines)
 
-    # Robust float pattern supporting scientific notation
+    all_lines = list(lines)
     float_pat = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?")
 
-    # If the final line looks like a float, treat it as the elapsed time and
-    # remove it from the list so it isn't misinterpreted as the success flag.
-    if lines:
-        m = float_pat.fullmatch(lines[-1])
+    # Prefer verbose format: "failed in time X" or "solved in X" (may appear after "Solution:" and grid when solved)
+    solved_in_pat = re.compile(r"solved in\s+(" + float_pat.pattern + r")", re.IGNORECASE)
+    failed_in_pat = re.compile(r"failed in time\s+(" + float_pat.pattern + r")", re.IGNORECASE)
+    for ln in all_lines:
+        m = solved_in_pat.search(ln)
         if m:
             try:
-                elapsed = float(m.group(0))
-                lines = lines[:-1]
-            except ValueError:
+                elapsed = float(m.group(1))
+                success = True
+                break
+            except (ValueError, IndexError):
+                pass
+        m = failed_in_pat.search(ln)
+        if m:
+            try:
+                elapsed = float(m.group(1))
+                success = False
+                break
+            except (ValueError, IndexError):
                 pass
 
-    # Prefer an explicit success flag line equal to '0' or '1' on the now-last line
-    flag = None
-    if lines and lines[-1] in ('0', '1'):
-        flag = lines[-1]
-        lines = lines[:-1]
-
-    # Fallback: search remaining lines for a float if we didn't find time above
+    # Fallback: old format (success 0/1 then time float on last lines)
     if math.isnan(elapsed):
-        for ln in reversed(lines):
-            m = float_pat.search(ln)
+        if lines:
+            m = float_pat.fullmatch(lines[-1])
             if m:
                 try:
                     elapsed = float(m.group(0))
-                    break
+                    lines = lines[:-1]
                 except ValueError:
-                    continue
+                    pass
+        flag = None
+        if lines and lines[-1] in ('0', '1'):
+            flag = lines[-1]
+            lines = lines[:-1]
+        if flag is not None:
+            success = (flag == '0')
+        if math.isnan(elapsed):
+            for ln in reversed(lines):
+                m = float_pat.search(ln)
+                if m:
+                    try:
+                        elapsed = float(m.group(0))
+                        break
+                    except ValueError:
+                        continue
+        if flag is None:
+            for ln in all_lines:
+                if 'solved in' in ln.lower():
+                    success = True
+                    break
 
-    # Extract number of cycles if present (supports single- and multi-colony prints)
+    # region agent log
+    # Log the specific time line (\"solved in\" / \"failed in time\") and the
+    # numeric value parsed directly from that line, to compare with `elapsed`.
+    try:
+        solved_in_pat = re.compile(r"solved in\\s+(" + float_pat.pattern + r")", re.IGNORECASE)
+        failed_in_pat = re.compile(r"failed in time\\s+(" + float_pat.pattern + r")", re.IGNORECASE)
+        source_line = None
+        source_time = math.nan
+        source_kind = None
+        for ln in all_lines:
+            m = solved_in_pat.search(ln)
+            if m:
+                try:
+                    source_time = float(m.group(1))
+                    source_line = ln
+                    source_kind = "solved"
+                    break
+                except (ValueError, IndexError):
+                    pass
+            m = failed_in_pat.search(ln)
+            if m:
+                try:
+                    source_time = float(m.group(1))
+                    source_line = ln
+                    source_kind = "failed"
+                    break
+                except (ValueError, IndexError):
+                    pass
+        with open("debug-860227.log", "a", encoding="utf-8") as _f:
+            _f.write(json.dumps({
+                "sessionId": "860227",
+                "runId": "pre-fix",
+                "hypothesisId": "C",
+                "location": "bench_utils.py:106",
+                "message": "run_solver time source comparison",
+                "data": {
+                    "source_kind": source_kind,
+                    "source_line": source_line,
+                    "source_time": source_time,
+                    "elapsed": elapsed,
+                    "success": success
+                },
+                "timestamp": __import__("time").time()
+            }) + "\\n")
+    except Exception:
+        pass
+    # endregion
+
+    # Extract number of cycles (single- or multi-colony)
     cyc_pat = re.compile(r"Number of cycles(?: \(multi\))?:\s*(\d+)")
     for ln in all_lines:
         m = cyc_pat.search(ln)
@@ -89,16 +179,25 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
                 cycles = int(m.group(1))
             except ValueError:
                 pass
-
-    if flag is not None:
-        success = (flag == '0')
-    else:
-        # Fallback: if we saw "solved in" treat as success
-        for ln in all_lines:
-            if 'solved in' in ln.lower():
-                success = True
-                break
-
+    # region agent log
+    try:
+        with open("debug-860227.log", "a", encoding="utf-8") as _f:
+            _f.write(json.dumps({
+                "sessionId": "860227",
+                "runId": "pre-fix",
+                "hypothesisId": "B",
+                "location": "bench_utils.py:115",
+                "message": "run_solver parsed values",
+                "data": {
+                    "success": success,
+                    "elapsed": elapsed,
+                    "cycles": cycles
+                },
+                "timestamp": __import__("time").time()
+            }) + "\n")
+    except Exception:
+        pass
+    # endregion
     return success, elapsed, cycles, out
 
 
