@@ -7,7 +7,14 @@ import {
   removeNoteFromRelatedCells,
   isPuzzleSolved
 } from './utils/sudokuUtils';
-import { getDailyPuzzle } from './utils/dailyPuzzleService';
+import { 
+  loadGameState, 
+  saveGameState, 
+  clearGameState, 
+  restoreGameState, 
+  isStateValid 
+} from './utils/gameStatePersistence';
+import { loadRandomLibraryPuzzle } from './utils/randomPuzzleLoader';
 
 // Import components
 import LoadingScreen from './components/LoadingScreen';
@@ -28,6 +35,8 @@ function App() {
   const [selectedCell, setSelectedCell] = useState(null);
   const [difficulty, setDifficulty] = useState('medium');
   const [isDaily, setIsDaily] = useState(false);
+  const [puzzleKey, setPuzzleKey] = useState(null);
+  const [initialTimerSeconds, setInitialTimerSeconds] = useState(0);
   
   // UI state
   const [isLoading, setIsLoading] = useState(true);
@@ -44,36 +53,61 @@ function App() {
   
   // Timer ref
   const timerRef = useRef(0);
+  const saveTimeoutRef = useRef(null);
 
-  // Load daily puzzle on first load
+  // Load initial puzzle: try restore first, then random library
   useEffect(() => {
     let mounted = true;
     
     const loadInitialPuzzle = async () => {
       setIsLoading(true);
-      setLoadingMessage('Generating daily puzzle...');
+      setLoadingMessage('Loading puzzle...');
       
       try {
-        // Small delay to show loading screen
         await new Promise(resolve => setTimeout(resolve, 300));
         
         if (!mounted) return;
         
-        // Get the daily puzzle (random size and difficulty)
-        const puzzleData = await getDailyPuzzle();
+        // 1. Try to restore saved state
+        const savedState = loadGameState();
+        if (savedState && isStateValid(savedState)) {
+          const restored = restoreGameState(savedState);
+          if (restored) {
+            setGrid(restored.grid);
+            setSize(restored.size);
+            setOriginalGrid(restored.originalGrid);
+            setNotes(restored.notes);
+            setDifficulty(restored.difficulty);
+            setIsDaily(restored.isDaily);
+            setPuzzleKey(restored.puzzleKey);
+            setInitialTimerSeconds(restored.timerSeconds);
+            setIsPlaying(true);
+            setIsLoading(false);
+            return;
+          }
+        }
+        
+        // 2. No valid saved state: load random library puzzle
+        if (!mounted) return;
+        setLoadingMessage('Loading random puzzle...');
+        
+        const puzzleData = await loadRandomLibraryPuzzle();
         
         if (!mounted) return;
         
-        const puzzleSize = puzzleData.size;
-        const newGrid = stringToGrid(puzzleData.puzzleString, puzzleSize);
-        
-        setGrid(newGrid);
-        setSize(puzzleSize);
-        setOriginalGrid(newGrid.map(row => [...row]));
-        setNotes(createEmptyNotesGrid(puzzleSize));
-        setDifficulty(puzzleData.difficulty);
-        setIsDaily(true);
-        setIsPlaying(true);
+        if (puzzleData) {
+          setGrid(puzzleData.grid);
+          setSize(puzzleData.size);
+          setOriginalGrid(puzzleData.grid.map(row => [...row]));
+          setNotes(createEmptyNotesGrid(puzzleData.size));
+          setDifficulty(puzzleData.difficulty);
+          setIsDaily(false);
+          setPuzzleKey(puzzleData.puzzleKey);
+          setInitialTimerSeconds(0);
+          setIsPlaying(true);
+        } else {
+          setShowPuzzleModal(true);
+        }
         setIsLoading(false);
       } catch (err) {
         console.error('Failed to load initial puzzle:', err);
@@ -92,7 +126,7 @@ function App() {
 
   // Handle puzzle selection from modal
   const handlePuzzleSelect = useCallback((puzzleData) => {
-    const { grid: newGrid, size: newSize, difficulty: newDifficulty, isDaily: newIsDaily } = puzzleData;
+    const { grid: newGrid, size: newSize, difficulty: newDifficulty, isDaily: newIsDaily, puzzleKey: newPuzzleKey } = puzzleData;
     
     setGrid(newGrid);
     setSize(newSize);
@@ -100,6 +134,8 @@ function App() {
     setNotes(createEmptyNotesGrid(newSize));
     setDifficulty(newDifficulty);
     setIsDaily(newIsDaily);
+    setPuzzleKey(newPuzzleKey || `puzzle-${Date.now()}`);
+    setInitialTimerSeconds(0);
     setIsPlaying(true);
     setIsPaused(false);
     setSelectedCell(null);
@@ -132,6 +168,7 @@ function App() {
   useEffect(() => {
     if (isPlaying && originalGrid && !showCompletionModal) {
       if (isPuzzleSolved(grid, size)) {
+        clearGameState(); // Clear saved progress on completion
         setShowCompletionModal(true);
         setIsPlaying(false);
       }
@@ -259,6 +296,54 @@ function App() {
     }
   }, [originalGrid]);
 
+  // Persist game state: debounced on grid/notes change, and on visibility/blur
+  const persistState = useCallback(() => {
+    if (!puzzleKey || !originalGrid || !isPlaying || showCompletionModal) return;
+    saveGameState({
+      puzzleKey,
+      grid,
+      originalGrid,
+      notes,
+      size,
+      difficulty,
+      isDaily,
+      timerSeconds: timerRef.current ?? 0
+    });
+  }, [puzzleKey, grid, originalGrid, notes, size, difficulty, isDaily, isPlaying, showCompletionModal]);
+
+  useEffect(() => {
+    if (!puzzleKey || !isPlaying || showCompletionModal) return;
+    
+    saveTimeoutRef.current = setTimeout(persistState, 500);
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [grid, notes, puzzleKey, isPlaying, showCompletionModal, persistState]);
+
+  // Save periodically when playing (captures timer)
+  useEffect(() => {
+    if (!isPlaying || !puzzleKey) return;
+    const interval = setInterval(persistState, 30000);
+    return () => clearInterval(interval);
+  }, [isPlaying, puzzleKey, persistState]);
+
+  // Save on page hide / before unload
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') persistState();
+    };
+    const handleBeforeUnload = () => persistState();
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [persistState]);
+
   // Show loading screen
   if (isLoading) {
     return <LoadingScreen message={loadingMessage} subMessage="This may take a moment..." />;
@@ -268,6 +353,7 @@ function App() {
     <div className="min-h-screen flex flex-col items-center px-2 sm:px-4 py-3 sm:py-6 w-full max-w-full overflow-x-hidden">
       {/* Game Header */}
       <GameHeader
+        key={puzzleKey || 'no-puzzle'}
         isPlaying={isPlaying}
         isPaused={isPaused}
         difficulty={difficulty}
@@ -278,6 +364,7 @@ function App() {
         timerRef={timerRef}
         isDaily={isDaily}
         algorithmSolveTime={algorithmSolveTime}
+        initialSeconds={initialTimerSeconds}
       />
       
       {/* Main Game Area */}

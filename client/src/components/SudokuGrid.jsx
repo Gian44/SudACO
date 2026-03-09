@@ -193,22 +193,28 @@ const SudokuGrid = ({
     return originalGrid && originalGrid[row] && originalGrid[row][col] !== '';
   }, [originalGrid]);
 
-  // Check if cell is in same row, col, or box as selected
+  // Check if cell is in same row, col, box, or has same number as selected
   const isHighlighted = useCallback((row, col) => {
-    if (!selectedCell || !Array.isArray(selectedCell)) return { row: false, col: false, box: false };
+    if (!selectedCell || !Array.isArray(selectedCell)) return { row: false, col: false, box: false, sameNumber: false };
     
     const [selRow, selCol] = selectedCell;
+    const selectedValue = grid[selRow] && grid[selRow][selCol];
     const boxRowStart = Math.floor(selRow / boxRows) * boxRows;
     const boxColStart = Math.floor(selCol / boxCols) * boxCols;
     const cellBoxRowStart = Math.floor(row / boxRows) * boxRows;
     const cellBoxColStart = Math.floor(col / boxCols) * boxCols;
     
+    const isSameNumber = selectedValue !== '' && selectedValue !== undefined &&
+      (row !== selRow || col !== selCol) &&
+      grid[row] && grid[row][col] === selectedValue;
+    
     return {
       row: row === selRow && col !== selCol,
       col: col === selCol && row !== selRow,
-      box: boxRowStart === cellBoxRowStart && boxColStart === cellBoxColStart && (row !== selRow || col !== selCol)
+      box: boxRowStart === cellBoxRowStart && boxColStart === cellBoxColStart && (row !== selRow || col !== selCol),
+      sameNumber: !!isSameNumber
     };
-  }, [selectedCell, boxRows, boxCols]);
+  }, [selectedCell, boxRows, boxCols, grid]);
 
   // Get cell size based on grid size and viewport width
   const getCellSize = useCallback(() => {
@@ -399,6 +405,7 @@ const SudokuGrid = ({
                     ${hasConflict ? 'conflict' : ''}
                     ${isSelected ? 'selected' : ''}
                     ${highlight.row || highlight.col || highlight.box ? 'highlight-row' : ''}
+                    ${highlight.sameNumber ? 'highlight-same-number' : ''}
                     ${isBoxRight ? 'box-right' : ''}
                     ${isBoxBottom ? 'box-bottom' : ''}
                     ${isAnimating || wasRecentlyChanged ? 'cell-animate' : ''}

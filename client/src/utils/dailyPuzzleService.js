@@ -486,12 +486,13 @@ export async function getDailyPuzzle() {
 }
 
 /**
- * Check if the daily puzzle has been completed today
+ * Check if the daily puzzle has been completed for a given date
+ * @param {string} [dateISO] - Date in YYYY-MM-DD format. Defaults to today (Philippines time).
  * @returns {boolean} True if completed
  */
-export function isDailyCompleted() {
-  const dateISO = getTodayISOString();
-  const key = `daily-completed-${dateISO}`;
+export function isDailyCompleted(dateISO) {
+  const targetDate = dateISO || getTodayISOString();
+  const key = `daily-completed-${targetDate}`;
   return localStorage.getItem(key) === 'true';
 }
 

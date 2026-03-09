@@ -8,6 +8,7 @@ import { getDefaultParameters } from '../utils/wasmBridge';
 import { getGenerationAlgorithmOptions } from '../utils/fileSystemManager';
 import { getUserCreatedPuzzles, saveUserCreatedPuzzle, deleteUserCreatedPuzzle } from '../utils/userCreatedPuzzles';
 import DifficultyBadge from './DifficultyBadge';
+import DailyCalendar from './DailyCalendar';
 
 const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
   const [activeTab, setActiveTab] = useState('daily');
@@ -258,7 +259,8 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
         puzzleString: puzzleData.puzzleString,
         difficulty: puzzleData.difficulty,
         isDaily: true,
-        source: puzzleData.source
+        source: puzzleData.source,
+        puzzleKey: `daily-${getTodayISOString()}`
       });
       
       onClose();
@@ -284,7 +286,8 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
         puzzleString: puzzleData.puzzleString,
         difficulty: puzzleData.difficulty,
         isDaily: true,
-        source: puzzleData.source
+        source: puzzleData.source,
+        puzzleKey: `daily-${dateISO}`
       });
       
       onClose();
@@ -341,7 +344,8 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
         puzzleString,
         difficulty,
         isDaily: false,
-        fileName: puzzleFile
+        fileName: puzzleFile,
+        puzzleKey: `library-${selectedCategory}-${puzzleFile}`
       });
       
       onClose();
@@ -365,7 +369,7 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
       }
       const grid = stringToGrid(puzzleString, size);
       const difficulty = calculateDifficulty(puzzleString, size);
-      saveUserCreatedPuzzle({ size, puzzleString, difficulty });
+      const entry = saveUserCreatedPuzzle({ size, puzzleString, difficulty });
       setMyPuzzles(getUserCreatedPuzzles());
 
       onPuzzleSelect({
@@ -374,7 +378,8 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
         puzzleString,
         difficulty,
         isDaily: false,
-        fileName: file.name
+        fileName: file.name,
+        puzzleKey: `my-${entry.id}`
       });
       
       onClose();
@@ -427,7 +432,7 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
     }
   }, [createSize, createAlgorithm]);
 
-  const selectCreatedPuzzle = useCallback((puzzleData) => {
+  const selectCreatedPuzzle = useCallback((puzzleData, savedId = null) => {
     const grid = stringToGrid(puzzleData.puzzleString, puzzleData.size);
     onPuzzleSelect({
       grid,
@@ -435,7 +440,8 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
       puzzleString: puzzleData.puzzleString,
       difficulty: puzzleData.difficulty,
       isDaily: false,
-      source: 'created'
+      source: 'created',
+      puzzleKey: savedId ? `my-${savedId}` : `created-${Date.now()}`
     });
     setGeneratedPuzzle(null);
     onClose();
@@ -443,7 +449,7 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
 
   const handleCreatePlay = useCallback(() => {
     if (!generatedPuzzle) return;
-    saveUserCreatedPuzzle({
+    const entry = saveUserCreatedPuzzle({
       size: generatedPuzzle.size,
       puzzleString: generatedPuzzle.puzzleString,
       difficulty: generatedPuzzle.difficulty,
@@ -451,7 +457,7 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
       fillPercentage: generatedPuzzle.fillPercentage
     });
     setMyPuzzles(getUserCreatedPuzzles());
-    selectCreatedPuzzle(generatedPuzzle);
+    selectCreatedPuzzle(generatedPuzzle, entry.id);
   }, [generatedPuzzle, selectCreatedPuzzle]);
 
   // My puzzles: play or delete
@@ -463,7 +469,8 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
       puzzleString: puzzle.puzzleString,
       difficulty: puzzle.difficulty,
       isDaily: false,
-      source: 'my-puzzles'
+      source: 'my-puzzles',
+      puzzleKey: `my-${puzzle.id}`
     });
     onClose();
   }, [onPuzzleSelect, onClose]);
@@ -633,57 +640,19 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
               )}
             </button>
             
-            {/* Daily Puzzles Collection */}
+            {/* Daily Puzzles Calendar */}
             <div className="mt-4 sm:mt-6">
               <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-[var(--color-text-primary)]">
-                Daily Puzzles Collection
+                Daily Puzzles Calendar
               </h3>
-              {previousDailyPuzzles.length > 0 ? (
-                <>
-                  <div className="max-h-80 sm:max-h-96 overflow-y-auto space-y-1.5 sm:space-y-2 rounded-lg bg-[var(--color-bg-secondary)] p-2 sm:p-3">
-                    {previousDailyPuzzles.map((puzzle) => (
-                      <button
-                        key={puzzle.date}
-                        onClick={() => handlePreviousDailySelect(puzzle.date)}
-                        disabled={isLoading}
-                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors flex items-center justify-between group gap-2"
-                      >
-                        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center flex-shrink-0">
-                            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-primary)]" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm sm:text-base text-[var(--color-text-primary)] truncate">
-                              {puzzle.dateDisplay}
-                            </div>
-                            <div className="text-xs sm:text-sm text-[var(--color-text-muted)] flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                              <span>{puzzle.size}×{puzzle.size}</span>
-                              <span>•</span>
-                              <span className="capitalize">{puzzle.difficulty}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-xs text-[var(--color-text-muted)] mt-2 px-1">
-                    {previousDailyPuzzles.filter(p => p.source === 'server').length > 0 
-                      ? `Showing ${previousDailyPuzzles.length} daily puzzles from server and local cache.`
-                      : 'Showing puzzles from your browser cache. Puzzles can be generated on-demand for any date.'}
-                  </p>
-                </>
-              ) : (
-                <div className="p-4 sm:p-6 rounded-lg bg-[var(--color-bg-secondary)] text-center">
-                  <p className="text-sm sm:text-base text-[var(--color-text-muted)]">
-                    No previous daily puzzles found. Play today's puzzle to get started!
-                  </p>
-                </div>
-              )}
+              <DailyCalendar
+                puzzles={previousDailyPuzzles}
+                onSelect={handlePreviousDailySelect}
+                isLoading={isLoading}
+              />
+              <p className="text-xs text-[var(--color-text-muted)] mt-2 px-1">
+                Click any past or current day to play that day&apos;s puzzle.
+              </p>
             </div>
           </div>
         )}

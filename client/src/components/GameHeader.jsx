@@ -12,9 +12,10 @@ const GameHeader = ({
   onResume,
   timerRef,
   isDaily = false,
-  algorithmSolveTime = null
+  algorithmSolveTime = null,
+  initialSeconds = 0
 }) => {
-  const [seconds, setSeconds] = useState(0);
+  const [seconds, setSeconds] = useState(initialSeconds);
   
   // Timer logic
   useEffect(() => {

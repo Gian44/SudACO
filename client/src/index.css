@@ -309,7 +309,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .sudoku-cell.highlight-row,
 .sudoku-cell.highlight-col,
-.sudoku-cell.highlight-box {
+.sudoku-cell.highlight-box,
+.sudoku-cell.highlight-same-number {
   background: rgba(139, 92, 246, 0.1);
 }
 
