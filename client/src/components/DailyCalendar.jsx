@@ -19,6 +19,15 @@ const DailyCalendar = ({ puzzles = [], onSelect, isLoading = false }) => {
   const todayISO = getTodayISOString();
   const [todayYear, todayMonth, todayDay] = todayISO.split('-').map(Number);
 
+  // Dates for which we actually have a stored/generated daily puzzle
+  const puzzleDates = useMemo(() => {
+    const set = new Set();
+    (puzzles || []).forEach(p => {
+      if (p && p.date) set.add(p.date);
+    });
+    return set;
+  }, [puzzles]);
+
   const { weeks, monthName, year } = useMemo(() => {
     const year = viewDate.getFullYear();
     const month = viewDate.getMonth();
@@ -136,8 +145,9 @@ const DailyCalendar = ({ puzzles = [], onSelect, isLoading = false }) => {
             const future = isFuture(day);
             const today = isToday(day);
             const inRange = day && !future;
-            const completed = day && inRange && isDailyCompleted(dateISO);
-            const clickable = inRange && !isLoading;
+            const hasPuzzle = inRange && dateISO && puzzleDates.has(dateISO);
+            const completed = hasPuzzle && isDailyCompleted(dateISO);
+            const clickable = hasPuzzle && !isLoading;
 
             return (
               <button
@@ -150,13 +160,14 @@ const DailyCalendar = ({ puzzles = [], onSelect, isLoading = false }) => {
                   text-sm font-medium transition-colors
                   ${!day ? 'bg-[var(--color-bg-secondary)]' : ''}
                   ${day && future ? 'bg-[var(--color-bg-secondary)] text-[var(--color-text-muted)] opacity-50 cursor-not-allowed' : ''}
-                  ${day && inRange ? 'bg-[var(--color-bg-elevated)] hover:bg-[var(--color-primary)]/20 cursor-pointer' : ''}
+                  ${day && inRange && !hasPuzzle ? 'bg-[var(--color-bg-elevated)] text-[var(--color-text-muted)]' : ''}
+                  ${day && inRange && hasPuzzle ? 'bg-[var(--color-bg-elevated)] hover:bg-[var(--color-primary)]/20 cursor-pointer' : ''}
                   ${today ? 'ring-1 ring-[var(--color-primary)] ring-inset' : ''}
-                  ${!clickable && inRange ? 'cursor-wait' : ''}
+                  ${!clickable && hasPuzzle ? 'cursor-wait' : ''}
                 `}
               >
                 {day || ''}
-                {day && inRange && (
+                {day && hasPuzzle && (
                   <span className="mt-0.5">
                     {completed ? (
                       <svg className="w-3.5 h-3.5 text-[var(--color-success)] mx-auto" fill="currentColor" viewBox="0 0 20 20">
