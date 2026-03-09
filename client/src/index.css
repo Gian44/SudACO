@@ -309,14 +309,22 @@ h1, h2, h3, h4, h5, h6 {
 
 .sudoku-cell.highlight-row,
 .sudoku-cell.highlight-col,
-.sudoku-cell.highlight-box,
+.sudoku-cell.highlight-box {
+  background: rgba(139, 92, 246, 0.08);
+}
+
+/* Same-number cells: brighter + glow */
 .sudoku-cell.highlight-same-number {
-  background: rgba(139, 92, 246, 0.1);
+  background: rgba(139, 92, 246, 0.25);
+  color: var(--color-primary-light);
+  box-shadow: 0 0 0 1px var(--color-primary),
+              0 0 12px rgba(139, 92, 246, 0.6);
 }
 
 .sudoku-cell.selected {
-  background: rgba(139, 92, 246, 0.25);
-  box-shadow: inset 0 0 0 2px var(--color-primary);
+  background: rgba(139, 92, 246, 0.45);
+  box-shadow: 0 0 0 2px var(--color-accent),
+              0 0 18px rgba(236, 72, 153, 0.7);
 }
 
 /* Notes/Pencil marks */
