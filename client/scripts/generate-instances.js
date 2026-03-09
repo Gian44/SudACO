@@ -94,22 +94,27 @@ async function solveSudoku(puzzleString, algorithm, params) {
   const module = await initWasm();
   
   try {
+    const numACS = params.numACS ?? 2;
+    const numColonies = params.numColonies ?? (numACS + 1);
+    const xi = params.xi ?? 0.1;
+
     const resultPtr = module.ccall(
       'solve_sudoku',
       'number',
-      ['string', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number'],
+      ['string', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number'],
       [
         puzzleString,
         algorithm,
-        params.nAnts || 4,
-        params.numColonies || 3,
-        params.numACS || 2,
-        params.q0 || 0.9,
-        params.rho || 0.9,
-        params.evap || 0.005,
-        params.convThresh || 0.8,
-        params.entropyThresh || 4.0,
-        params.timeout || 10.0
+        params.nAnts ?? 4,
+        numColonies,
+        numACS,
+        params.q0 ?? 0.9,
+        params.rho ?? 0.9,
+        params.evap ?? 0.005,
+        params.convThresh ?? 0.8,
+        params.entropyThresh ?? 1.47,
+        params.timeout ?? 10.0,
+        xi
       ]
     );
     

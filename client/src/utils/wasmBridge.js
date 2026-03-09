@@ -49,26 +49,28 @@ export async function solveSudoku(puzzleString, algorithm, params) {
   const module = await initWasm();
   
   try {
-    const numACS = params.numACS ?? 3;
+    const numACS = params.numACS ?? 2;
     const numColonies = params.numColonies ?? (numACS + 1);
+    const xi = params.xi ?? 0.1;
 
-    // Call the WASM function
+    // Call the WASM function (signature matches wasm_interface.cpp solve_sudoku)
     const resultPtr = module.ccall(
       'solve_sudoku',
       'number', // returns pointer
-      ['string', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number'],
+      ['string', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number'],
       [
         puzzleString,
         algorithm,
-        params.nAnts || 4,
+        params.nAnts ?? 4,
         numColonies,
         numACS,
-        params.q0 || 0.9,
-        params.rho || 0.9,
-        params.evap || 0.005,
-        params.convThresh || 0.8,
-        params.entropyThresh || 4.0,
-        params.timeout || 10.0
+        params.q0 ?? 0.9,
+        params.rho ?? 0.9,
+        params.evap ?? 0.005,
+        params.convThresh ?? 0.8,
+        params.entropyThresh ?? 1.47,
+        params.timeout ?? 10.0,
+        xi
       ]
     );
     
@@ -110,21 +112,22 @@ export function getAlgorithmNames() {
  */
 export function getDefaultParameters(size = 9) {
   const timeout = getDefaultTimeout(size);
-  const defaultNumACS = 3;
+  const defaultNumACS = 2; // match solvermain
   const defaultNumColonies = defaultNumACS + 1; // n ACS + 1 MMAS
 
   return {
-    0: { // ACS
+    0: { // ACS (match solvermain defaults)
       nAnts: 10,
       q0: 0.9,
       rho: 0.9,
       evap: 0.005,
+      xi: 0.1,
       timeout
     },
     1: { // Backtracking
       timeout
     },
-    2: { // DCM-ACO
+    2: { // DCM-ACO (match solvermain: numACS 2, entropyThresh 1.47)
       nAnts: 4,
       numColonies: defaultNumColonies,
       numACS: defaultNumACS,
@@ -132,7 +135,8 @@ export function getDefaultParameters(size = 9) {
       rho: 0.9,
       evap: 0.005,
       convThresh: 0.8,
-      entropyThresh: 4.0,
+      entropyThresh: 1.47,
+      xi: 0.1,
       timeout
     }
   };

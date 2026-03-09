@@ -9,6 +9,7 @@
 #include "backtracksearch.h"
 #include "sudokuantsystem.h"
 #include "multicolonyantsystem.h"
+#include "constraintpropagation.h"
 
 // Helper function to escape JSON strings
 std::string escapeJson(const std::string& str) {
@@ -36,26 +37,30 @@ char* solve_sudoku(
     float evap,
     float convThresh,
     float entropyThresh,
-    float timeout
+    float timeout,
+    float xi
 ) {
     try {
         // Create board from puzzle string
         Board board{std::string(puzzleString)};
         
-        // Create solver based on algorithm type
+        // Reset CP timing before solve (matches solvermain)
+        ResetCPTiming();
+        
+        // Create solver based on algorithm type (match solvermain constructors)
         SudokuSolver* solver = nullptr;
         
         if (algorithm == 0) {
-            // Ant Colony System (ACS) - single colony
-            solver = new SudokuAntSystem(nAnts, q0, rho, 1.0f/board.CellCount(), evap);
+            // Ant Colony System (ACS) - single colony, with xi
+            solver = new SudokuAntSystem(nAnts, q0, rho, 1.0f/board.CellCount(), evap, xi);
         } else if (algorithm == 1) {
             // Backtracking search
             solver = new BacktrackSearch();
         } else if (algorithm == 2) {
-            // Multi-Colony DCM-ACO
+            // Multi-Colony DCM-ACO, with xi
             solver = new MultiColonyAntSystem(
                 nAnts, q0, rho, 1.0f/board.CellCount(), evap,
-                numColonies, numACS, convThresh, entropyThresh
+                numColonies, numACS, convThresh, entropyThresh, xi
             );
         } else {
             // Default to backtracking
@@ -68,6 +73,12 @@ char* solve_sudoku(
         float solTime = solver->GetSolutionTime();
         int iterations = solver->GetIterationCount();
         
+        // CP timing (matches solvermain: add initial CP to total time)
+        float initialCPTime = GetInitialCPTime();
+        float antCPTime = GetAntCPTime();
+        int cpCallCount = GetCPCallCount();
+        solTime += initialCPTime;
+        
         // Get solution as string (without formatting, just the grid)
         std::string solutionStr = solution.AsString(false, false);
         
@@ -79,16 +90,30 @@ char* solve_sudoku(
             }
         }
         
-        // Build JSON response
+        // Build JSON response (include timing fields to match solvermain output)
         std::ostringstream jsonStream;
-        // Use maximum precision for time to get exact values
         jsonStream << std::setprecision(std::numeric_limits<float>::max_digits10);
         jsonStream << "{";
         jsonStream << "\"success\":" << (success ? "true" : "false") << ",";
         jsonStream << "\"solution\":\"" << escapeJson(cleanSolution) << "\",";
         jsonStream << "\"time\":" << solTime << ",";
         jsonStream << "\"cellsFilled\":" << solution.FixedCellCount() << ",";
-        jsonStream << "\"iterations\":" << iterations;
+        jsonStream << "\"iterations\":" << iterations << ",";
+        jsonStream << "\"cp_initial\":" << initialCPTime << ",";
+        jsonStream << "\"cp_ant\":" << antCPTime << ",";
+        jsonStream << "\"cp_calls\":" << cpCallCount << ",";
+        jsonStream << "\"cp_total\":" << (initialCPTime + antCPTime);
+        
+        // DCM-ACO timing (algorithm 2 only, matches solvermain)
+        if (algorithm == 2) {
+            MultiColonyAntSystem* mcas = dynamic_cast<MultiColonyAntSystem*>(solver);
+            if (mcas) {
+                jsonStream << ",\"dcm_aco\":" << mcas->GetDCMAcoTime();
+                jsonStream << ",\"cooperative_game\":" << mcas->GetCooperativeGameTime();
+                jsonStream << ",\"pheromone_fusion\":" << mcas->GetPheromoneFusionTime();
+                jsonStream << ",\"public_path\":" << mcas->GetPublicPathRecommendationTime();
+            }
+        }
         jsonStream << "}";
         
         std::string result = jsonStream.str();

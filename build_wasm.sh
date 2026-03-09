@@ -23,6 +23,7 @@ emcc \
   src/colonyant.cpp \
   src/multicolonyantsystem.cpp \
   src/backtracksearch.cpp \
+  src/constraintpropagation.cpp \
   src/wasm_interface.cpp \
   -o client/public/sudoku_solver.js \
   -I src \
