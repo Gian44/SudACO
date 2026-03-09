@@ -7,18 +7,6 @@
 #include <cmath>
 #include <chrono>
 
-#ifdef __EMSCRIPTEN__
-static std::string CleanBoardString(const Board& board)
-{
-    std::string raw = board.AsString(false, false);
-    std::string clean;
-    for (char ch : raw)
-        if (ch != '\n' && ch != ' ' && ch != '\t' && ch != '|' && ch != '-' && ch != '+')
-            clean += ch;
-    return clean;
-}
-#endif
-
 void MultiColonyAntSystem::InitPheromone(Colony &c, int nNumCells, int valuesPerCell)
 {
     c.numCells = nNumCells;
@@ -182,14 +170,6 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
                 }
             }
         }
-
-#ifdef __EMSCRIPTEN__
-        if (progressCallback_ && progressInterval_ > 0 && (iter % progressInterval_ == 0))
-        {
-            std::string boardStr = CleanBoardString(globalBestSol);
-            progressCallback_(iter, globalBestVal, puzzle.CellCount(), boardStr);
-        }
-#endif
 
         // partition indices by type
         std::vector<int> acsIdx; acsIdx.reserve(numColonies);

@@ -23,7 +23,6 @@ emcc \
   src/colonyant.cpp \
   src/multicolonyantsystem.cpp \
   src/backtracksearch.cpp \
-  src/constraintpropagation.cpp \
   src/wasm_interface.cpp \
   -o client/public/sudoku_solver.js \
   -I src \
@@ -35,8 +34,6 @@ emcc \
   -s MODULARIZE=1 \
   -s EXPORT_ES6=1 \
   -s EXPORT_NAME='createSudokuModule' \
-  -s ASYNCIFY=1 \
-  -s ASYNCIFY_STACK_SIZE=65536 \
   -std=c++11 \
   -O3
 

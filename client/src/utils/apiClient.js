@@ -57,35 +57,13 @@ export async function loadPuzzlesFromServer() {
   }
 }
 
-const SERVER_TIMEOUT_MS = 4000;
-
-/**
- * Fetch with timeout to avoid hanging
- * @param {string} url
- * @param {RequestInit} options
- * @param {number} timeoutMs
- * @returns {Promise<Response>}
- */
-async function fetchWithTimeout(url, options = {}, timeoutMs = SERVER_TIMEOUT_MS) {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const response = await fetch(url, { ...options, signal: controller.signal });
-    clearTimeout(id);
-    return response;
-  } catch (e) {
-    clearTimeout(id);
-    throw e;
-  }
-}
-
 /**
  * Check if the API server is available
  * @returns {Promise<boolean>} True if server is available
  */
 export async function checkServerHealth() {
   try {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/health`);
+    const response = await fetch(`${API_BASE_URL}/health`);
     return response.ok;
   } catch (error) {
     return false;

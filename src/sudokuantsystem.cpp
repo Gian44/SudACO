@@ -1,18 +1,6 @@
 #include "sudokuantsystem.h"
 #include <iostream>
 
-#ifdef __EMSCRIPTEN__
-static std::string CleanBoardString(const Board& board)
-{
-	std::string raw = board.AsString(false, false);
-	std::string clean;
-	for (char ch : raw)
-		if (ch != '\n' && ch != ' ' && ch != '\t' && ch != '|' && ch != '-' && ch != '+')
-			clean += ch;
-	return clean;
-}
-#endif
-
 void SudokuAntSystem::InitPheromone(int nNumCells, int valuesPerCell )
 {
 	numCells = nNumCells;
@@ -105,13 +93,6 @@ bool SudokuAntSystem::Solve(const Board& puzzle, float maxTime )
 		}
 		UpdatePheromone();
 		bestPher *= (1.0f - bestEvap);
-#ifdef __EMSCRIPTEN__
-		if (progressCallback_ && progressInterval_ > 0 && (iter % progressInterval_ == 0))
-		{
-			std::string boardStr = CleanBoardString(bestSol);
-			progressCallback_(iter, curBestAnt, numCells, boardStr);
-		}
-#endif
 		++iter;
 		// check timer every 100 iterations
 		if ((iter % 100) == 0)

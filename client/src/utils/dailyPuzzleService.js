@@ -307,14 +307,6 @@ async function saveDailyPuzzleToServer(puzzleData) {
   }
 }
 
-const FETCH_TIMEOUT_MS = 5000;
-
-function fetchWithTimeout(url, options = {}, timeoutMs = FETCH_TIMEOUT_MS) {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeoutMs);
-  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(id));
-}
-
 /**
  * Try to load daily puzzle from server/library for a specific date
  * @param {string} dateISO - Date in ISO format (YYYY-MM-DD)
@@ -322,9 +314,9 @@ function fetchWithTimeout(url, options = {}, timeoutMs = FETCH_TIMEOUT_MS) {
  */
 async function loadDailyPuzzleFromServer(dateISO) {
   try {
-    // First try to get from KV via API (with timeout)
+    // First try to get from KV via API
     try {
-      const response = await fetchWithTimeout(`/api/puzzles/daily?date=${dateISO}`);
+      const response = await fetch(`/api/puzzles/daily?date=${dateISO}`);
       if (response.ok) {
         const puzzleData = await response.json();
         return {
@@ -342,14 +334,14 @@ async function loadDailyPuzzleFromServer(dateISO) {
       console.warn('KV API not available, trying static files:', apiErr);
     }
     
-    // Fallback: Try to fetch from static files (with timeout)
+    // Fallback: Try to fetch from static files
     const date = new Date(dateISO);
     const { size, difficulty } = getRandomSizeAndDifficulty(date);
     const dateStr = getDateString(date);
     const filename = generateDailyFilename(dateStr, size, difficulty);
     
     const puzzlePath = `/instances/daily-puzzles/${filename}`;
-    const response = await fetchWithTimeout(puzzlePath);
+    const response = await fetch(puzzlePath);
     
     if (response.ok) {
       const fileContent = await response.text();
@@ -555,35 +547,6 @@ export function getDifficultyInfo(difficulty) {
     hard: { label: 'Hard', className: 'difficulty-hard', stars: 3 }
   };
   return info[difficulty] || info.medium;
-}
-
-/** First 9x9 puzzle in index for fast fallback when daily is slow or unavailable */
-const FALLBACK_PUZZLE_PATH = '/instances/9x9/2020_00153.txt';
-
-/**
- * Load a quick fallback puzzle (9x9) so the app never hangs on loading.
- * Used when daily puzzle fetch/generation times out or fails.
- * @returns {Promise<Object>} Puzzle data for fallback puzzle
- */
-export async function getFallbackPuzzle() {
-  try {
-    const response = await fetchWithTimeout(FALLBACK_PUZZLE_PATH, {}, 5000);
-    if (!response.ok) return null;
-    const fileContent = await response.text();
-    const { size, puzzleString } = parseInstanceFile(fileContent);
-    const difficulty = calculateDifficulty(puzzleString, size);
-    return {
-      puzzleString,
-      size,
-      difficulty,
-      filename: '2020_00153.txt',
-      source: 'fallback',
-      isDaily: false
-    };
-  } catch (e) {
-    console.warn('Fallback puzzle load failed:', e);
-    return null;
-  }
 }
 
 /**

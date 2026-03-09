@@ -7,9 +7,7 @@ import {
   removeNoteFromRelatedCells,
   isPuzzleSolved
 } from './utils/sudokuUtils';
-import { getDailyPuzzle, getFallbackPuzzle } from './utils/dailyPuzzleService';
-
-const DAILY_PUZZLE_TIMEOUT_MS = 8000;
+import { getDailyPuzzle } from './utils/dailyPuzzleService';
 
 // Import components
 import LoadingScreen from './components/LoadingScreen';
@@ -47,7 +45,7 @@ function App() {
   // Timer ref
   const timerRef = useRef(0);
 
-  // Load daily puzzle on first load (with timeout so we never hang)
+  // Load daily puzzle on first load
   useEffect(() => {
     let mounted = true;
     
@@ -61,13 +59,8 @@ function App() {
         
         if (!mounted) return;
         
-        // Race: get daily puzzle with a timeout so we never hang on server or WASM generation
-        const puzzleData = await Promise.race([
-          getDailyPuzzle(),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('timeout')), DAILY_PUZZLE_TIMEOUT_MS)
-          )
-        ]);
+        // Get the daily puzzle (random size and difficulty)
+        const puzzleData = await getDailyPuzzle();
         
         if (!mounted) return;
         
@@ -79,31 +72,14 @@ function App() {
         setOriginalGrid(newGrid.map(row => [...row]));
         setNotes(createEmptyNotesGrid(puzzleSize));
         setDifficulty(puzzleData.difficulty);
-        setIsDaily(Boolean(puzzleData.isDaily));
+        setIsDaily(true);
         setIsPlaying(true);
         setIsLoading(false);
       } catch (err) {
-        console.warn('Daily puzzle load failed or timed out, using fallback:', err?.message || err);
+        console.error('Failed to load initial puzzle:', err);
         if (!mounted) return;
-        // Try a quick fallback puzzle so the user can play immediately
-        try {
-          const fallback = await getFallbackPuzzle();
-          if (mounted && fallback) {
-            const newGrid = stringToGrid(fallback.puzzleString, fallback.size);
-            setGrid(newGrid);
-            setSize(fallback.size);
-            setOriginalGrid(newGrid.map(row => [...row]));
-            setNotes(createEmptyNotesGrid(fallback.size));
-            setDifficulty(fallback.difficulty);
-            setIsDaily(false);
-            setIsPlaying(true);
-          } else if (mounted) {
-            setShowPuzzleModal(true);
-          }
-        } catch (fallbackErr) {
-          if (mounted) setShowPuzzleModal(true);
-        }
         setIsLoading(false);
+        setShowPuzzleModal(true);
       }
     };
     
@@ -242,12 +218,6 @@ function App() {
     }, 300);
   }, []);
 
-  // Handle algorithm progress update (batch grid update from solver iterations)
-  const handleProgressUpdate = useCallback((boardString) => {
-    const progressGrid = stringToGrid(boardString, size);
-    setGrid(progressGrid);
-  }, [size]);
-
   // Handle algorithm solution complete
   const handleSolutionComplete = useCallback((result) => {
     setShowAlgorithmModal(false);
@@ -378,7 +348,6 @@ function App() {
         onSolutionStart={handleSolutionStart}
         onSolutionStep={handleSolutionStep}
         onSolutionComplete={handleSolutionComplete}
-        onProgressUpdate={handleProgressUpdate}
       />
       
       <CompletionModal
