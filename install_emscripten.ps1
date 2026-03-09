@@ -33,7 +33,7 @@ if (Test-Path $emsdkPath) {
 Write-Host "Creating Emscripten SDK directory..." -ForegroundColor Blue
 New-Item -ItemType Directory -Path $emsdkPath -Force | Out-Null
 
-# Clone emsdk repository (clone into empty dir so contents land in $emsdkPath)
+# Clone emsdk repository
 Write-Host "Cloning emsdk repository..." -ForegroundColor Blue
 Set-Location $emsdkPath
 git clone https://github.com/emscripten-core/emsdk.git .
@@ -45,8 +45,8 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "✓ Successfully cloned emsdk repository" -ForegroundColor Green
 
-# Install latest Emscripten SDK (single quotes avoid PowerShell interpreting $(this) as a command)
-Write-Host 'Installing latest Emscripten SDK (this may take several minutes)...' -ForegroundColor Blue
+# Install latest Emscripten SDK
+Write-Host "Installing latest Emscripten SDK (this may take several minutes)..." -ForegroundColor Blue
 .\emsdk.bat install latest
 
 if ($LASTEXITCODE -ne 0) {
@@ -61,20 +61,15 @@ Write-Host "Activating Emscripten SDK..." -ForegroundColor Blue
 .\emsdk.bat activate latest
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Activation failed (often missing Node). Installing dependencies and retrying..." -ForegroundColor Yellow
-    .\emsdk.bat install latest
-    .\emsdk.bat activate latest
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "✗ Failed to activate Emscripten SDK. From C:\emsdk run: .\emsdk.bat install latest" -ForegroundColor Red
-        exit 1
-    }
+    Write-Host "✗ Failed to activate Emscripten SDK" -ForegroundColor Red
+    exit 1
 }
 
 Write-Host "✓ Successfully activated Emscripten SDK" -ForegroundColor Green
 
-# Note: .bat only sets env in its own process; use "cmd /c build_wasm.bat" from project dir to build
-Write-Host "Verifying emsdk_env.bat is present..." -ForegroundColor Blue
-if (-not (Test-Path ".\emsdk_env.bat")) { Write-Host "✗ emsdk_env.bat not found" -ForegroundColor Red; exit 1 }
+# Set up environment variables for current session
+Write-Host "Setting up environment variables..." -ForegroundColor Blue
+.\emsdk_env.bat
 
 Write-Host "✓ Emscripten SDK installation completed!" -ForegroundColor Green
 Write-Host ""

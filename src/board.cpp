@@ -222,7 +222,7 @@ int Board::GetNumUnits(void) const
 // SECTION 4: OUTPUT & VISUALIZATION
 // ============================================================================
 
-string Board::AsString(bool useNumbers, bool showUnfixed) const
+string Board::AsString(bool useNumbers, bool showUnfixed )
 {
 	if ( showUnfixed )
 		useNumbers = false;
