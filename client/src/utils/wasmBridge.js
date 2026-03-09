@@ -43,47 +43,62 @@ export async function initWasm() {
  * @param {string} puzzleString - The puzzle as a string (dots for empty cells)
  * @param {number} algorithm - Algorithm type: 0=ACS, 1=Backtrack, 2=DCM-ACO
  * @param {Object} params - Algorithm parameters
+ * @param {Function} [onProgress] - Optional callback: (iteration, bestCellsFilled, totalCells, boardString) => void
  * @returns {Promise<Object>} Result object with success, solution, time, cellsFilled
  */
-export async function solveSudoku(puzzleString, algorithm, params) {
+export async function solveSudoku(puzzleString, algorithm, params, onProgress) {
   const module = await initWasm();
-  
+
+  // Register progress callback on the module (called from C++ via EM_ASM)
+  module._progressCallback = onProgress || null;
+
   try {
     const numACS = params.numACS ?? 3;
     const numColonies = params.numColonies ?? (numACS + 1);
+    const progressInterval = params.progressInterval ?? 5;
 
     // Call the WASM function
-    const resultPtr = module.ccall(
+    // async: true is required for Asyncify (emscripten_sleep) when progress callback is active
+    const ccallArgs = [
+      puzzleString,
+      algorithm,
+      params.nAnts || 4,
+      numColonies,
+      numACS,
+      params.q0 || 0.9,
+      params.rho || 0.9,
+      params.evap || 0.005,
+      params.convThresh || 0.8,
+      params.entropyThresh || 4.0,
+      params.timeout || 10.0,
+      onProgress ? progressInterval : 0
+    ];
+    const ccallOpts = onProgress ? { async: true } : {};
+    const resultPtrOrPromise = module.ccall(
       'solve_sudoku',
-      'number', // returns pointer
-      ['string', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number'],
-      [
-        puzzleString,
-        algorithm,
-        params.nAnts || 4,
-        numColonies,
-        numACS,
-        params.q0 || 0.9,
-        params.rho || 0.9,
-        params.evap || 0.005,
-        params.convThresh || 0.8,
-        params.entropyThresh || 4.0,
-        params.timeout || 10.0
-      ]
+      'number',
+      ['string', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number'],
+      ccallArgs,
+      ccallOpts
     );
-    
+    const resultPtr = onProgress ? await resultPtrOrPromise : resultPtrOrPromise;
+
     // Convert pointer to string
     const resultString = module.UTF8ToString(resultPtr);
-    
+
     // Free the memory allocated by WASM
     module._free(resultPtr);
-    
+
+    // Clean up callback
+    module._progressCallback = null;
+
     // Parse JSON result
     const result = JSON.parse(resultString);
-    
+
     return result;
-    
+
   } catch (error) {
+    module._progressCallback = null;
     console.error('Error calling WASM solver:', error);
     return {
       success: false,

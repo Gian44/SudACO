@@ -36,15 +36,16 @@ char* solve_sudoku(
     float evap,
     float convThresh,
     float entropyThresh,
-    float timeout
+    float timeout,
+    int progressInterval
 ) {
     try {
         // Create board from puzzle string
         Board board{std::string(puzzleString)};
-        
+
         // Create solver based on algorithm type
         SudokuSolver* solver = nullptr;
-        
+
         if (algorithm == 0) {
             // Ant Colony System (ACS) - single colony
             solver = new SudokuAntSystem(nAnts, q0, rho, 1.0f/board.CellCount(), evap);
@@ -61,16 +62,29 @@ char* solve_sudoku(
             // Default to backtracking
             solver = new BacktrackSearch();
         }
-        
+
+        // Set up progress reporting (yields to browser via emscripten_sleep)
+        if (progressInterval > 0) {
+            solver->SetProgressInterval(progressInterval);
+            solver->SetProgressCallback([](int iter, int bestVal, int totalCells, const std::string& boardStr) {
+                EM_ASM({
+                    if (Module._progressCallback) {
+                        Module._progressCallback($0, $1, $2, UTF8ToString($3));
+                    }
+                }, iter, bestVal, totalCells, boardStr.c_str());
+                emscripten_sleep(0);
+            });
+        }
+
         // Solve the puzzle
         bool success = solver->Solve(board, timeout);
         Board solution = solver->GetSolution();
         float solTime = solver->GetSolutionTime();
         int iterations = solver->GetIterationCount();
-        
+
         // Get solution as string (without formatting, just the grid)
         std::string solutionStr = solution.AsString(false, false);
-        
+
         // Clean up newlines and extra spaces from the solution string
         std::string cleanSolution;
         for (char c : solutionStr) {
@@ -78,7 +92,7 @@ char* solve_sudoku(
                 cleanSolution += c;
             }
         }
-        
+
         // Build JSON response
         std::ostringstream jsonStream;
         // Use maximum precision for time to get exact values
@@ -90,20 +104,20 @@ char* solve_sudoku(
         jsonStream << "\"cellsFilled\":" << solution.FixedCellCount() << ",";
         jsonStream << "\"iterations\":" << iterations;
         jsonStream << "}";
-        
+
         std::string result = jsonStream.str();
-        
+
         // Clean up solver
         delete solver;
-        
+
         // Allocate memory for return string (caller must free)
         char* output = (char*)malloc(result.length() + 1);
         strcpy(output, result.c_str());
         return output;
-        
+
     } catch (const std::exception& e) {
         // Return error as JSON
-        std::string errorMsg = std::string("{\"success\":false,\"error\":\"") + 
+        std::string errorMsg = std::string("{\"success\":false,\"error\":\"") +
                               escapeJson(e.what()) + "\"}";
         char* output = (char*)malloc(errorMsg.length() + 1);
         strcpy(output, errorMsg.c_str());
@@ -118,4 +132,3 @@ char* solve_sudoku(
 }
 
 } // extern "C"
-

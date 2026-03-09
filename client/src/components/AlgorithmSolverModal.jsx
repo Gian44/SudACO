@@ -2,25 +2,26 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { getAlgorithmNames, getDefaultParameters, solveSudoku } from '../utils/wasmBridge';
 import { gridToString, stringToGrid } from '../utils/sudokuUtils';
 
-const ANIMATION_SPEEDS = {
-  fast: 20,
-  medium: 50,
-  slow: 100
-};
+const PROGRESS_INTERVALS = [
+  { label: '1', value: 1 },
+  { label: '5', value: 5 },
+  { label: '10', value: 10 }
+];
 
-const AlgorithmSolverModal = ({ 
-  isOpen, 
-  onClose, 
+const AlgorithmSolverModal = ({
+  isOpen,
+  onClose,
   puzzle,
   size,
   onSolutionStart,
   onSolutionStep,
-  onSolutionComplete 
+  onSolutionComplete,
+  onProgressUpdate
 }) => {
   const [selectedAlgorithm, setSelectedAlgorithm] = useState(2); // Default to DCM-ACO
   const [parameters, setParameters] = useState(() => getDefaultParameters(size)[2]);
   const [isParametersExpanded, setIsParametersExpanded] = useState(false);
-  const [animationSpeed, setAnimationSpeed] = useState('medium');
+  const [progressInterval, setProgressInterval] = useState(5);
   const [isSolving, setIsSolving] = useState(false);
   const [solveResult, setSolveResult] = useState(null);
   const [error, setError] = useState('');
@@ -29,22 +30,16 @@ const AlgorithmSolverModal = ({
 
   const algorithms = [
     {
-      id: 1,
-      name: algorithmNames[1],
-      description: 'Classic backtracking with constraint propagation',
-      icon: '🔄'
-    },
-    {
       id: 0,
       name: algorithmNames[0],
       description: 'Single-colony Ant Colony Optimization (ACO)',
-      icon: '🐜'
+      icon: '\uD83D\uDC1C'
     },
     {
       id: 2,
       name: algorithmNames[2],
       description: 'Multi-Colony DCM-ACO (recommended)',
-      icon: '🐜🐜'
+      icon: '\uD83D\uDC1C\uD83D\uDC1C'
     }
   ];
 
@@ -67,37 +62,8 @@ const AlgorithmSolverModal = ({
   // Reset parameters
   const handleResetParams = useCallback(() => {
     setParameters(getDefaultParameters(size)[selectedAlgorithm]);
+    setProgressInterval(5);
   }, [size, selectedAlgorithm]);
-
-  // Animate solution cell by cell
-  const animateSolution = useCallback(async (solution, originalPuzzle) => {
-    const solutionGrid = stringToGrid(solution, size);
-    const originalGrid = stringToGrid(originalPuzzle, size);
-    const delay = ANIMATION_SPEEDS[animationSpeed];
-    
-    // Find cells that need to be filled (empty in original)
-    const cellsToFill = [];
-    for (let row = 0; row < size; row++) {
-      for (let col = 0; col < size; col++) {
-        if (originalGrid[row][col] === '' && solutionGrid[row][col] !== '') {
-          cellsToFill.push({ row, col, value: solutionGrid[row][col] });
-        }
-      }
-    }
-    
-    // Shuffle cells randomly for more authentic animation
-    for (let i = cellsToFill.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [cellsToFill[i], cellsToFill[j]] = [cellsToFill[j], cellsToFill[i]];
-    }
-    
-    // Animate each cell
-    for (let i = 0; i < cellsToFill.length; i++) {
-      const { row, col, value } = cellsToFill[i];
-      onSolutionStep(row, col, value);
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
-  }, [size, animationSpeed, onSolutionStep]);
 
   // Handle solve
   const handleSolve = useCallback(async () => {
@@ -106,19 +72,34 @@ const AlgorithmSolverModal = ({
     setSolveResult(null);
     onSolutionStart();
 
-    // Small delay to ensure UI updates and loading animation is visible
+    // Close modal immediately so the grid is visible during solving
+    onClose();
+
+    // Small delay to ensure UI updates
     await new Promise(resolve => setTimeout(resolve, 50));
 
     try {
       const puzzleString = gridToString(puzzle, size);
-      const result = await solveSudoku(puzzleString, selectedAlgorithm, parameters);
-      
+
+      // Progress callback: update grid with current best solution in batch
+      const handleProgress = (iteration, bestCellsFilled, totalCells, boardString) => {
+        if (onProgressUpdate) {
+          onProgressUpdate(boardString);
+        }
+      };
+
+      // Merge progressInterval into params for the WASM call
+      const solveParams = { ...parameters, progressInterval };
+
+      const result = await solveSudoku(puzzleString, selectedAlgorithm, solveParams, handleProgress);
+
       setSolveResult(result);
-      
+
       if (result.success && result.solution) {
-        // Close modal before showing animation
-        onClose();
-        await animateSolution(result.solution, puzzleString);
+        // Final solution — update grid one last time with the complete solution
+        if (onProgressUpdate) {
+          onProgressUpdate(result.solution);
+        }
         onSolutionComplete(result);
       } else {
         setError(result.error || 'Failed to solve puzzle');
@@ -130,7 +111,7 @@ const AlgorithmSolverModal = ({
     } finally {
       setIsSolving(false);
     }
-  }, [puzzle, size, selectedAlgorithm, parameters, onSolutionStart, animateSolution, onSolutionComplete, onClose]);
+  }, [puzzle, size, selectedAlgorithm, parameters, progressInterval, onSolutionStart, onSolutionComplete, onClose, onProgressUpdate]);
 
   // Render parameter input
   const renderParameter = useCallback((key, label, min = 0, max = 100, step = 0.1) => {
@@ -187,8 +168,8 @@ const AlgorithmSolverModal = ({
               disabled={isSolving}
               className={`
                 w-full p-4 rounded-xl text-left transition-all
-                ${selectedAlgorithm === algo.id 
-                  ? 'bg-[var(--color-primary)]/20 border-2 border-[var(--color-primary)]' 
+                ${selectedAlgorithm === algo.id
+                  ? 'bg-[var(--color-primary)]/20 border-2 border-[var(--color-primary)]'
                   : 'bg-[var(--color-bg-elevated)] border-2 border-[var(--color-border)] hover:border-[var(--color-primary)]/50'
                 }
                 disabled:opacity-50 disabled:cursor-not-allowed
@@ -210,29 +191,31 @@ const AlgorithmSolverModal = ({
           ))}
         </div>
 
-        {/* Animation Speed */}
-        <div className="mb-6">
-          <label className="text-sm font-medium block mb-2">Animation Speed</label>
-          <div className="flex gap-2">
-            {Object.keys(ANIMATION_SPEEDS).map(speed => (
-              <button
-                key={speed}
-                onClick={() => setAnimationSpeed(speed)}
-                disabled={isSolving}
-                className={`
-                  flex-1 py-2 px-4 rounded-lg font-medium transition-all capitalize
-                  ${animationSpeed === speed 
-                    ? 'bg-[var(--color-secondary)] text-white' 
-                    : 'bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[var(--color-secondary)]'
-                  }
-                  disabled:opacity-50
-                `}
-              >
-                {speed}
-              </button>
-            ))}
+        {/* Update Frequency (for ACO algorithms) */}
+        {(selectedAlgorithm === 0 || selectedAlgorithm === 2) && (
+          <div className="mb-6">
+            <label className="text-sm font-medium block mb-2">Update Frequency (iterations)</label>
+            <div className="flex gap-2">
+              {PROGRESS_INTERVALS.map(({ label, value }) => (
+                <button
+                  key={value}
+                  onClick={() => setProgressInterval(value)}
+                  disabled={isSolving}
+                  className={`
+                    flex-1 py-2 px-4 rounded-lg font-medium transition-all
+                    ${progressInterval === value
+                      ? 'bg-[var(--color-secondary)] text-white'
+                      : 'bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[var(--color-secondary)]'
+                    }
+                    disabled:opacity-50
+                  `}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Advanced Parameters (Collapsible) */}
         <div className="mb-6">
@@ -242,30 +225,30 @@ const AlgorithmSolverModal = ({
             className="flex items-center justify-between w-full p-3 rounded-lg bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[var(--color-primary)]/50 transition-colors disabled:opacity-50"
           >
             <span className="font-medium">Advanced Parameters</span>
-            <svg 
-              className={`w-5 h-5 transition-transform ${isParametersExpanded ? 'rotate-180' : ''}`} 
-              fill="none" 
-              stroke="currentColor" 
+            <svg
+              className={`w-5 h-5 transition-transform ${isParametersExpanded ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
-          
+
           {isParametersExpanded && (
             <div className="mt-3 p-4 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]">
               <div className="grid grid-cols-2 gap-4">
                 {renderParameter('timeout', 'Timeout (sec)', 1, 300, 1)}
-                
+
                 {(selectedAlgorithm === 0 || selectedAlgorithm === 2) && (
                   <>
                     {renderParameter('nAnts', 'Number of Ants', 1, 50, 1)}
                     {renderParameter('q0', 'Exploitation (q0)', 0, 1, 0.01)}
-                    {renderParameter('rho', 'Evaporation (ρ)', 0, 1, 0.01)}
+                    {renderParameter('rho', 'Evaporation (\u03C1)', 0, 1, 0.01)}
                     {renderParameter('evap', 'Best Sol. Evap.', 0, 0.1, 0.001)}
                   </>
                 )}
-                
+
                 {selectedAlgorithm === 2 && (
                   <>
                     {renderParameter('numACS', 'ACS Colonies', 1, 5, 1)}
@@ -274,7 +257,7 @@ const AlgorithmSolverModal = ({
                   </>
                 )}
               </div>
-              
+
               <button
                 onClick={handleResetParams}
                 disabled={isSolving}
@@ -290,41 +273,6 @@ const AlgorithmSolverModal = ({
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-[var(--color-error)]/20 border border-[var(--color-error)]/50 text-[var(--color-error)]">
             {error}
-          </div>
-        )}
-
-        {/* Loading animation with ants */}
-        {isSolving && (
-          <div className="mb-4 p-4 rounded-lg bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/50">
-            <div className="flex flex-col items-center justify-center gap-3 min-h-[120px] py-2">
-              <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
-                {/* Ants revolving in a circle */}
-                <div className="ant-orbit-container">
-                  {[...Array(6)].map((_, i) => {
-                    const angle = (i * 60) * (Math.PI / 180);
-                    const radius = 32;
-                    const x = Math.cos(angle) * radius;
-                    const y = Math.sin(angle) * radius;
-                    return (
-                      <div
-                        key={i}
-                        className="absolute"
-                        style={{
-                          left: `calc(50% + ${x}px)`,
-                          top: `calc(50% + ${y}px)`,
-                          transform: `translate(-50%, -50%) rotate(${-i * 60}deg)`,
-                        }}
-                      >
-                        <span className="text-2xl block">🐜</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="text-[var(--color-primary)] font-medium text-sm">
-                Solving puzzle...
-              </div>
-            </div>
           </div>
         )}
 
