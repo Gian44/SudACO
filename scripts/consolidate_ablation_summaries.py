@@ -232,14 +232,16 @@ def write_consolidated_csv(groups: Dict[Tuple[str, str, str, str, str], Dict[str
     "cycles_std_mean",
   ]
 
-  # Sort by param_name, numeric param_value where possible, then puzzle_size
+  # Sort by param_name, puzzle_size, then numeric param_value for easy comparison
+  SIZE_ORDER = {"9x9": 0, "16x16": 1, "25x25": 2}
+
   def sort_key(item):
     (param_name, param_value, puzzle_size, alg, alg_name), _ = item
     try:
       pv_num = float(param_value)
     except Exception:
       pv_num = math.nan
-    return (param_name, pv_num, param_value, puzzle_size, alg, alg_name)
+    return (param_name, SIZE_ORDER.get(puzzle_size, 99), puzzle_size, pv_num, param_value, alg, alg_name)
 
   with open(OUT_CSV, "w", newline="") as f:
     writer = csv.writer(f)
