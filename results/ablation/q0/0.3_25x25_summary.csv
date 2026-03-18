@@ -1,0 +1,4 @@
+param_value,puzzle_size,instance,alg,alg_name,success_%,time_mean,time_std,cycles_mean,cycles_std
+0.3,25x25,inst25x25_40_10.txt,2,CP-DCM-ACO,99.0,24.101763,26.581495,1031.343,1138.971
+0.3,25x25,inst25x25_40_30.txt,2,CP-DCM-ACO,38.0,26.883821,27.455162,1133.105,1158.125
+0.3,25x25,inst25x25_40_50.txt,2,CP-DCM-ACO,22.0,34.801337,27.021178,1463.636,1169.349
