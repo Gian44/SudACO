@@ -11,7 +11,6 @@ import math
 import os
 import re
 import subprocess
-import json
 from pathlib import Path
 from statistics import mean, pstdev
 
@@ -39,25 +38,6 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
         out = subprocess.check_output(args, stderr=subprocess.STDOUT, universal_newlines=True)
     except subprocess.CalledProcessError as e:
         out = e.output
-
-    # region agent log
-    try:
-        with open("debug-860227.log", "a", encoding="utf-8") as _f:
-            _f.write(json.dumps({
-                "sessionId": "860227",
-                "runId": "pre-fix",
-                "hypothesisId": "A",
-                "location": "bench_utils.py:38",
-                "message": "run_solver raw output",
-                "data": {
-                    "args": args,
-                    "out_head": out[:500]
-                },
-                "timestamp": __import__("time").time()
-            }) + "\n")
-    except Exception:
-        pass
-    # endregion
 
     # Parse output. Verbose format:
     #   - "Number of cycles (multi): N" then either "failed in time X" or "Solution:" + grid + "solved in X", then cp_* lines.
@@ -122,54 +102,6 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
                     success = True
                     break
 
-    # region agent log
-    # Log the specific time line (\"solved in\" / \"failed in time\") and the
-    # numeric value parsed directly from that line, to compare with `elapsed`.
-    try:
-        solved_in_pat = re.compile(r"solved in\\s+(" + float_pat.pattern + r")", re.IGNORECASE)
-        failed_in_pat = re.compile(r"failed in time\\s+(" + float_pat.pattern + r")", re.IGNORECASE)
-        source_line = None
-        source_time = math.nan
-        source_kind = None
-        for ln in all_lines:
-            m = solved_in_pat.search(ln)
-            if m:
-                try:
-                    source_time = float(m.group(1))
-                    source_line = ln
-                    source_kind = "solved"
-                    break
-                except (ValueError, IndexError):
-                    pass
-            m = failed_in_pat.search(ln)
-            if m:
-                try:
-                    source_time = float(m.group(1))
-                    source_line = ln
-                    source_kind = "failed"
-                    break
-                except (ValueError, IndexError):
-                    pass
-        with open("debug-860227.log", "a", encoding="utf-8") as _f:
-            _f.write(json.dumps({
-                "sessionId": "860227",
-                "runId": "pre-fix",
-                "hypothesisId": "C",
-                "location": "bench_utils.py:106",
-                "message": "run_solver time source comparison",
-                "data": {
-                    "source_kind": source_kind,
-                    "source_line": source_line,
-                    "source_time": source_time,
-                    "elapsed": elapsed,
-                    "success": success
-                },
-                "timestamp": __import__("time").time()
-            }) + "\\n")
-    except Exception:
-        pass
-    # endregion
-
     # Extract number of cycles (single- or multi-colony)
     cyc_pat = re.compile(r"Number of cycles(?: \(multi\))?:\s*(\d+)")
     for ln in all_lines:
@@ -179,25 +111,6 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
                 cycles = int(m.group(1))
             except ValueError:
                 pass
-    # region agent log
-    try:
-        with open("debug-860227.log", "a", encoding="utf-8") as _f:
-            _f.write(json.dumps({
-                "sessionId": "860227",
-                "runId": "pre-fix",
-                "hypothesisId": "B",
-                "location": "bench_utils.py:115",
-                "message": "run_solver parsed values",
-                "data": {
-                    "success": success,
-                    "elapsed": elapsed,
-                    "cycles": cycles
-                },
-                "timestamp": __import__("time").time()
-            }) + "\n")
-    except Exception:
-        pass
-    # endregion
     return success, elapsed, cycles, out
 
 

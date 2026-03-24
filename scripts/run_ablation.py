@@ -238,6 +238,62 @@ def read_completed_from_summary(summary_file):
     return completed
 
 
+def size_name_from_summary_filename(filename: str):
+    """Parse e.g. ``6_25x25_summary.csv`` or ``0.99_25x25_summary.csv`` → ``25x25``."""
+    if not filename.endswith('_summary.csv'):
+        return None
+    base = filename[: -len('_summary.csv')]
+    for sz in ('25x25', '16x16', '9x9'):
+        if base.endswith('_' + sz):
+            return sz
+    return None
+
+
+def sort_summary_csv_if_complete(summary_file: Path, canonical_instance_names: list) -> bool:
+    """If the summary has one row per canonical instance, rewrite rows in instance-folder order.
+
+    Parallel workers append rows in completion order; this restores the same ordering as
+    ``sorted(instances/*.txt)`` for thesis tables and comparison with ``numACS`` single-worker runs.
+    """
+    if not summary_file.exists() or not canonical_instance_names:
+        return False
+    canonical_set = set(canonical_instance_names)
+    try:
+        with open(summary_file, 'r+', newline='') as f:
+            lock_file(f)
+            try:
+                reader = csv.DictReader(f)
+                fieldnames = reader.fieldnames
+                if not fieldnames:
+                    return False
+                rows = list(reader)
+                if len(rows) != len(canonical_instance_names):
+                    return False
+                by_inst = {}
+                for row in rows:
+                    inst = (row.get('instance') or '').strip()
+                    if inst:
+                        by_inst[inst] = row
+                if set(by_inst.keys()) != canonical_set:
+                    return False
+                f.seek(0)
+                f.truncate()
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer.writeheader()
+                for name in canonical_instance_names:
+                    writer.writerow(by_inst[name])
+                f.flush()
+                try:
+                    os.fsync(f.fileno())
+                except OSError:
+                    pass
+            finally:
+                unlock_file(f)
+        return True
+    except Exception:
+        return False
+
+
 def format_param_value(param_name, value):
     """Produce a clean string for file names and display."""
     if isinstance(value, float):
@@ -289,7 +345,8 @@ def build_solver_args(param_name, param_value):
 # ============================================================
 
 def run_ablation_test(binary, param_name, param_value, size_name, size_cfg,
-                      reps, outdir, vlog, timeout_override=None):
+                      reps, outdir, vlog, timeout_override=None,
+                      worker_id: int = 0, num_workers: int = 1):
     """Run all instances for one (param, value, size) combo. Returns summary rows."""
 
     val_str = format_param_value(param_name, param_value)
@@ -309,22 +366,59 @@ def run_ablation_test(binary, param_name, param_value, size_name, size_cfg,
         extra_args, ent_thresh = build_solver_args(param_name, param_value)
         timeout = timeout_override if timeout_override else size_cfg['timeout']
 
-    instances = scan_instances(size_cfg['dir'])
-    if not instances:
+    instances_all = scan_instances(size_cfg['dir'])
+    if not instances_all:
         vlog(f'  No instances found in {size_cfg["dir"]}')
         return []
 
+    all_instance_names = {fp.name for fp in instances_all}
+
+    # Partition instances deterministically across workers so each worker handles
+    # a disjoint subset of instances (prevents duplicate summary rows).
+    if num_workers < 1:
+        num_workers = 1
+    worker_id = int(worker_id) % int(num_workers)
+    instances = [
+        fp for i, fp in enumerate(instances_all)
+        if (i % num_workers) == worker_id
+    ]
+
+    if not instances:
+        vlog(f'  Worker {worker_id}/{num_workers} has no assigned instances')
+        return []
+
     completed = read_completed_from_summary(summary_file)
+
+    # If the summary is already complete for *all* instances, we never need
+    # progress anymore. Also delete any existing progress file so it does not
+    # get recreated by this job.
+    completed_overall = len(completed.intersection(all_instance_names))
+    if completed_overall == len(instances_all):
+        sort_summary_csv_if_complete(summary_file, [fp.name for fp in instances_all])
+        if progress_file.exists() and worker_id == 0:
+            try:
+                progress_file.unlink()
+            except OSError:
+                pass
+        vlog(f'  [{tag}] Already complete ({completed_overall}/{len(instances_all)}). '
+             f'Deleted progress (if any) and skipping.')
+        return []
+
     progress = read_progress(progress_file)
 
     ensure_csv_header(summary_file, SUMMARY_HEADERS)
+    # Only create progress.csv when we actually need to resume/continue work.
     ensure_csv_header(progress_file, PROGRESS_HEADERS)
+
+    subset_names = {fp.name for fp in instances}
+    completed_in_subset = completed.intersection(subset_names)
 
     total = len(instances)
     summary_rows = []
 
-    if completed:
-        vlog(f'  [{tag}] Resuming: {len(completed)}/{total} instances already done')
+    if completed_in_subset:
+        vlog(f'  [{tag}] Worker {worker_id}/{num_workers} Resuming: '
+             f'{len(completed_in_subset)}/{total} instances already done')
 
     for idx, fp in enumerate(instances, 1):
         if fp.name in completed:
@@ -393,6 +487,8 @@ def run_ablation_test(binary, param_name, param_value, size_name, size_cfg,
         if append_csv_row(summary_file, row):
             completed.add(fp.name)
             summary_rows.append(row)
+            if len(read_completed_from_summary(summary_file)) == len(instances_all):
+                sort_summary_csv_if_complete(summary_file, [p.name for p in instances_all])
             vlog(f'    => success%={round(succ_pct,2)} '
                  f'time_mean={round(tm,6) if not math.isnan(tm) else "N/A"} '
                  f'cycles_mean={round(cm,3) if not math.isnan(cm) else "N/A"}')
@@ -401,11 +497,9 @@ def run_ablation_test(binary, param_name, param_value, size_name, size_cfg,
 
         progress[fp.name] = rep_map
 
-    if len(completed) == total and progress_file.exists():
-        try:
-            progress_file.unlink()
-        except OSError:
-            pass
+    # When a subset completes we do not delete progress because other workers
+    # may still need it. Progress gets deleted when the whole summary is done
+    # (handled at the top, so it prevents the file from being recreated).
 
     return summary_rows
 
@@ -440,6 +534,11 @@ def consolidate_to_excel(outdir, excel_path):
 
         all_rows = []
         for csv_file in sorted(param_dir.glob('*_summary.csv')):
+            sz = size_name_from_summary_filename(csv_file.name)
+            if sz:
+                canon = [fp.name for fp in scan_instances(Path('instances') / sz)]
+                if canon:
+                    sort_summary_csv_if_complete(csv_file, canon)
             try:
                 with open(csv_file, 'r', newline='') as f:
                     reader = csv.DictReader(f)
@@ -534,6 +633,8 @@ def main():
     ap.add_argument('--param', type=str, default=None,
                     choices=list(PARAM_TESTS.keys()),
                     help='Run only this parameter (default: all)')
+    ap.add_argument('--param-value', type=str, default=None,
+                    help='Run only this parameter value for --param (default: all values)')
     ap.add_argument('--size', type=str, default=None,
                     choices=['9', '16', '25'],
                     help='Run only this puzzle size: 9, 16, or 25 (default: all)')
@@ -547,6 +648,12 @@ def main():
                     help='Print progress (default: True)')
     ap.add_argument('--quiet', action='store_true',
                     help='Suppress progress output')
+    ap.add_argument('--no-consolidate', action='store_true',
+                    help='Skip Excel consolidation at the end (useful for parallel runs)')
+    ap.add_argument('--worker-id', type=int, default=0,
+                    help='Worker index for partitioning instance set (0-based)')
+    ap.add_argument('--num-workers', type=int, default=1,
+                    help='Number of workers partitioning one (param,value,size) job')
     args = ap.parse_args()
 
     outdir = Path(args.outdir)
@@ -581,14 +688,50 @@ def main():
     else:
         params_to_test = PARAM_TESTS
 
+    filtered_single_param_value = None
+    if args.param_value is not None:
+        if not args.param:
+            raise SystemExit('--param-value requires --param')
+
+        # Parse and match provided value against the configured candidate list.
+        candidates = PARAM_TESTS[args.param]['values']
+        parsed = None
+        try:
+            raw_num = float(args.param_value)
+            for c in candidates:
+                try:
+                    if abs(float(c) - raw_num) <= 1e-12:
+                        parsed = c
+                        break
+                except Exception:
+                    continue
+        except Exception:
+            parsed = None
+
+        if parsed is None:
+            for c in candidates:
+                if str(c) == args.param_value:
+                    parsed = c
+                    break
+
+        if parsed is None:
+            raise SystemExit(f'Invalid --param-value={args.param_value!r} for --param={args.param!r}')
+        filtered_single_param_value = parsed
+
     total_configs = 0
     for pname, pcfg in params_to_test.items():
         if pname == 'timeout':
             for sname in sizes_to_test:
                 vals = pcfg.get('values_per_size', {}).get(sname, [])
-                total_configs += len(vals)
+                if filtered_single_param_value is not None and pname == args.param:
+                    total_configs += 1 if any(abs(float(v) - float(filtered_single_param_value)) <= 1e-12 for v in vals) else 0
+                else:
+                    total_configs += len(vals)
         else:
-            total_configs += len(pcfg['values']) * len(sizes_to_test)
+            if filtered_single_param_value is not None and pname == args.param:
+                total_configs += 1 * len(sizes_to_test)
+            else:
+                total_configs += len(pcfg['values']) * len(sizes_to_test)
 
     vlog(f'{"="*70}')
     vlog(f'Ablation Study for {ALG_NAME}')
@@ -598,6 +741,9 @@ def main():
     vlog(f'Total configurations: {total_configs}')
     vlog(f'Output directory: {outdir}')
     vlog(f'{"="*70}')
+
+    worker_id = int(args.worker_id)
+    num_workers = int(args.num_workers)
 
     config_idx = 0
     for size_name, size_cfg in sizes_to_test.items():
@@ -610,29 +756,45 @@ def main():
 
             if param_name == 'timeout':
                 timeout_vals = pcfg.get('values_per_size', {}).get(size_name, [])
-                for tval in timeout_vals:
+                if filtered_single_param_value is not None and param_name == args.param:
+                    timeout_vals_iter = [
+                        tval for tval in timeout_vals
+                        if abs(float(tval) - float(filtered_single_param_value)) <= 1e-12
+                    ]
+                else:
+                    timeout_vals_iter = timeout_vals
+
+                for tval in timeout_vals_iter:
                     config_idx += 1
                     vlog(f'\n[Config {config_idx}/{total_configs}] '
                          f'timeout={tval}s on {size_name}')
                     run_ablation_test(
                         binary, 'timeout', tval, size_name, size_cfg,
-                        args.reps, outdir, vlog)
+                        args.reps, outdir, vlog,
+                        worker_id=worker_id, num_workers=num_workers)
             else:
-                for value in pcfg['values']:
+                if filtered_single_param_value is not None and param_name == args.param:
+                    values_iter = [filtered_single_param_value]
+                else:
+                    values_iter = pcfg['values']
+
+                for value in values_iter:
                     config_idx += 1
                     val_str = format_param_value(param_name, value)
                     vlog(f'\n[Config {config_idx}/{total_configs}] '
                          f'{param_name}={val_str} on {size_name}')
                     run_ablation_test(
                         binary, param_name, value, size_name, size_cfg,
-                        args.reps, outdir, vlog)
+                        args.reps, outdir, vlog,
+                        worker_id=worker_id, num_workers=num_workers)
 
-    vlog(f'\n{"="*70}')
-    vlog('All ablation tests completed. Consolidating to Excel...')
-    vlog(f'{"="*70}')
-    consolidate_to_excel(outdir, excel_path)
+    if not args.no_consolidate:
+        vlog(f'\n{"="*70}')
+        vlog('All ablation tests completed. Consolidating to Excel...')
+        vlog(f'{"="*70}')
+        consolidate_to_excel(outdir, excel_path)
 
-    vlog(f'\nDone! Results saved to: {excel_path}')
+        vlog(f'\nDone! Results saved to: {excel_path}')
 
 
 if __name__ == '__main__':
