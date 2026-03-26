@@ -154,8 +154,17 @@ def main():
         param_name, param_value, size_arg, worker_id = task
         val_str = str(param_value)
         safe_val_str = val_str.replace(os.sep, "_").replace(" ", "")
-        log_path = log_dir / f"{param_name}_{safe_val_str}_size{size_arg}_w{worker_id}.log"
-        fh = open(log_path, "a", encoding="utf-8")
+        # One log per (param, value, size); all workers append here (do not use --quiet
+        # or vlog output is suppressed and the file stays empty).
+        log_path = log_dir / f"{param_name}_{safe_val_str}_size{size_arg}.log"
+        fh = open(log_path, "a", encoding="utf-8", newline="\n")
+        fh.write(
+            f"\n{'='*60}\n"
+            f"worker start: {param_name}={param_value} size={size_arg} "
+            f"worker_id={worker_id}/{workers_per_value}\n"
+            f"{'='*60}\n"
+        )
+        fh.flush()
 
         # Unbuffered child stdout so log files update in real time (otherwise Python
         # fully buffers when stdout is not a TTY and logs look empty for hours).
@@ -173,7 +182,6 @@ def main():
             str(args.reps),
             "--outdir",
             str(outdir),
-            "--quiet",
             "--no-consolidate",
             "--worker-id",
             str(worker_id),
