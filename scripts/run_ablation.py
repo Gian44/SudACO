@@ -340,6 +340,28 @@ def build_solver_args(param_name, param_value):
     return args, round(ent_thresh, 6)
 
 
+def delete_ablation_progress_if_summary_done(
+    progress_file: Path,
+    summary_file: Path,
+    all_instance_names: set,
+    vlog,
+    tag: str,
+):
+    """Delete progress CSV when the summary lists every expected instance."""
+    if not summary_file.exists() or not all_instance_names:
+        return
+    completed = read_completed_from_summary(summary_file)
+    if not all_instance_names <= completed:
+        return
+    if not progress_file.exists():
+        return
+    try:
+        progress_file.unlink()
+        vlog(f'  [{tag}] Summary complete; removed {progress_file.name}')
+    except OSError as e:
+        vlog(f'  [{tag}] WARNING: could not remove progress file: {e}')
+
+
 # ============================================================
 # Core test runner
 # ============================================================
@@ -395,13 +417,10 @@ def run_ablation_test(binary, param_name, param_value, size_name, size_cfg,
     completed_overall = len(completed.intersection(all_instance_names))
     if completed_overall == len(instances_all):
         sort_summary_csv_if_complete(summary_file, [fp.name for fp in instances_all])
-        if progress_file.exists() and worker_id == 0:
-            try:
-                progress_file.unlink()
-            except OSError:
-                pass
+        delete_ablation_progress_if_summary_done(
+            progress_file, summary_file, all_instance_names, vlog, tag)
         vlog(f'  [{tag}] Already complete ({completed_overall}/{len(instances_all)}). '
-             f'Deleted progress (if any) and skipping.')
+             f'Skipping.')
         return []
 
     progress = read_progress(progress_file)
@@ -487,8 +506,11 @@ def run_ablation_test(binary, param_name, param_value, size_name, size_cfg,
         if append_csv_row(summary_file, row):
             completed.add(fp.name)
             summary_rows.append(row)
-            if len(read_completed_from_summary(summary_file)) == len(instances_all):
+            completed_now = read_completed_from_summary(summary_file)
+            if all_instance_names <= completed_now:
                 sort_summary_csv_if_complete(summary_file, [p.name for p in instances_all])
+                delete_ablation_progress_if_summary_done(
+                    progress_file, summary_file, all_instance_names, vlog, tag)
             vlog(f'    => success%={round(succ_pct,2)} '
                  f'time_mean={round(tm,6) if not math.isnan(tm) else "N/A"} '
                  f'cycles_mean={round(cm,3) if not math.isnan(cm) else "N/A"}')
@@ -497,9 +519,9 @@ def run_ablation_test(binary, param_name, param_value, size_name, size_cfg,
 
         progress[fp.name] = rep_map
 
-    # When a subset completes we do not delete progress because other workers
-    # may still need it. Progress gets deleted when the whole summary is done
-    # (handled at the top, so it prevents the file from being recreated).
+    # Other worker may have finished last; delete progress if summary is now full.
+    delete_ablation_progress_if_summary_done(
+        progress_file, summary_file, all_instance_names, vlog, tag)
 
     return summary_rows
 
@@ -539,6 +561,15 @@ def consolidate_to_excel(outdir, excel_path):
                 canon = [fp.name for fp in scan_instances(Path('instances') / sz)]
                 if canon:
                     sort_summary_csv_if_complete(csv_file, canon)
+                    canon_set = set(canon)
+                    if canon_set <= read_completed_from_summary(csv_file):
+                        prog_path = csv_file.parent / csv_file.name.replace(
+                            '_summary.csv', '_progress.csv')
+                        if prog_path.exists():
+                            try:
+                                prog_path.unlink()
+                            except OSError:
+                                pass
             try:
                 with open(csv_file, 'r', newline='') as f:
                     reader = csv.DictReader(f)
