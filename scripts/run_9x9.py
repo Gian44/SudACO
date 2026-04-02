@@ -14,6 +14,13 @@ automatically resumes from where it stopped if the output file already exists.
 Example usage:
   python scripts/run_9x9.py --alg 0 --verbose          # Run CP-ACS
   python scripts/run_9x9.py --alg 2 --verbose          # Run CP-DCM-ACO
+  python scripts/run_9x9.py --alg 2 --best-config --verbose   # CP-DCM-ACO + ablation best_config.json → best_config_results_9x9_*.csv
+
+Dynamic pool (recommended): fixed worker count, shared queue of unfinished (instance, rep):
+  python scripts/run_9x9.py --alg 2 --best-config --pool-workers 2 --verbose
+
+Static rep sharding (legacy): disjoint rep subsets across processes:
+  python scripts/run_9x9.py --alg 2 --best-config --num-workers 4 --worker-id 0 --verbose
 
 Multiple runs (separate result files for run 1, 2, ... 5):
   python scripts/run_9x9.py --alg 0 --run 1 --verbose   # results_9x9_CP-ACS.csv (default)
@@ -38,6 +45,8 @@ except ImportError:
         HAS_FCNTL = True
     except ImportError:
         HAS_FCNTL = False
+
+import bench_best_config
 
 from bench_utils import (
     default_binary,
@@ -167,6 +176,72 @@ def _append_csv_row(path: Path, row, vlog):
                 return False
 
 
+def _summary_row_from_rep_map(rep_map, args, alg_name):
+    """Compute summary row from a full rep_map (for multi-worker when we re-read progress)."""
+    successes = 0
+    times = []
+    cycles_solved = []
+    for _rep, (succ, t, cyc) in sorted(rep_map.items()):
+        if succ:
+            successes += 1
+            times.append(t)
+            if not math.isnan(cyc):
+                cycles_solved.append(cyc)
+    succ_pct = (successes / float(args.reps)) * 100.0
+    time_mean = safe_mean(times)
+    time_std = safe_std(times)
+    cycles_mean = safe_mean(cycles_solved)
+    cycles_std = safe_std(cycles_solved)
+    return [
+        None,
+        args.alg,
+        alg_name,
+        round(succ_pct, 2),
+        round(time_mean, 6) if not math.isnan(time_mean) else '',
+        round(time_std, 6) if not math.isnan(time_std) else '',
+        round(cycles_mean, 3) if not math.isnan(cycles_mean) else '',
+        round(cycles_std, 3) if not math.isnan(cycles_std) else '',
+    ]
+
+
+def _try_write_summary_if_complete(outfile: Path, progress_file: Path, instance_name, args, alg_name, vlog):
+    """If this instance has args.reps in progress file, write summary row once (thread-safe)."""
+    progress = _read_progress(progress_file)
+    rep_map = progress.get(instance_name, {})
+    if len(rep_map) < args.reps:
+        return False
+    completed = _read_completed_instances_from_summary(outfile)
+    if instance_name in completed:
+        return True
+    row = _summary_row_from_rep_map(rep_map, args, alg_name)
+    row[0] = instance_name
+    max_retries = 10
+    retry_delay = 0.1
+    for attempt in range(max_retries):
+        try:
+            with open(outfile, 'r+', newline='') as f:
+                lock_file(f)
+                completed_now = set()
+                reader = csv.DictReader(f)
+                for r in reader:
+                    completed_now.add(r.get('instance', ''))
+                if instance_name in completed_now:
+                    unlock_file(f)
+                    return True
+                f.seek(0, 2)
+                writer = csv.writer(f)
+                writer.writerow(row)
+                unlock_file(f)
+            return True
+        except (IOError, OSError) as e:
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay * (attempt + 1))
+            else:
+                vlog(f"  WARNING: Failed to write summary after {max_retries} attempts: {e}")
+                return False
+    return False
+
+
 def main():
     ap = argparse.ArgumentParser(
         description='Run CP-ACS or CP-DCM-ACO tests on 9x9 Sudoku instances with 100 repetitions per instance. Automatically resumes from existing results.'
@@ -179,6 +254,13 @@ def main():
     ap.add_argument('--outdir', default='results/9x9', help='Output directory (default: results/9x9)')
     ap.add_argument('--reps', type=int, default=100, help='Repetitions per instance (default: 100)')
     ap.add_argument('--run', type=int, default=1, help='Run index (1=default; 2+ use results_*_runN.csv for separate runs)')
+    ap.add_argument('--worker-id', type=int, default=0,
+                    help='Worker index 0..num-workers-1 for parallel runs (default: 0)')
+    ap.add_argument('--num-workers', type=int, default=1,
+                    help='Total workers sharing the same output files (default: 1)')
+    ap.add_argument('--pool-workers', type=int, default=None,
+                    help='Use this many child processes with a shared job queue (unfinished reps). '
+                         'Mutually exclusive with --num-workers > 1 or non-zero --worker-id.')
     ap.add_argument('--verbose', action='store_true', help='Print progress while running instances')
     # Factor overrides (optional)
     ap.add_argument('--nAnts', type=int, help='Override nAnts (int)')
@@ -189,9 +271,26 @@ def main():
     ap.add_argument('--convThresh', type=float, help='Override convThresh (float)')
     ap.add_argument('--entropyThreshold', type=float, help='Override entropyThreshold (float)')
     ap.add_argument('--xi', type=float, help='Override xi / local pheromone update rate (float)')
+    ap.add_argument(
+        '--best-config', nargs='?', const='results/ablation/best_config.json', default=None,
+        help='Load hyperparameters from ablation best_config.json (default path if flag has no value). '
+             'Requires --alg 2. Output: best_config_results_9x9_*.csv under --outdir')
     args = ap.parse_args()
     if args.run < 1:
         ap.error('--run must be >= 1')
+    if args.best_config is not None and args.alg != 2:
+        ap.error('--best-config requires --alg 2 (CP-DCM-ACO)')
+    if args.worker_id < 0 or args.worker_id >= args.num_workers:
+        ap.error('--worker-id must be in 0..num-workers-1')
+    if args.num_workers < 1:
+        ap.error('--num-workers must be >= 1')
+    if args.pool_workers is not None:
+        if args.pool_workers < 1:
+            ap.error('--pool-workers must be >= 1')
+        if args.num_workers != 1:
+            ap.error('Do not combine --pool-workers with --num-workers > 1')
+        if args.worker_id != 0:
+            ap.error('Do not combine --pool-workers with non-zero --worker-id')
 
     binary = args.binary
     instances_dir = Path(args.instances)
@@ -207,8 +306,9 @@ def main():
 
     # Output filenames: run 1 = legacy names; run 2+ = results_*_runN.csv
     run_suffix = f'_run{args.run}' if args.run > 1 else ''
-    outfile = outdir / f'results_9x9_{alg_name}{run_suffix}.csv'
-    progress_file = outdir / f'progress_9x9_{alg_name}{run_suffix}.csv'
+    file_prefix = 'best_config_' if args.best_config is not None else ''
+    outfile = outdir / f'{file_prefix}results_9x9_{alg_name}{run_suffix}.csv'
+    progress_file = outdir / f'{file_prefix}progress_9x9_{alg_name}{run_suffix}.csv'
     vlog(f"Output file: {outfile}")
     vlog(f"Progress file: {progress_file} (temporary; deleted when all instances complete)")
 
@@ -222,24 +322,33 @@ def main():
 
     # Build extra factor args
     factor_args = []
-    if args.nAnts is not None:
-        factor_args += ['--nAnts', str(int(args.nAnts))]
-    if args.q0 is not None:
-        factor_args += ['--q0', str(float(args.q0))]
-    if args.rho is not None:
-        factor_args += ['--rho', str(float(args.rho))]
-    if args.evap is not None:
-        factor_args += ['--evap', str(float(args.evap))]
-    if args.numACS is not None:
-        num_acs = int(args.numACS)
-        factor_args += ['--numACS', str(num_acs)]
-        factor_args += ['--numColonies', str(num_acs + 1)]
-    if args.convThresh is not None:
-        factor_args += ['--convThresh', str(float(args.convThresh))]
-    if args.entropyThreshold is not None:
-        factor_args += ['--entropyThreshold', str(float(args.entropyThreshold))]
-    if args.xi is not None:
-        factor_args += ['--xi', str(float(args.xi))]
+    if args.best_config is not None:
+        cfg = bench_best_config.load_merged_config(args.best_config)
+        bench_best_config.apply_cli_cfg_overrides(cfg, args)
+        factor_args = bench_best_config.factor_args_from_cfg(cfg)
+        if args.entropyThreshold is not None:
+            factor_args = bench_best_config.replace_entropy_threshold_arg(
+                factor_args, args.entropyThreshold)
+        vlog(f'Using --best-config {args.best_config} (output prefix best_config_)')
+    else:
+        if args.nAnts is not None:
+            factor_args += ['--nAnts', str(int(args.nAnts))]
+        if args.q0 is not None:
+            factor_args += ['--q0', str(float(args.q0))]
+        if args.rho is not None:
+            factor_args += ['--rho', str(float(args.rho))]
+        if args.evap is not None:
+            factor_args += ['--evap', str(float(args.evap))]
+        if args.numACS is not None:
+            num_acs = int(args.numACS)
+            factor_args += ['--numACS', str(num_acs)]
+            factor_args += ['--numColonies', str(num_acs + 1)]
+        if args.convThresh is not None:
+            factor_args += ['--convThresh', str(float(args.convThresh))]
+        if args.entropyThreshold is not None:
+            factor_args += ['--entropyThreshold', str(float(args.entropyThreshold))]
+        if args.xi is not None:
+            factor_args += ['--xi', str(float(args.xi))]
 
     # Scan instances
     instance_files = scan_instances(instances_dir)
@@ -250,6 +359,9 @@ def main():
     vlog(f"Found {len(instance_files)} instances in {instances_dir}")
     vlog(f"Running algorithm: {alg_name} (alg={args.alg})")
     vlog(f"Repetitions per instance: {args.reps}")
+    if args.num_workers > 1:
+        vlog(f"Worker {args.worker_id}/{args.num_workers} (reps {args.worker_id + 1}, "
+             f"{args.worker_id + 1 + args.num_workers}, ...)")
 
     # Summary CSV (one row per instance, only when all reps are finished)
     summary_headers = ['instance', 'alg', 'alg_name', 'success_%', 'time_mean', 'time_std', 'cycles_mean', 'cycles_std']
@@ -258,6 +370,23 @@ def main():
     # Progress CSV (one row per rep)
     progress_headers = ['instance', 'alg', 'alg_name', 'rep', 'success', 'time', 'cycles']
     _ensure_csv_header(progress_file, progress_headers)
+
+    if args.pool_workers is not None:
+        import bench_pool_jobs
+        bench_pool_jobs.run_benchmark_pool(
+            binary_path=str(Path(binary).resolve()),
+            args=args,
+            alg_name=alg_name,
+            instance_files=instance_files,
+            outfile=outfile,
+            progress_file=progress_file,
+            factor_args=factor_args,
+            pool_workers=args.pool_workers,
+            completed_instances=completed_instances,
+            progress={k: dict(v) for k, v in progress.items()},
+            vlog=vlog,
+        )
+        return
 
     # Process each instance
     total_instances = len(instance_files)
@@ -287,8 +416,8 @@ def main():
         else:
             vlog(f"[{idx}/{total_instances}] {fp.name}")
 
-        # Run missing repetitions (rep numbers are 1..args.reps)
-        for rep in range(1, args.reps + 1):
+        my_reps = list(range(args.worker_id + 1, args.reps + 1, args.num_workers))
+        for rep in my_reps:
             if rep in done_reps:
                 continue
             if args.verbose and rep % 10 == 0:
@@ -296,7 +425,6 @@ def main():
 
             success, t, cyc, out = run_solver(binary, fp, args.alg, args.timeout, extra_args=factor_args)
 
-            # Append progress immediately so we can resume mid-instance
             progress_row = [
                 fp.name,
                 args.alg,
@@ -309,7 +437,6 @@ def main():
             if not _append_csv_row(progress_file, progress_row, vlog):
                 vlog("  ERROR: Could not write progress row; continuing anyway.")
 
-            # Update in-memory progress + aggregates
             rep_map[rep] = (success, t, cyc)
             done_reps.add(rep)
             if success:
@@ -318,41 +445,50 @@ def main():
                 if not math.isnan(cyc):
                     cycles_solved.append(cyc)
 
-        # Only write a summary row once all reps are finished
-        if len(done_reps) < args.reps:
+            if args.num_workers > 1 and _try_write_summary_if_complete(
+                    outfile, progress_file, fp.name, args, alg_name, vlog):
+                completed_instances.add(fp.name)
+                vlog(f"  => instance complete (summary written by this worker)")
+
+        if args.num_workers == 1 and len(done_reps) < args.reps:
             vlog(f"  => partial progress saved ({len(done_reps)}/{args.reps} reps).")
             progress[fp.name] = rep_map
             continue
 
-        succ_pct = (successes / float(args.reps)) * 100.0
-        time_mean = safe_mean(times)
-        time_std = safe_std(times)
-        cycles_mean = safe_mean(cycles_solved)
-        cycles_std = safe_std(cycles_solved)
+        if args.num_workers == 1 and len(done_reps) >= args.reps:
+            succ_pct = (successes / float(args.reps)) * 100.0
+            time_mean = safe_mean(times)
+            time_std = safe_std(times)
+            cycles_mean = safe_mean(cycles_solved)
+            cycles_std = safe_std(cycles_solved)
 
-        summary_row = [
-            fp.name,
-            args.alg,
-            alg_name,
-            round(succ_pct, 2),
-            round(time_mean, 6) if not math.isnan(time_mean) else '',
-            round(time_std, 6) if not math.isnan(time_std) else '',
-            round(cycles_mean, 3) if not math.isnan(cycles_mean) else '',
-            round(cycles_std, 3) if not math.isnan(cycles_std) else '',
-        ]
+            summary_row = [
+                fp.name,
+                args.alg,
+                alg_name,
+                round(succ_pct, 2),
+                round(time_mean, 6) if not math.isnan(time_mean) else '',
+                round(time_std, 6) if not math.isnan(time_std) else '',
+                round(cycles_mean, 3) if not math.isnan(cycles_mean) else '',
+                round(cycles_std, 3) if not math.isnan(cycles_std) else '',
+            ]
 
-        written = _append_csv_row(outfile, summary_row, vlog)
-        if written:
-            completed_instances.add(fp.name)
-        else:
-            vlog(f"  ERROR: Could not write result to CSV file!")
+            written = _append_csv_row(outfile, summary_row, vlog)
+            if written:
+                completed_instances.add(fp.name)
+            else:
+                vlog(f"  ERROR: Could not write result to CSV file!")
 
-        vlog(
-            f"  => success%={round(succ_pct, 2)} "
-            f"time_mean={round(time_mean, 6) if not math.isnan(time_mean) else 'N/A'} "
-            f"cycles_mean={round(cycles_mean, 3) if not math.isnan(cycles_mean) else 'N/A'} "
-            f"[Saved]"
-        )
+            vlog(
+                f"  => success%={round(succ_pct, 2)} "
+                f"time_mean={round(time_mean, 6) if not math.isnan(time_mean) else 'N/A'} "
+                f"cycles_mean={round(cycles_mean, 3) if not math.isnan(cycles_mean) else 'N/A'} "
+                f"[Saved]"
+            )
+        elif args.num_workers > 1 and fp.name not in completed_instances:
+            if _try_write_summary_if_complete(outfile, progress_file, fp.name, args, alg_name, vlog):
+                completed_instances.add(fp.name)
+
         progress[fp.name] = rep_map
 
     # Delete progress file when fully done (no longer needed)

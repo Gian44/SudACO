@@ -38,9 +38,6 @@ def build_param_value_jobs_for_param_and_size(param_name, pcfg, size_name):
     (param_name, size_name).
     """
     size_arg = SIZE_ARG_MAP[size_name]
-    if param_name == "timeout":
-        timeout_vals = pcfg.get("values_per_size", {}).get(size_name, [])
-        return [(param_name, tval, size_name, size_arg) for tval in timeout_vals]
     return [(param_name, val, size_name, size_arg) for val in pcfg["values"]]
 
 

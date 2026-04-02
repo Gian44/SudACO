@@ -1,0 +1,10 @@
+{
+  "nAnts": 3,
+  "numACS": 6,
+  "q0": 0.9,
+  "xi": 0.1,
+  "rho": 0.9,
+  "evap": 0.0125,
+  "convThresh": 0.8,
+  "entropyPct": 92.5
+}

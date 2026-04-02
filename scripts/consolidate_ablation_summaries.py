@@ -42,15 +42,9 @@ DEFAULTS = {
   "entropyPct": 92.5,
 }
 
-# Timeout defaults per size (from SIZE_CONFIGS in run_ablation.py)
-TIMEOUT_DEFAULTS = {
-  "9x9": 5,
-  "16x16": 20,
-  "25x25": 120,
-}
-
-# Parameter names we care about for consolidation
-PARAM_NAMES = list(DEFAULTS.keys()) + ["timeout"]
+# Parameter names we care about for consolidation (ablation only; timeout
+# comparison lives in scripts/run_algo_timeout_comparison.py).
+PARAM_NAMES = list(DEFAULTS.keys())
 
 
 def safe_mean(values: List[float]) -> float:
@@ -104,6 +98,8 @@ def collect_groups() -> Dict[Tuple[str, str, str, str, str], Dict[str, List[floa
     if not param_dir.is_dir():
       continue
     param_name = param_dir.name
+    if param_name not in PARAM_NAMES:
+      continue
 
     for csv_file in sorted(param_dir.glob("*_summary.csv")):
       try:
@@ -153,7 +149,7 @@ def add_default_runs(
     results/25x25/results_25x25_CP-DCM-ACO.csv
 
   For each size and each parameter (nAnts, numACS, q0, xi, rho, evap,
-  convThresh, entropyPct, timeout) we create a synthetic group with
+  convThresh, entropyPct) we create a synthetic group with
   param_value equal to that parameter's default and statistics taken
   from the default runs.
   """
@@ -181,11 +177,7 @@ def add_default_runs(
           alg_name = (row.get("alg_name") or "").strip()
 
           for param_name in PARAM_NAMES:
-            if param_name == "timeout":
-              default_val = TIMEOUT_DEFAULTS.get(size_name)
-            else:
-              default_val = DEFAULTS.get(param_name)
-
+            default_val = DEFAULTS.get(param_name)
             if default_val is None:
               continue
 

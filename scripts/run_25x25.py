@@ -14,9 +14,14 @@ automatically resumes from where it stopped if the output file already exists.
 Example usage:
   python scripts/run_25x25.py --alg 0 --verbose          # Run CP-ACS
   python scripts/run_25x25.py --alg 2 --verbose          # Run CP-DCM-ACO
+  python scripts/run_25x25.py --alg 2 --best-config --verbose   # CP-DCM-ACO + best_config.json
 
-Parallel workers (same algorithm, same output files; each worker does different reps):
-  python scripts/run_25x25.py --alg 0 --worker-id 0 --num-workers 4 --verbose
+Dynamic pool (recommended): 2 processes share a queue of unfinished (instance, rep):
+  python scripts/run_25x25.py --alg 2 --best-config --pool-workers 2 --verbose
+  # Or (all sizes, shared pool, 2 concurrent reps per size at start): python scripts/run_best_config_global_pool.py --workers-per-size 2 --verbose
+
+Static rep sharding (legacy):
+  python scripts/run_25x25.py --alg 2 --best-config --num-workers 8 --worker-id 0 --verbose
   ...
 
 Multiple runs (separate result files for run 1, 2, ... 5):
@@ -43,6 +48,8 @@ except ImportError:
         HAS_FCNTL = True
     except ImportError:
         HAS_FCNTL = False
+
+import bench_best_config
 
 from bench_utils import (
     default_binary,
@@ -250,6 +257,9 @@ def main():
     ap.add_argument('--run', type=int, default=1, help='Run index (1=default; 2+ use results_*_runN.csv for separate runs)')
     ap.add_argument('--worker-id', type=int, default=0, help='Worker index 0..num-workers-1 for parallel runs (default: 0)')
     ap.add_argument('--num-workers', type=int, default=1, help='Total number of workers sharing the same output files (default: 1)')
+    ap.add_argument('--pool-workers', type=int, default=None,
+                    help='Child processes with shared job queue (unfinished reps). '
+                         'Mutually exclusive with --num-workers > 1 or non-zero --worker-id.')
     ap.add_argument('--verbose', action='store_true', help='Print progress while running instances')
     # Factor overrides (optional)
     ap.add_argument('--nAnts', type=int, help='Override nAnts (int)')
@@ -260,6 +270,10 @@ def main():
     ap.add_argument('--convThresh', type=float, help='Override convThresh (float)')
     ap.add_argument('--entropyThreshold', type=float, help='Override entropyThreshold (float)')
     ap.add_argument('--xi', type=float, help='Override xi / local pheromone update rate (float)')
+    ap.add_argument(
+        '--best-config', nargs='?', const='results/ablation/best_config.json', default=None,
+        help='Load hyperparameters from ablation best_config.json (default path if flag has no value). '
+             'Requires --alg 2. Output: best_config_results_25x25_*.csv under --outdir')
     args = ap.parse_args()
     if args.worker_id < 0 or args.worker_id >= args.num_workers:
         ap.error('--worker-id must be in 0..num-workers-1')
@@ -267,6 +281,15 @@ def main():
         ap.error('--num-workers must be >= 1')
     if args.run < 1:
         ap.error('--run must be >= 1')
+    if args.best_config is not None and args.alg != 2:
+        ap.error('--best-config requires --alg 2 (CP-DCM-ACO)')
+    if args.pool_workers is not None:
+        if args.pool_workers < 1:
+            ap.error('--pool-workers must be >= 1')
+        if args.num_workers != 1:
+            ap.error('Do not combine --pool-workers with --num-workers > 1')
+        if args.worker_id != 0:
+            ap.error('Do not combine --pool-workers with non-zero --worker-id')
 
     binary = args.binary
     instances_dir = Path(args.instances)
@@ -282,8 +305,9 @@ def main():
 
     # Output filenames: run 1 = legacy names; run 2+ = results_*_runN.csv
     run_suffix = f'_run{args.run}' if args.run > 1 else ''
-    outfile = outdir / f'results_25x25_{alg_name}{run_suffix}.csv'
-    progress_file = outdir / f'progress_25x25_{alg_name}{run_suffix}.csv'
+    file_prefix = 'best_config_' if args.best_config is not None else ''
+    outfile = outdir / f'{file_prefix}results_25x25_{alg_name}{run_suffix}.csv'
+    progress_file = outdir / f'{file_prefix}progress_25x25_{alg_name}{run_suffix}.csv'
     vlog(f"Output file: {outfile}")
     vlog(f"Progress file: {progress_file} (temporary; deleted when all instances complete)")
 
@@ -297,24 +321,33 @@ def main():
 
     # Build extra factor args
     factor_args = []
-    if args.nAnts is not None:
-        factor_args += ['--nAnts', str(int(args.nAnts))]
-    if args.q0 is not None:
-        factor_args += ['--q0', str(float(args.q0))]
-    if args.rho is not None:
-        factor_args += ['--rho', str(float(args.rho))]
-    if args.evap is not None:
-        factor_args += ['--evap', str(float(args.evap))]
-    if args.numACS is not None:
-        num_acs = int(args.numACS)
-        factor_args += ['--numACS', str(num_acs)]
-        factor_args += ['--numColonies', str(num_acs + 1)]
-    if args.convThresh is not None:
-        factor_args += ['--convThresh', str(float(args.convThresh))]
-    if args.entropyThreshold is not None:
-        factor_args += ['--entropyThreshold', str(float(args.entropyThreshold))]
-    if args.xi is not None:
-        factor_args += ['--xi', str(float(args.xi))]
+    if args.best_config is not None:
+        cfg = bench_best_config.load_merged_config(args.best_config)
+        bench_best_config.apply_cli_cfg_overrides(cfg, args)
+        factor_args = bench_best_config.factor_args_from_cfg(cfg)
+        if args.entropyThreshold is not None:
+            factor_args = bench_best_config.replace_entropy_threshold_arg(
+                factor_args, args.entropyThreshold)
+        vlog(f'Using --best-config {args.best_config} (output prefix best_config_)')
+    else:
+        if args.nAnts is not None:
+            factor_args += ['--nAnts', str(int(args.nAnts))]
+        if args.q0 is not None:
+            factor_args += ['--q0', str(float(args.q0))]
+        if args.rho is not None:
+            factor_args += ['--rho', str(float(args.rho))]
+        if args.evap is not None:
+            factor_args += ['--evap', str(float(args.evap))]
+        if args.numACS is not None:
+            num_acs = int(args.numACS)
+            factor_args += ['--numACS', str(num_acs)]
+            factor_args += ['--numColonies', str(num_acs + 1)]
+        if args.convThresh is not None:
+            factor_args += ['--convThresh', str(float(args.convThresh))]
+        if args.entropyThreshold is not None:
+            factor_args += ['--entropyThreshold', str(float(args.entropyThreshold))]
+        if args.xi is not None:
+            factor_args += ['--xi', str(float(args.xi))]
 
     # Scan instances
     instance_files = scan_instances(instances_dir)
@@ -335,6 +368,23 @@ def main():
     # Progress CSV (one row per rep)
     progress_headers = ['instance', 'alg', 'alg_name', 'rep', 'success', 'time', 'cycles']
     _ensure_csv_header(progress_file, progress_headers)
+
+    if args.pool_workers is not None:
+        import bench_pool_jobs
+        bench_pool_jobs.run_benchmark_pool(
+            binary_path=str(Path(binary).resolve()),
+            args=args,
+            alg_name=alg_name,
+            instance_files=instance_files,
+            outfile=outfile,
+            progress_file=progress_file,
+            factor_args=factor_args,
+            pool_workers=args.pool_workers,
+            completed_instances=completed_instances,
+            progress={k: dict(v) for k, v in progress.items()},
+            vlog=vlog,
+        )
+        return
 
     # Process each instance
     total_instances = len(instance_files)

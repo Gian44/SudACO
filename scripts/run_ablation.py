@@ -3,7 +3,14 @@
 Ablation study for CP-DCM-ACO (Algorithm 2).
 
 Tests one parameter at a time while keeping all others at default values.
-Results are consolidated into a single Excel file with one sheet per parameter.
+Results are consolidated into ``results/ablation/ablation_results.xlsx`` (one sheet per
+parameter) plus sheets for the best value per parameter and the recommended config
+for follow-up experiments. ``best_config.json`` (one overall hyperparameter vector) is
+written beside the Excel
+file and is consumed by ``scripts/run_algo_timeout_comparison.py``.
+
+Wall-clock timeout sweeps comparing ACO vs CP-DCM-ACO are *not* part of this script;
+use ``python scripts/run_algo_timeout_comparison.py`` for that.
 
 Each puzzle is run 100 times (configurable via --reps) for each parameter value.
 The script supports resume: if interrupted, re-running picks up where it left off.
@@ -21,6 +28,7 @@ Requirements:
 
 import argparse
 import csv
+import json
 import math
 import os
 import sys
@@ -97,14 +105,6 @@ PARAM_TESTS = OrderedDict([
     ('entropyPct', {
         'label': 'Entropy Threshold (% of Max Entropy)',
         'values': [78.625, 83.25, 87.875, 97.125],
-    }),
-    ('timeout', {
-        'label': 'Timeout (seconds)',
-        'values_per_size': {
-            '9x9':  [1, 3, 7, 9],
-            '16x16': [10, 15, 25, 30],
-            '25x25': [60, 90, 150, 180],
-        },
     }),
 ])
 
@@ -303,41 +303,53 @@ def format_param_value(param_name, value):
     return s
 
 
-def build_solver_args(param_name, param_value):
-    """Build extra CLI args for the solver and return (args_list, entropy_threshold_used)."""
-    n_ants = DEFAULTS['nAnts']
-    entropy_pct = DEFAULTS['entropyPct']
+def build_solver_args_from_full_config(full=None):
+    """
+    Build CLI args from a full hyperparameter dict (same keys as DEFAULTS).
+    Used for timeout comparison runs and for exporting the recommended config.
+    """
+    cfg = {**DEFAULTS, **(full or {})}
+    n_ants = int(cfg['nAnts'])
+    entropy_pct = float(cfg['entropyPct'])
 
-    if param_name == 'nAnts':
-        n_ants = int(param_value)
-    elif param_name == 'entropyPct':
-        entropy_pct = float(param_value)
+    args = ['--nAnts', str(n_ants)]
 
-    args = []
-    args += ['--nAnts', str(n_ants)]
-
-    num_acs = int(param_value) if param_name == 'numACS' else DEFAULTS['numACS']
+    num_acs = int(cfg['numACS'])
     args += ['--numACS', str(num_acs), '--numColonies', str(num_acs + 1)]
 
-    q0 = float(param_value) if param_name == 'q0' else DEFAULTS['q0']
-    args += ['--q0', str(q0)]
-
-    xi = float(param_value) if param_name == 'xi' else DEFAULTS['xi']
-    args += ['--xi', str(xi)]
-
-    rho = float(param_value) if param_name == 'rho' else DEFAULTS['rho']
-    args += ['--rho', str(rho)]
-
-    evap = float(param_value) if param_name == 'evap' else DEFAULTS['evap']
-    args += ['--evap', str(evap)]
-
-    conv = float(param_value) if param_name == 'convThresh' else DEFAULTS['convThresh']
-    args += ['--convThresh', str(conv)]
+    args += ['--q0', str(float(cfg['q0']))]
+    args += ['--xi', str(float(cfg['xi']))]
+    args += ['--rho', str(float(cfg['rho']))]
+    args += ['--evap', str(float(cfg['evap']))]
+    args += ['--convThresh', str(float(cfg['convThresh']))]
 
     ent_thresh = compute_entropy_threshold(n_ants, entropy_pct)
     args += ['--entropyThreshold', str(round(ent_thresh, 6))]
 
     return args, round(ent_thresh, 6)
+
+
+def build_solver_args(param_name, param_value):
+    """Build extra CLI args for the solver and return (args_list, entropy_threshold_used)."""
+    cfg = dict(DEFAULTS)
+    if param_name == 'nAnts':
+        cfg['nAnts'] = int(param_value)
+    elif param_name == 'numACS':
+        cfg['numACS'] = int(param_value)
+    elif param_name == 'q0':
+        cfg['q0'] = float(param_value)
+    elif param_name == 'xi':
+        cfg['xi'] = float(param_value)
+    elif param_name == 'rho':
+        cfg['rho'] = float(param_value)
+    elif param_name == 'evap':
+        cfg['evap'] = float(param_value)
+    elif param_name == 'convThresh':
+        cfg['convThresh'] = float(param_value)
+    elif param_name == 'entropyPct':
+        cfg['entropyPct'] = float(param_value)
+
+    return build_solver_args_from_full_config(cfg)
 
 
 def delete_ablation_progress_if_summary_done(
@@ -381,12 +393,8 @@ def run_ablation_test(binary, param_name, param_value, size_name, size_cfg,
     summary_file = param_dir / f'{val_str}_{size_name}_summary.csv'
 
     # Build solver args (all defaults except the tested param)
-    if param_name == 'timeout':
-        extra_args, ent_thresh = build_solver_args(None, None)
-        timeout = int(param_value)
-    else:
-        extra_args, ent_thresh = build_solver_args(param_name, param_value)
-        timeout = timeout_override if timeout_override else size_cfg['timeout']
+    extra_args, ent_thresh = build_solver_args(param_name, param_value)
+    timeout = timeout_override if timeout_override else size_cfg['timeout']
 
     instances_all = scan_instances(size_cfg['dir'])
     if not instances_all:
@@ -526,6 +534,168 @@ def run_ablation_test(binary, param_name, param_value, size_name, size_cfg,
     return summary_rows
 
 
+def _coerce_param_for_config(param_name, value_str):
+    s = str(value_str).strip()
+    if param_name in ('nAnts', 'numACS'):
+        return int(float(s))
+    return float(s)
+
+
+def _append_default_baseline_instances(agg, param_name, alg_num):
+    """
+    Same instance-level source as ``consolidate_ablation_summaries.add_default_runs``:
+    default hyperparameters (e.g. nAnts=3) are not stored under ``results/ablation/``,
+    but appear in ``consolidated_ablation_summary.csv`` via
+    ``results/<size>/results_<size>_CP-DCM-ACO.csv``. Without this, ``best_config`` would
+    ignore those candidates and disagree with the consolidated CSV.
+    """
+    dv = DEFAULTS[param_name]
+    key = format_param_value(param_name, dv)
+    result_root = Path('results')
+    for size_name in SIZE_CONFIGS:
+        bench = result_root / size_name / f'results_{size_name}_CP-DCM-ACO.csv'
+        if not bench.exists():
+            continue
+        try:
+            with open(bench, 'r', newline='') as f:
+                for row in csv.DictReader(f):
+                    if str(row.get('alg', '')).strip() != str(alg_num):
+                        continue
+                    sp = parse_floatish(row.get('success_%'))
+                    tm = parse_floatish(row.get('time_mean'))
+                    agg[key]['succ'].append(sp)
+                    agg[key]['time'].append(tm)
+        except Exception:
+            continue
+
+
+def _default_baseline_summary_rows(param_name):
+    """
+    Build ablation-shaped summary rows from ``results/<size>/results_<size>_CP-DCM-ACO.csv``
+    for the script default of ``param_name`` (same source as consolidated_ablation_summary).
+    """
+    dv = DEFAULTS[param_name]
+    pv_display = format_param_value(param_name, dv)
+    result_root = Path('results')
+    rows = []
+    for size_name in SIZE_CONFIGS:
+        bench = result_root / size_name / f'results_{size_name}_CP-DCM-ACO.csv'
+        if not bench.exists():
+            continue
+        try:
+            with open(bench, 'r', newline='') as f:
+                for row in csv.DictReader(f):
+                    if str(row.get('alg', '')).strip() != str(ALG):
+                        continue
+                    rows.append({
+                        'param_value': pv_display,
+                        'puzzle_size': size_name,
+                        'instance': (row.get('instance') or '').strip(),
+                        'alg': str(ALG),
+                        'alg_name': (row.get('alg_name') or '').strip() or ALG_NAME,
+                        'success_%': row.get('success_%', ''),
+                        'time_mean': row.get('time_mean', ''),
+                        'time_std': row.get('time_std', ''),
+                        'cycles_mean': row.get('cycles_mean', ''),
+                        'cycles_std': row.get('cycles_std', ''),
+                    })
+        except Exception:
+            continue
+    return rows
+
+
+def compute_best_config_overall(outdir, alg_num='2'):
+    """
+    From ablation summaries (one parameter varied at a time), pick one **overall**
+    hyperparameter vector for algorithm ``alg_num`` (default CP-DCM-ACO = 2).
+
+    For each parameter, all instance rows from **all** puzzle sizes are **pooled**. Rows
+    come from (1) ``<param>/<value>_<size>_summary.csv`` ablation files and (2) for the
+    **script default** of that parameter, the same benchmark CSVs used in
+    ``consolidate_ablation_summaries.py`` (so candidates match ``consolidated_ablation_summary.csv``).
+
+    For each candidate ``param_value``, the score is the mean of ``success_%`` over those
+    instances; tie-break: lower mean of ``time_mean``.
+
+    Returns:
+      detail_rows: one row per parameter (for Excel), including ``n_instances``.
+      best_config: single dict (same keys as DEFAULTS).
+    """
+    from collections import defaultdict
+
+    detail_rows = []
+    best_config = dict(DEFAULTS)
+
+    for param_name, pcfg in PARAM_TESTS.items():
+        agg = defaultdict(lambda: {'succ': [], 'time': []})
+        param_dir = outdir / param_name
+        if param_dir.exists():
+            for csv_file in sorted(param_dir.glob('*_summary.csv')):
+                sz = size_name_from_summary_filename(csv_file.name)
+                if sz not in SIZE_CONFIGS:
+                    continue
+                try:
+                    with open(csv_file, 'r', newline='') as f:
+                        for row in csv.DictReader(f):
+                            if str(row.get('alg', '')).strip() != str(alg_num):
+                                continue
+                            if (row.get('puzzle_size') or '').strip() != sz:
+                                continue
+                            pv = str(row.get('param_value', '')).strip()
+                            if not pv:
+                                continue
+                            sp = parse_floatish(row.get('success_%'))
+                            tm = parse_floatish(row.get('time_mean'))
+                            agg[pv]['succ'].append(sp)
+                            agg[pv]['time'].append(tm)
+                except Exception:
+                    continue
+
+        _append_default_baseline_instances(agg, param_name, alg_num)
+
+        if not agg:
+            continue
+
+        best_pv = None
+        best_key = None
+        for pv, data in agg.items():
+            ms = safe_mean(data['succ'])
+            mt = safe_mean(data['time'])
+            mt_key = mt if not math.isnan(mt) else float('inf')
+            key = (ms, -mt_key)
+            if best_key is None or key > best_key:
+                best_key = key
+                best_pv = pv
+
+        if best_pv is None:
+            continue
+
+        coerced = _coerce_param_for_config(param_name, best_pv)
+        best_config[param_name] = coerced
+        ms = safe_mean(agg[best_pv]['succ'])
+        mt = safe_mean(agg[best_pv]['time'])
+        n_inst = len(agg[best_pv]['succ'])
+        detail_rows.append({
+            'param_name': param_name,
+            'label': pcfg['label'],
+            'best_value': best_pv,
+            'mean_success_pct': ms,
+            'mean_time_s': mt,
+            'n_instances': n_inst,
+        })
+
+    return detail_rows, best_config
+
+
+def parse_floatish(s):
+    if s is None or str(s).strip() == '':
+        return math.nan
+    try:
+        return float(s)
+    except Exception:
+        return math.nan
+
+
 # ============================================================
 # Excel consolidation
 # ============================================================
@@ -549,37 +719,54 @@ def consolidate_to_excel(outdir, excel_path):
         left=Side(style='thin'), right=Side(style='thin'),
         top=Side(style='thin'), bottom=Side(style='thin'))
 
+    size_order_excel = {'9x9': 0, '16x16': 1, '25x25': 2}
+
+    def ablation_summary_sort_key(r):
+        pv = str(r.get('param_value', '')).strip()
+        try:
+            pn = float(pv)
+        except ValueError:
+            pn = float('nan')
+        sz = r.get('puzzle_size', '')
+        return (pn, size_order_excel.get(sz, 99), r.get('instance', ''))
+
     for param_name, pcfg in PARAM_TESTS.items():
         param_dir = outdir / param_name
-        if not param_dir.exists():
-            continue
-
         all_rows = []
-        for csv_file in sorted(param_dir.glob('*_summary.csv')):
-            sz = size_name_from_summary_filename(csv_file.name)
-            if sz:
-                canon = [fp.name for fp in scan_instances(Path('instances') / sz)]
-                if canon:
-                    sort_summary_csv_if_complete(csv_file, canon)
-                    canon_set = set(canon)
-                    if canon_set <= read_completed_from_summary(csv_file):
-                        prog_path = csv_file.parent / csv_file.name.replace(
-                            '_summary.csv', '_progress.csv')
-                        if prog_path.exists():
-                            try:
-                                prog_path.unlink()
-                            except OSError:
-                                pass
-            try:
-                with open(csv_file, 'r', newline='') as f:
-                    reader = csv.DictReader(f)
-                    for row in reader:
-                        all_rows.append(row)
-            except Exception:
-                continue
+
+        if param_dir.exists():
+            for csv_file in sorted(param_dir.glob('*_summary.csv')):
+                sz = size_name_from_summary_filename(csv_file.name)
+                if sz:
+                    canon = [fp.name for fp in scan_instances(Path('instances') / sz)]
+                    if canon:
+                        sort_summary_csv_if_complete(csv_file, canon)
+                        canon_set = set(canon)
+                        if canon_set <= read_completed_from_summary(csv_file):
+                            prog_path = csv_file.parent / csv_file.name.replace(
+                                '_summary.csv', '_progress.csv')
+                            if prog_path.exists():
+                                try:
+                                    prog_path.unlink()
+                                except OSError:
+                                    pass
+                try:
+                    with open(csv_file, 'r', newline='') as f:
+                        reader = csv.DictReader(f)
+                        for row in reader:
+                            all_rows.append(row)
+                except Exception:
+                    continue
+
+        existing_pv = {str(r.get('param_value', '')).strip() for r in all_rows}
+        dkey = format_param_value(param_name, DEFAULTS[param_name])
+        if dkey not in existing_pv:
+            all_rows.extend(_default_baseline_summary_rows(param_name))
 
         if not all_rows:
             continue
+
+        all_rows.sort(key=ablation_summary_sort_key)
 
         label = pcfg['label']
         sheet_name = label[:31]  # Excel sheet name limit
@@ -598,14 +785,10 @@ def consolidate_to_excel(outdir, excel_path):
             cell.alignment = Alignment(horizontal='center', wrap_text=True)
             cell.border = thin_border
 
-        # Determine which param values are default
-        if param_name == 'timeout':
-            default_vals = set()
-            vps = pcfg.get('values_per_size', {})
-            for sz, cfg in SIZE_CONFIGS.items():
-                default_vals.add(str(cfg['timeout']))
-        elif param_name in DEFAULTS:
-            default_vals = {str(DEFAULTS[param_name])}
+        # Determine which param values are default (for row highlighting)
+        if param_name in DEFAULTS:
+            dv = DEFAULTS[param_name]
+            default_vals = {str(dv), format_param_value(param_name, dv)}
         else:
             default_vals = set()
 
@@ -644,6 +827,64 @@ def consolidate_to_excel(outdir, excel_path):
     if not wb.sheetnames:
         print('No ablation data found to consolidate.')
         return False
+
+    detail_rows, best_config = compute_best_config_overall(outdir)
+
+    best_json_path = outdir / 'best_config.json'
+    try:
+        serializable = {
+            k: (int(v) if k in ('nAnts', 'numACS') else float(v))
+            for k, v in best_config.items()
+        }
+        best_json_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(best_json_path, 'w', encoding='utf-8') as jf:
+            json.dump(serializable, jf, indent=2)
+        print(f'Best-config JSON saved: {best_json_path}')
+    except Exception as e:
+        print(f'WARNING: could not write {best_json_path}: {e}')
+
+    if detail_rows:
+        ws_b = wb.create_sheet(title='Best per parameter')
+        bh = ['Scope', 'Parameter', 'Label', 'Best value',
+              'Mean success %', 'Mean time (s)', 'N instances']
+        for col_idx, h in enumerate(bh, 1):
+            cell = ws_b.cell(row=1, column=col_idx, value=h)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.border = thin_border
+        for r_idx, dr in enumerate(detail_rows, 2):
+            row_vals = [
+                'all sizes (pooled)',
+                dr['param_name'],
+                dr['label'],
+                dr['best_value'],
+                dr['mean_success_pct'],
+                dr['mean_time_s'],
+                dr['n_instances'],
+            ]
+            for col_idx, v in enumerate(row_vals, 1):
+                cell = ws_b.cell(row=r_idx, column=col_idx, value=v)
+                cell.border = thin_border
+        for col_idx in range(1, len(bh) + 1):
+            ws_b.column_dimensions[
+                ws_b.cell(row=1, column=col_idx).column_letter].width = 18
+        ws_b.freeze_panes = 'A2'
+
+    ws_c = wb.create_sheet(title='Timeout study config')
+    ch = ['Scope'] + list(DEFAULTS.keys())
+    for col_idx, h in enumerate(ch, 1):
+        cell = ws_c.cell(row=1, column=col_idx, value=h)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.border = thin_border
+    vals = ['all sizes'] + [best_config[k] for k in DEFAULTS]
+    for col_idx, v in enumerate(vals, 1):
+        cell = ws_c.cell(row=2, column=col_idx, value=v)
+        cell.border = thin_border
+    for col_idx in range(1, len(ch) + 1):
+        ws_c.column_dimensions[
+            ws_c.cell(row=1, column=col_idx).column_letter].width = 14
+    ws_c.freeze_panes = 'A2'
 
     excel_path.parent.mkdir(parents=True, exist_ok=True)
     wb.save(str(excel_path))
@@ -725,7 +966,8 @@ def main():
             raise SystemExit('--param-value requires --param')
 
         # Parse and match provided value against the configured candidate list.
-        candidates = PARAM_TESTS[args.param]['values']
+        pcfg_single = PARAM_TESTS[args.param]
+        candidates = pcfg_single['values']
         parsed = None
         try:
             raw_num = float(args.param_value)
@@ -751,18 +993,10 @@ def main():
 
     total_configs = 0
     for pname, pcfg in params_to_test.items():
-        if pname == 'timeout':
-            for sname in sizes_to_test:
-                vals = pcfg.get('values_per_size', {}).get(sname, [])
-                if filtered_single_param_value is not None and pname == args.param:
-                    total_configs += 1 if any(abs(float(v) - float(filtered_single_param_value)) <= 1e-12 for v in vals) else 0
-                else:
-                    total_configs += len(vals)
+        if filtered_single_param_value is not None and pname == args.param:
+            total_configs += 1 * len(sizes_to_test)
         else:
-            if filtered_single_param_value is not None and pname == args.param:
-                total_configs += 1 * len(sizes_to_test)
-            else:
-                total_configs += len(pcfg['values']) * len(sizes_to_test)
+            total_configs += len(pcfg['values']) * len(sizes_to_test)
 
     vlog(f'{"="*70}')
     vlog(f'Ablation Study for {ALG_NAME}')
@@ -785,39 +1019,20 @@ def main():
         for param_name, pcfg in params_to_test.items():
             vlog(f'\n  Parameter: {pcfg["label"]} ({param_name})')
 
-            if param_name == 'timeout':
-                timeout_vals = pcfg.get('values_per_size', {}).get(size_name, [])
-                if filtered_single_param_value is not None and param_name == args.param:
-                    timeout_vals_iter = [
-                        tval for tval in timeout_vals
-                        if abs(float(tval) - float(filtered_single_param_value)) <= 1e-12
-                    ]
-                else:
-                    timeout_vals_iter = timeout_vals
-
-                for tval in timeout_vals_iter:
-                    config_idx += 1
-                    vlog(f'\n[Config {config_idx}/{total_configs}] '
-                         f'timeout={tval}s on {size_name}')
-                    run_ablation_test(
-                        binary, 'timeout', tval, size_name, size_cfg,
-                        args.reps, outdir, vlog,
-                        worker_id=worker_id, num_workers=num_workers)
+            if filtered_single_param_value is not None and param_name == args.param:
+                values_iter = [filtered_single_param_value]
             else:
-                if filtered_single_param_value is not None and param_name == args.param:
-                    values_iter = [filtered_single_param_value]
-                else:
-                    values_iter = pcfg['values']
+                values_iter = pcfg['values']
 
-                for value in values_iter:
-                    config_idx += 1
-                    val_str = format_param_value(param_name, value)
-                    vlog(f'\n[Config {config_idx}/{total_configs}] '
-                         f'{param_name}={val_str} on {size_name}')
-                    run_ablation_test(
-                        binary, param_name, value, size_name, size_cfg,
-                        args.reps, outdir, vlog,
-                        worker_id=worker_id, num_workers=num_workers)
+            for value in values_iter:
+                config_idx += 1
+                val_str = format_param_value(param_name, value)
+                vlog(f'\n[Config {config_idx}/{total_configs}] '
+                     f'{param_name}={val_str} on {size_name}')
+                run_ablation_test(
+                    binary, param_name, value, size_name, size_cfg,
+                    args.reps, outdir, vlog,
+                    worker_id=worker_id, num_workers=num_workers)
 
     if not args.no_consolidate:
         vlog(f'\n{"="*70}')
