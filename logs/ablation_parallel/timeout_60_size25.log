@@ -1,0 +1,37 @@
+
+============================================================
+worker start: timeout=60 size=25 worker_id=0/2
+============================================================
+Traceback (most recent call last):
+  File "C:\Users\renom\OneDrive\Desktop\Thesis\SudACO\scripts\run_ablation.py", line 832, in <module>
+    main()
+  File "C:\Users\renom\OneDrive\Desktop\Thesis\SudACO\scripts\run_ablation.py", line 728, in main
+    candidates = PARAM_TESTS[args.param]['values']
+                 ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+KeyError: 'values'
+
+============================================================
+worker start: timeout=60 size=25 worker_id=1/2
+============================================================
+Traceback (most recent call last):
+  File "C:\Users\renom\OneDrive\Desktop\Thesis\SudACO\scripts\run_ablation.py", line 832, in <module>
+    main()
+  File "C:\Users\renom\OneDrive\Desktop\Thesis\SudACO\scripts\run_ablation.py", line 728, in main
+    candidates = PARAM_TESTS[args.param]['values']
+                 ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+KeyError: 'values'
+
+============================================================
+worker start: timeout=60 size=25 worker_id=0/2
+============================================================
+Traceback (most recent call last):
+  File "C:\Users\renom\OneDrive\Desktop\Thesis\SudACO\scripts\run_ablation.py", line 832, in <module>
+    main()
+  File "C:\Users\renom\OneDrive\Desktop\Thesis\SudACO\scripts\run_ablation.py", line 728, in main
+    candidates = PARAM_TESTS[args.param]['values']
+                 ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+KeyError: 'values'
+\scripts\run_ablation.py", line 728, in main
+    candidates = PARAM_TESTS[args.param]['values']
+                 ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+KeyError: 'values'
