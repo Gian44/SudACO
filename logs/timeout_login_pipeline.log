@@ -1,0 +1,14 @@
+
+================================================================
+[Fri 04/03/2026  8:43:43.00] Timeout comparison start
+Detailed logs: logs\timeout_comparison\timeout_orchestrator.log
+                logs\timeout_comparison\timeout_alg0.log  (ACO)
+                logs\timeout_comparison\timeout_alg2.log  (CP-DCM-ACO)
+================================================================
+
+================================================================
+[Sat 04/04/2026  0:08:05.04] Timeout comparison start
+Detailed logs: logs\timeout_comparison\timeout_orchestrator.log
+                logs\timeout_comparison\timeout_alg0.log  (ACO)
+                logs\timeout_comparison\timeout_alg2.log  (CP-DCM-ACO)
+================================================================

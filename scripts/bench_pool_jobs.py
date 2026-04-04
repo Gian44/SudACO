@@ -68,6 +68,34 @@ def _read_completed_instances_from_summary(outfile: Path):
     return completed
 
 
+def remove_best_config_progress_if_done(
+    outfile: Path,
+    progress_file: Path,
+    instance_files: list,
+) -> bool:
+    """
+    Delete the progress CSV when the summary lists exactly the same instance names as
+    ``instance_files``. Uses the summary file as source of truth so we still clean up
+    after a resume or when the parent exits via the "nothing to run" path (in-memory
+    completed counts can be incomplete).
+    """
+    canon = {fp.name for fp in instance_files}
+    if not canon:
+        return False
+    done = _read_completed_instances_from_summary(outfile)
+    if done != canon:
+        return False
+    if not progress_file.exists():
+        return False
+    try:
+        progress_file.unlink()
+        print(f'Progress file removed: {progress_file}')
+        return True
+    except OSError as e:
+        print(f'Could not remove progress file {progress_file}: {e}')
+        return False
+
+
 def _read_progress(progress_file: Path):
     prog = {}
     if not progress_file.exists():
@@ -120,6 +148,11 @@ def _append_csv_row(path: Path, row, vlog):
             with open(path, 'a', newline='') as f:
                 lock_file(f)
                 csv.writer(f).writerow(row)
+                f.flush()
+                try:
+                    os.fsync(f.fileno())
+                except OSError:
+                    pass
                 unlock_file(f)
             return True
         except (IOError, OSError) as e:
@@ -182,6 +215,11 @@ def _try_write_summary_if_complete(outfile: Path, progress_file: Path, instance_
                     return True
                 f.seek(0, 2)
                 csv.writer(f).writerow(row)
+                f.flush()
+                try:
+                    os.fsync(f.fileno())
+                except OSError:
+                    pass
                 unlock_file(f)
             return True
         except (IOError, OSError) as e:
@@ -297,12 +335,12 @@ def run_benchmark_pool(
                     vlog(f'  Pool progress: {done_count}/{len(pending)} jobs finished')
 
     total_instances = len(instance_files)
-    if len(completed_instances) == total_instances and progress_file.exists():
-        try:
-            progress_file.unlink()
-            print(f"Progress file removed: {progress_file}")
-        except OSError as e:
-            print(f"Could not remove progress file: {e}")
+    from run_ablation import sort_summary_csv_if_complete
+
+    canon = [fp.name for fp in instance_files]
+    if sort_summary_csv_if_complete(outfile, canon):
+        print(f'Sorted summary rows to instance-folder order ({len(canon)}): {outfile}')
+    remove_best_config_progress_if_done(outfile, progress_file, instance_files)
 
     print(f"\n{'='*70}")
     print(f'Completed (pool). Results saved to: {outfile}')

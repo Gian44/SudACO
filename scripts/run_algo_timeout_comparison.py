@@ -2,14 +2,13 @@
 """
 Compare ACO (algorithm 0) vs CP-DCM-ACO (algorithm 2) at multiple wall-clock timeouts.
 
-Hyperparameters come from ``results/ablation/best_config.json``, written when you run
-``python scripts/run_ablation.py --consolidate`` (per-parameter winners pooled across all
-puzzle sizes in the ablation). The same CLI args are passed
-to both algorithms; unused DCM-only flags are ignored by the single-colony ACO binary.
+For **CP-DCM-ACO (alg 2)**, hyperparameters come from ``results/ablation/best_config.json``
+(``run_ablation.py --consolidate``). **ACO (alg 0)** uses no JSON overrides: the binary’s
+built-in defaults (``solvermain.cpp`` / CLI defaults) apply; DCM-only flags are not passed.
 
-Outputs (default ``results/timeout_algo_comparison``):
+Outputs (default ``results/ablation/timeout``):
   alg_<id>/<timeout>_<size>_summary.csv — same row schema as ablation summaries
-  timeout_comparison.xlsx — aggregated sheet per puzzle size (after consolidation)
+  timeout_comparison.xlsx — aggregated sheet per puzzle size (after consolidation, in same folder)
   results/ablation/ablation_results.xlsx — updated with timeout tables:
     - ACO table
     - CP-DCM-ACO table
@@ -20,6 +19,11 @@ Parallel mode:
     Runs both algorithms simultaneously with 4 shard workers each
     (8 Python processes per (size, timeout) phase), with resume-safe progress CSVs.
 
+Logging (default ``logs/timeout_comparison/``):
+  timeout_orchestrator.log — parent process: phases, worker launches, Excel consolidation
+  timeout_alg0.log — ACO (merged from parallel worker sessions, or direct tee in serial mode)
+  timeout_alg2.log — CP-DCM-ACO (same)
+
   pip install openpyxl
 """
 
@@ -29,16 +33,24 @@ import argparse
 import csv
 import json
 import math
+import shutil
 import subprocess
 import sys
 from collections import OrderedDict
+from datetime import datetime
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from bench_utils import default_binary, run_solver, safe_mean, safe_std  # noqa: E402
+from bench_utils import (  # noqa: E402
+    SolverInterruptedError,
+    default_binary,
+    run_solver,
+    safe_mean,
+    safe_std,
+)
 
 from scripts.run_ablation import (  # noqa: E402
     DEFAULTS,
@@ -56,10 +68,11 @@ from scripts.run_ablation import (  # noqa: E402
     sort_summary_csv_if_complete,
 )
 
-DEFAULT_OUTDIR = Path('results') / 'timeout_algo_comparison'
+DEFAULT_OUTDIR = Path('results') / 'ablation' / 'timeout'
 DEFAULT_BEST_CONFIG = Path('results') / 'ablation' / 'best_config.json'
 DEFAULT_EXCEL = DEFAULT_OUTDIR / 'timeout_comparison.xlsx'
 DEFAULT_ABLATION_EXCEL = Path('results') / 'ablation' / 'ablation_results.xlsx'
+DEFAULT_LOG_DIR = REPO_ROOT / 'logs' / 'timeout_comparison'
 
 # Wall-clock timeouts (seconds) to compare; same grid as the former ablation timeout sweep.
 TIMEOUTS_PER_SIZE = OrderedDict([
@@ -75,6 +88,52 @@ ALGORITHMS = (
 
 SIZE_SHORT = {'9x9': '9', '16x16': '16', '25x25': '25'}
 SIZE_SORT = {'9x9': 0, '16x16': 1, '25x25': 2}
+
+
+def _log_timestamp() -> str:
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+
+class _TeeStdout:
+    """Duplicate stdout to a log file (and optionally the real console)."""
+
+    def __init__(self, primary, secondary):
+        self._primary = primary
+        self._secondary = secondary
+
+    def write(self, data: str) -> int:
+        self._primary.write(data)
+        self._secondary.write(data)
+        return len(data)
+
+    def flush(self) -> None:
+        self._primary.flush()
+        self._secondary.flush()
+
+    def isatty(self) -> bool:
+        return self._primary.isatty()
+
+
+def _append_session_to_alg_log(
+    log_dir: Path,
+    alg: int,
+    session_path: Path,
+    header: str,
+) -> None:
+    """Append one worker session file into the per-algorithm log, then remove the session."""
+    dest = log_dir / f'timeout_alg{alg}.log'
+    with open(dest, 'a', encoding='utf-8', newline='\n') as out:
+        out.write('\n')
+        out.write('=' * 72 + '\n')
+        out.write(f'[{_log_timestamp()}] {header}\n')
+        out.write('=' * 72 + '\n')
+        if session_path.exists():
+            with open(session_path, encoding='utf-8', errors='replace') as inc:
+                shutil.copyfileobj(inc, out)
+    try:
+        session_path.unlink()
+    except OSError:
+        pass
 
 
 def load_best_config(path: Path) -> dict:
@@ -198,8 +257,14 @@ def run_timeout_job(
             if rep in done_reps:
                 continue
 
-            success, t, cyc, out = run_solver(
-                binary, fp, alg, timeout, extra_args=extra_args)
+            try:
+                success, t, cyc, out = run_solver(
+                    binary, fp, alg, timeout, extra_args=extra_args)
+            except SolverInterruptedError:
+                # User aborted this rep: do not record a fake FAIL row.
+                vlog(
+                    f'    Rep {rep}/{reps}: INTERRUPTED; not recorded (will resume)')
+                break
 
             status_str = 'OK' if success else 'FAIL'
             t_str = f'{t:.4f}s' if not math.isnan(t) else 'N/A'
@@ -491,20 +556,26 @@ def merge_timeout_into_ablation_workbook(outdir: Path, ablation_excel_path: Path
     return True
 
 
-def run_parallel_timeout_shards(args, sizes, algs):
+def run_parallel_timeout_shards(
+    args,
+    sizes,
+    algs,
+    log_dir: Path | None,
+):
     """
     Parent orchestration mode:
     For each (size, timeout), launch workers-per-alg shards for each algorithm.
     """
     workers_per_alg = max(1, int(args.workers_per_alg))
+    total_workers = workers_per_alg * max(1, len(algs))
     script_path = Path(__file__).resolve()
     best_config = str(Path(args.best_config))
     outdir = str(Path(args.outdir))
     binary = str(args.binary)
 
     print(
-        f'Parallel timeout mode: {workers_per_alg} worker(s)/algorithm, '
-        f'{workers_per_alg * len(algs)} total process(es) per (size, timeout) phase.'
+        f'[ORCHESTRATOR] Parallel timeout transfer mode: {workers_per_alg} worker(s)/algorithm, '
+        f'{total_workers} total process(es) per (size, timeout) phase.'
     )
 
     for size_name, _size_cfg in sizes.items():
@@ -517,52 +588,101 @@ def run_parallel_timeout_shards(args, sizes, algs):
             timeouts = [args.timeout]
 
         for t in timeouts:
-            print(f'\n=== Phase: {size_name} timeout={t}s ===')
-            procs = []
-            for alg, alg_name in algs:
-                for worker_id in range(workers_per_alg):
-                    cmd = [
-                        sys.executable,
-                        str(script_path),
-                        '--binary', binary,
-                        '--best-config', best_config,
-                        '--outdir', outdir,
-                        '--reps', str(int(args.reps)),
-                        '--size', size_short,
-                        '--timeout', str(int(t)),
-                        '--alg', str(int(alg)),
-                        '--worker-id', str(worker_id),
-                        '--num-workers', str(workers_per_alg),
-                        '--no-consolidate',
-                    ]
-                    if args.quiet:
-                        cmd.append('--quiet')
-                    elif args.verbose:
-                        cmd.append('--verbose')
-                    else:
-                        cmd.append('--quiet')
-                    print(f'  Launch {alg_name} worker {worker_id + 1}/{workers_per_alg}')
-                    procs.append((alg_name, worker_id, subprocess.Popen(cmd, cwd=str(REPO_ROOT))))
+            print(
+                f'\n[ORCHESTRATOR] Phase start — puzzle={size_name} timeout={t}s '
+                f'— launching {total_workers} workers (first-alg + second-alg switching)'
+            )
+            procs: list[tuple[int, str, int, int, subprocess.Popen, Path | None]] = []
+            for worker_shard_id in range(total_workers):
+                first_alg, first_name = algs[worker_shard_id % len(algs)]
+                second_alg, second_name = algs[(worker_shard_id + 1) % len(algs)]
 
-            failed = []
-            for alg_name, worker_id, proc in procs:
+                session_path: Path | None = None
+                if log_dir is not None:
+                    log_dir.mkdir(parents=True, exist_ok=True)
+                    sess_dir = log_dir / 'sessions'
+                    sess_dir.mkdir(exist_ok=True)
+                    session_path = (
+                        sess_dir
+                        / f'{size_short}_{t}s_firstalg{first_alg}_w{worker_shard_id}.log'
+                    )
+
+                cmd = [
+                    sys.executable,
+                    str(script_path),
+                    '--binary', binary,
+                    '--best-config', best_config,
+                    '--outdir', outdir,
+                    '--reps', str(int(args.reps)),
+                    '--size', size_short,
+                    '--timeout', str(int(t)),
+                    '--alg', str(int(first_alg)),
+                    '--worker-id', str(worker_shard_id),
+                    '--num-workers', str(int(total_workers)),
+                    '--no-consolidate',
+                ]
+                if len(algs) > 1:
+                    cmd.extend(['--second-alg', str(int(second_alg))])
+                if log_dir is not None and session_path is not None:
+                    cmd.extend(['--worker-session-log', str(session_path)])
+                if args.no_log_files:
+                    cmd.append('--no-log-files')
+                if args.quiet:
+                    cmd.append('--quiet')
+                elif args.verbose:
+                    cmd.append('--verbose')
+                else:
+                    cmd.append('--quiet')
+                then_part = f' (then alg={second_alg})' if len(algs) > 1 else ''
+                print(
+                    f'[ORCHESTRATOR] Spawn {first_name} (alg={first_alg}) worker '
+                    f'{worker_shard_id + 1}/{total_workers} pid pending…{then_part}'
+                )
+                procs.append((
+                    first_alg,
+                    first_name,
+                    worker_shard_id,
+                    second_alg,
+                    subprocess.Popen(cmd, cwd=str(REPO_ROOT)),
+                    session_path,
+                ))
+
+            failed: list[tuple[str, int, int]] = []
+            for first_alg, first_name, worker_shard_id, second_alg, proc, session_path in procs:
                 rc = proc.wait()
+                if log_dir is not None and session_path is not None:
+                    _append_session_to_alg_log(
+                        log_dir,
+                        first_alg,
+                        session_path,
+                        f'Merged — first alg={first_alg} then alg={second_alg} '
+                        f'worker {worker_shard_id + 1}/{total_workers} | '
+                        f'{size_name} timeout={t}s | exit_code={rc}',
+                    )
                 if rc != 0:
-                    failed.append((alg_name, worker_id, rc))
+                    failed.append((first_name, worker_shard_id, rc))
             if failed:
-                print('ERROR: some workers failed in this phase:', file=sys.stderr)
+                print(
+                    '[ORCHESTRATOR] ERROR: some workers failed in this phase:',
+                    file=sys.stderr,
+                )
                 for alg_name, worker_id, rc in failed:
-                    print(f'  {alg_name} worker {worker_id}: exit {rc}', file=sys.stderr)
+                    print(
+                        f'  {alg_name} worker {worker_id}: exit {rc}',
+                        file=sys.stderr,
+                    )
                 raise SystemExit(1)
-            print(f'Completed phase: {size_name} timeout={t}s')
+            print(
+                f'[ORCHESTRATOR] Phase complete — puzzle={size_name} timeout={t}s'
+            )
 
 
 def main():
     ap = argparse.ArgumentParser(
-        description='ACO vs CP-DCM-ACO across timeouts (uses best_config.json).')
+        description='ACO vs CP-DCM-ACO across timeouts; best_config.json applies to CP-DCM-ACO only.')
     ap.add_argument('--binary', default=default_binary(), help='Solver binary path')
     ap.add_argument('--best-config', type=str, default=str(DEFAULT_BEST_CONFIG),
-                    help='JSON from run_ablation.py --consolidate')
+                    help='JSON for CP-DCM-ACO only (alg 2); ACO uses binary defaults')
     ap.add_argument('--outdir', type=str, default=str(DEFAULT_OUTDIR),
                     help='Output directory for CSVs')
     ap.add_argument('--reps', type=int, default=100, help='Repetitions per instance')
@@ -572,6 +692,13 @@ def main():
                     help='Single timeout value (must belong to that size grid)')
     ap.add_argument('--alg', type=int, default=None, choices=[0, 2],
                     help='Run only this algorithm ID (default: both)')
+    ap.add_argument(
+        '--second-alg',
+        type=int,
+        default=None,
+        choices=[0, 2],
+        help='Run --alg first, then --second-alg inside the same worker (timeout transfer mode).',
+    )
     ap.add_argument('--workers-per-alg', type=int, default=1,
                     help='When >1, parent spawns shard workers per algorithm per (size, timeout) phase')
     ap.add_argument('--consolidate', action='store_true',
@@ -586,6 +713,22 @@ def main():
     ap.add_argument('--num-workers', type=int, default=1)
     ap.add_argument('--verbose', action='store_true', default=True)
     ap.add_argument('--quiet', action='store_true')
+    ap.add_argument(
+        '--log-dir',
+        type=str,
+        default=str(DEFAULT_LOG_DIR),
+        help='Directory for timeout_alg0.log, timeout_alg2.log, timeout_orchestrator.log',
+    )
+    ap.add_argument(
+        '--no-log-files',
+        action='store_true',
+        help='Do not write per-algorithm / orchestrator log files (stdout only)',
+    )
+    ap.add_argument(
+        '--worker-session-log',
+        default=None,
+        help=argparse.SUPPRESS,
+    )
     args = ap.parse_args()
 
     outdir = Path(args.outdir)
@@ -593,66 +736,179 @@ def main():
     ablation_excel_path = Path(args.ablation_excel_path)
     verbose = args.verbose and not args.quiet
 
+    _orig_stdout = sys.stdout
+    _orch_log_f = None
+    _alg_log_f = None
+    _worker_sess_f = None
+
+    log_dir: Path | None = None if args.no_log_files else Path(args.log_dir)
+
     def vlog(*a, **k):
         if verbose:
             print(*a, **k, flush=True)
 
-    if args.consolidate:
-        consolidate_timeout_excel(outdir, excel_path)
-        merge_timeout_into_ablation_workbook(outdir, ablation_excel_path)
-        return
+    def _close_alg_log() -> None:
+        nonlocal _alg_log_f
+        if _alg_log_f is not None:
+            try:
+                _alg_log_f.close()
+            except OSError:
+                pass
+            _alg_log_f = None
 
-    binary = args.binary
-    if not Path(binary).exists():
-        print(f'ERROR: binary not found: {binary}')
-        sys.exit(1)
+    def _attach_alg_log(size_name: str, alg: int, alg_name: str) -> None:
+        nonlocal _alg_log_f
+        if log_dir is None:
+            sys.stdout = _orig_stdout
+            return
+        log_dir.mkdir(parents=True, exist_ok=True)
+        _close_alg_log()
+        p = log_dir / f'timeout_alg{alg}.log'
+        _alg_log_f = open(p, 'a', encoding='utf-8', buffering=1, newline='\n')
+        _alg_log_f.write('\n' + '=' * 72 + '\n')
+        _alg_log_f.write(
+            f'[{_log_timestamp()}] PHASE — puzzle={size_name} | {alg_name} (alg={alg}) | '
+            f'serial/shard worker_id={args.worker_id} num_workers={args.num_workers}\n'
+        )
+        _alg_log_f.write('=' * 72 + '\n')
+        _alg_log_f.flush()
+        sys.stdout = _TeeStdout(_orig_stdout, _alg_log_f)
 
-    best_path = Path(args.best_config)
-    per_size_cfg = load_best_config(best_path)
+    parallel_parent = args.workers_per_alg > 1 and args.num_workers == 1
+    worker_session = args.worker_session_log
 
-    size_map = {'9': '9x9', '16': '16x16', '25': '25x25'}
-    if args.size:
-        sizes = OrderedDict([
-            (size_map[args.size], SIZE_CONFIGS[size_map[args.size]]),
-        ])
-    else:
-        sizes = SIZE_CONFIGS
+    try:
+        if worker_session:
+            sp = Path(worker_session)
+            sp.parent.mkdir(parents=True, exist_ok=True)
+            _worker_sess_f = open(sp, 'w', encoding='utf-8', buffering=1, newline='\n')
+            _worker_sess_f.write(
+                f'[{_log_timestamp()}] Worker process — alg={args.alg} '
+                f'worker_id={args.worker_id} num_workers={args.num_workers}\n'
+            )
+            _worker_sess_f.flush()
+            sys.stdout = _TeeStdout(_orig_stdout, _worker_sess_f)
+        elif log_dir is not None and (parallel_parent or args.consolidate):
+            log_dir.mkdir(parents=True, exist_ok=True)
+            _orch_log_f = open(
+                log_dir / 'timeout_orchestrator.log',
+                'a',
+                encoding='utf-8',
+                buffering=1,
+                newline='\n',
+            )
+            role = 'consolidate-only' if args.consolidate else 'parallel parent'
+            _orch_log_f.write('\n' + '=' * 72 + '\n')
+            _orch_log_f.write(f'[{_log_timestamp()}] ORCHESTRATOR — {role}\n')
+            _orch_log_f.write('=' * 72 + '\n')
+            _orch_log_f.flush()
+            sys.stdout = _TeeStdout(_orig_stdout, _orch_log_f)
 
-    algs = ALGORITHMS if args.alg is None else tuple(
-        (a, n) for a, n in ALGORITHMS if a == args.alg)
-
-    if args.workers_per_alg > 1 and args.num_workers == 1:
-        run_parallel_timeout_shards(args, sizes, algs)
-        if not args.no_consolidate:
-            vlog('\nConsolidating timeout comparison Excel...')
+        if args.consolidate:
+            print(f'[{_log_timestamp()}] [ORCHESTRATOR] Building Excel from existing CSVs…')
             consolidate_timeout_excel(outdir, excel_path)
             merge_timeout_into_ablation_workbook(outdir, ablation_excel_path)
-        return
+            return
 
-    for size_name, size_cfg in sizes.items():
-        timeouts = TIMEOUTS_PER_SIZE.get(size_name, [])
-        if args.timeout is not None:
-            if args.timeout not in timeouts:
-                raise SystemExit(
-                    f'--timeout {args.timeout} not in grid for {size_name}: {timeouts}')
-            timeouts = [args.timeout]
+        binary = args.binary
+        if not Path(binary).exists():
+            print(f'ERROR: binary not found: {binary}')
+            sys.exit(1)
 
-        cfg = per_size_cfg[size_name]
-        extra_args, _ = build_solver_args_from_full_config(cfg)
-        vlog(f'Config {size_name}: {cfg}')
+        size_map = {'9': '9x9', '16': '16x16', '25': '25x25'}
+        if args.size:
+            sizes = OrderedDict([
+                (size_map[args.size], SIZE_CONFIGS[size_map[args.size]]),
+            ])
+        else:
+            sizes = SIZE_CONFIGS
 
-        for alg, alg_name in algs:
-            for t in timeouts:
-                vlog(f'\n=== {alg_name} (alg={alg}) timeout={t}s {size_name} ===')
-                run_timeout_job(
-                    binary, alg, alg_name, t, size_name, size_cfg,
-                    extra_args, args.reps, outdir, vlog,
-                    worker_id=args.worker_id, num_workers=args.num_workers)
+        algs = ALGORITHMS if args.alg is None else tuple(
+            (a, n) for a, n in ALGORITHMS if a == args.alg)
+        if args.second_alg is not None:
+            # Force ordered (first alg -> second alg) run inside the same worker.
+            if args.alg is None:
+                raise SystemExit('ERROR: --second-alg requires --alg to be set.')
+            alg_map = {a: n for a, n in ALGORITHMS}
+            if args.alg not in alg_map or args.second_alg not in alg_map:
+                raise SystemExit(f'ERROR: invalid alg ids: {args.alg}, {args.second_alg}')
+            algs = ((args.alg, alg_map[args.alg]), (args.second_alg, alg_map[args.second_alg]))
 
-    if not args.no_consolidate:
-        vlog('\nConsolidating timeout comparison Excel...')
-        consolidate_timeout_excel(outdir, excel_path)
-        merge_timeout_into_ablation_workbook(outdir, ablation_excel_path)
+        best_path = Path(args.best_config)
+        per_size_cfg = None
+        if any(a == 2 for a, _ in algs):
+            per_size_cfg = load_best_config(best_path)
+
+        if parallel_parent:
+            run_parallel_timeout_shards(args, sizes, algs, log_dir)
+            if not args.no_consolidate:
+                vlog(
+                    f'\n[{_log_timestamp()}] [ORCHESTRATOR] Consolidating timeout '
+                    f'comparison Excel…'
+                )
+                consolidate_timeout_excel(outdir, excel_path)
+                merge_timeout_into_ablation_workbook(outdir, ablation_excel_path)
+            return
+
+        for size_name, size_cfg in sizes.items():
+            timeouts = TIMEOUTS_PER_SIZE.get(size_name, [])
+            if args.timeout is not None:
+                if args.timeout not in timeouts:
+                    raise SystemExit(
+                        f'--timeout {args.timeout} not in grid for {size_name}: {timeouts}')
+                timeouts = [args.timeout]
+
+            for alg, alg_name in algs:
+                _attach_alg_log(size_name, alg, alg_name)
+                if alg == 0:
+                    extra_args: list = []
+                    vlog(
+                        f'[ACO alg=0] {size_name}: binary defaults '
+                        f'(no best_config.json CLI overrides)'
+                    )
+                else:
+                    assert per_size_cfg is not None
+                    cfg = per_size_cfg[size_name]
+                    extra_args, _ = build_solver_args_from_full_config(cfg)
+                    vlog(f'[CP-DCM-ACO alg=2] {size_name} config: {cfg}')
+                for t in timeouts:
+                    vlog(
+                        f'\n[RUN] {alg_name} (alg={alg}) timeout={t}s puzzle={size_name} — '
+                        f'starting instances…'
+                    )
+                    run_timeout_job(
+                        binary, alg, alg_name, t, size_name, size_cfg,
+                        extra_args, args.reps, outdir, vlog,
+                        worker_id=args.worker_id, num_workers=args.num_workers)
+
+        if not args.no_consolidate:
+            _close_alg_log()
+            sys.stdout = _orig_stdout
+            if log_dir is not None and not worker_session:
+                log_dir.mkdir(parents=True, exist_ok=True)
+                _orch_log_f = open(
+                    log_dir / 'timeout_orchestrator.log',
+                    'a',
+                    encoding='utf-8',
+                    buffering=1,
+                    newline='\n',
+                )
+                sys.stdout = _TeeStdout(_orig_stdout, _orch_log_f)
+            vlog(
+                f'\n[{_log_timestamp()}] [ORCHESTRATOR] Consolidating timeout '
+                f'comparison Excel…'
+            )
+            consolidate_timeout_excel(outdir, excel_path)
+            merge_timeout_into_ablation_workbook(outdir, ablation_excel_path)
+
+    finally:
+        sys.stdout = _orig_stdout
+        for fh in (_worker_sess_f, _alg_log_f, _orch_log_f):
+            if fh is not None:
+                try:
+                    fh.close()
+                except OSError:
+                    pass
 
 
 if __name__ == '__main__':

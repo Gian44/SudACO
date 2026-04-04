@@ -88,7 +88,6 @@ bool SudokuAntSystem::Solve(const Board& puzzle, float maxTime )
 			if (bestVal == numCells)
 			{
 				solved = true;
-				solTime = solutionTimer.Elapsed();
 			}
 		}
 		UpdatePheromone();
@@ -104,6 +103,9 @@ bool SudokuAntSystem::Solve(const Board& puzzle, float maxTime )
 			}
 		}
 	}
+	// Total wall time for this run (success or timeout). Without this, timeout exits
+	// could leave solTime unset so verbose output prints a bogus "failed in time".
+	solTime = solutionTimer.Elapsed();
 	ClearPheromone();
 	iterationCount = iter;
 	std::cout << "Number of cycles: " << iter << "\n";

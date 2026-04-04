@@ -25,6 +25,7 @@ from types import SimpleNamespace
 
 import bench_best_config
 import bench_pool_jobs
+from run_ablation import sort_summary_csv_if_complete
 
 from bench_utils import default_binary
 
@@ -124,7 +125,7 @@ def main(argv: list[str] | None = None) -> int:
         '--workers-per-size',
         type=int,
         default=2,
-        help='Max concurrent reps per size at start; pool size = this times (selected sizes with work). '
+        help='Max concurrent reps per size; pool size = this times (selected sizes). '
              'When a size finishes, its slots move to the next busy size (default: 2).',
     )
     ap.add_argument(
@@ -248,21 +249,30 @@ def main(argv: list[str] | None = None) -> int:
 
     if not instance_job_blocks:
         print('Nothing to run (all selected sizes already complete or empty).')
+        for st in size_state.values():
+            outfile = st['outfile']
+            instance_files = st['instance_files']
+            canon = [fp.name for fp in instance_files]
+            if sort_summary_csv_if_complete(outfile, canon):
+                print(f'Sorted summary rows to instance-folder order ({len(canon)}): {outfile}')
+            bench_pool_jobs.remove_best_config_progress_if_done(
+                outfile, st['progress_file'], instance_files)
         return 0
 
     batches: dict[str, deque] = {s: deque() for s in selected}
     for size_name, _fp, jobs in instance_job_blocks:
         batches[size_name].append(deque(jobs))
 
-    n_sizes_with_work = sum(1 for s in sizes_order if _size_has_pending_work(batches, s))
-    max_workers = workers_per_size * max(1, n_sizes_with_work)
+    # Keep total pool fixed by selected sizes (e.g., all sizes with 2 => always 6),
+    # then redistribute slots from sizes that are already complete at startup.
+    max_workers = workers_per_size * max(1, len(sizes_order))
     max_parallel = {
-        s: (workers_per_size if _size_has_pending_work(batches, s) else 0)
+        s: workers_per_size
         for s in selected
     }
     in_flight = {s: 0 for s in selected}
 
-    def redistribute_capacity(finished_sz: str) -> None:
+    def redistribute_capacity(finished_sz: str, reason: str = 'finished') -> None:
         bonus = max_parallel.get(finished_sz, 0)
         if bonus <= 0:
             return
@@ -273,12 +283,18 @@ def main(argv: list[str] | None = None) -> int:
             if _size_has_pending_work(batches, sz) or in_flight[sz] > 0:
                 max_parallel[sz] = max_parallel.get(sz, 0) + bonus
                 print(
-                    f'Size {finished_sz} finished — moved {bonus} worker slot(s) to {sz} '
+                    f'Size {finished_sz} {reason} — moved {bonus} worker slot(s) to {sz} '
                     f'(max concurrent reps on {sz} is now {max_parallel[sz]}).',
                     flush=True,
                 )
                 vlog(f'  max_parallel: {dict(max_parallel)}')
                 return
+
+    # Startup rebalance: if a selected size has no pending work at launch,
+    # move its slots immediately so remaining sizes can use the full pool.
+    for sz in sizes_order:
+        if not _size_has_pending_work(batches, sz):
+            redistribute_capacity(sz, reason='already complete at startup')
 
     print(
         f'Unified pool: {max_workers} solver process(es), {workers_per_size} cap per size at start, '
@@ -357,7 +373,7 @@ def main(argv: list[str] | None = None) -> int:
             and not _size_has_pending_work(batches, sz_done)
             and sz_done in max_parallel
         ):
-            redistribute_capacity(sz_done)
+            redistribute_capacity(sz_done, reason='finished')
 
     def submit_round(ex: ProcessPoolExecutor, job_by_fut: dict) -> None:
         """Fair fill: one submission per size per inner sweep so 9/16/25 start together."""
@@ -386,13 +402,13 @@ def main(argv: list[str] | None = None) -> int:
             submit_round(ex, job_by_fut)
 
     for size_name, st in size_state.items():
-        n_inst = len(st['instance_files'])
-        if len(st['completed']) >= n_inst and st['progress_file'].exists():
-            try:
-                st['progress_file'].unlink()
-                print(f'Progress file removed: {st["progress_file"]}')
-            except OSError as e:
-                print(f'Could not remove progress file {st["progress_file"]}: {e}')
+        outfile = st['outfile']
+        instance_files = st['instance_files']
+        canon = [fp.name for fp in instance_files]
+        if sort_summary_csv_if_complete(outfile, canon):
+            print(f'Sorted summary rows to instance-folder order ({len(canon)}): {outfile}')
+        bench_pool_jobs.remove_best_config_progress_if_done(
+            outfile, st['progress_file'], instance_files)
 
     print(f"\n{'='*70}")
     print('Unified pool finished.')

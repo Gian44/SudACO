@@ -15,6 +15,16 @@ from pathlib import Path
 from statistics import mean, pstdev
 
 
+class SolverInterruptedError(RuntimeError):
+    """
+    Raised when the solver subprocess terminated in a way that we cannot reliably
+    interpret as a normal 'solved'/'failed in time' outcome.
+
+    Used so benchmark harnesses can avoid writing bogus failures when the user
+    abruptly terminates a running instance/rep.
+    """
+
+
 def default_binary():
     """Guess a sensible default solver binary depending on the platform."""
     if os.name == 'nt':
@@ -34,10 +44,12 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
     args = [binary, '--file', str(file_path), '--alg', str(alg), '--timeout', str(timeout), '--verbose']
     if extra_args:
         args.extend(extra_args)
+    solver_returncode: int | None = None
     try:
         out = subprocess.check_output(args, stderr=subprocess.STDOUT, universal_newlines=True)
     except subprocess.CalledProcessError as e:
         out = e.output
+        solver_returncode = e.returncode
 
     # Parse output. Verbose format:
     #   - "Number of cycles (multi): N" then either "failed in time X" or "Solution:" + grid + "solved in X", then cp_* lines.
@@ -53,12 +65,14 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
     # Prefer verbose format: "failed in time X" or "solved in X" (may appear after "Solution:" and grid when solved)
     solved_in_pat = re.compile(r"solved in\s+(" + float_pat.pattern + r")", re.IGNORECASE)
     failed_in_pat = re.compile(r"failed in time\s+(" + float_pat.pattern + r")", re.IGNORECASE)
+    found_solved_or_failed = False
     for ln in all_lines:
         m = solved_in_pat.search(ln)
         if m:
             try:
                 elapsed = float(m.group(1))
                 success = True
+                found_solved_or_failed = True
                 break
             except (ValueError, IndexError):
                 pass
@@ -67,6 +81,7 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
             try:
                 elapsed = float(m.group(1))
                 success = False
+                found_solved_or_failed = True
                 break
             except (ValueError, IndexError):
                 pass
@@ -101,6 +116,15 @@ def run_solver(binary, file_path, alg, timeout, extra_args=None):
                 if 'solved in' in ln.lower():
                     success = True
                     break
+
+    # If the solver terminated unexpectedly and we can't find the standard
+    # 'solved in X' or 'failed in time X' markers, treat it as an interruption
+    # (e.g., user-aborted process) so callers can avoid writing a fake FAIL row.
+    if math.isnan(elapsed) and (solver_returncode not in (None, 0)) and (not found_solved_or_failed):
+        raise SolverInterruptedError(
+            f"Solver subprocess terminated unexpectedly (returncode={solver_returncode}) "
+            f"without 'solved in'/'failed in time' markers for file {file_path}."
+        )
 
     # Extract number of cycles (single- or multi-colony)
     cyc_pat = re.compile(r"Number of cycles(?: \(multi\))?:\s*(\d+)")
