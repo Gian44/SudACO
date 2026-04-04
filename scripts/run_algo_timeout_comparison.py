@@ -16,8 +16,10 @@ Outputs (default ``results/ablation/timeout``):
 
 Parallel mode:
   --workers-per-alg 4
-    Runs both algorithms simultaneously with 4 shard workers each
-    (8 Python processes per (size, timeout) phase), with resume-safe progress CSVs.
+    Per puzzle size, each worker runs the full timeout grid for its algorithm.
+    Start 4 workers on ACO (alg 0) and 4 on CP-DCM-ACO (alg 2); when all alg 2
+    workers finish every timeout, spawn ACO on the freed worker IDs to cover
+    the remaining instance shard (resume-safe). No mid-timeout transfer.
 
 Logging (default ``logs/timeout_comparison/``):
   timeout_orchestrator.log — parent process: phases, worker launches, Excel consolidation
@@ -36,6 +38,7 @@ import math
 import shutil
 import subprocess
 import sys
+import time
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
@@ -320,6 +323,51 @@ def run_timeout_job(
         progress_file, summary_file, all_instance_names, vlog, tag)
 
 
+def wait_for_timeout_matrix_complete(
+    *,
+    outdir: Path,
+    alg: int,
+    timeout_sec: int,
+    size_name: str,
+    size_cfg: dict,
+    alg_name: str,
+    vlog,
+    poll_seconds: float = 2.0,
+) -> None:
+    """Block until summary for (alg, timeout, size) contains every instance."""
+    instances_all = scan_instances(size_cfg['dir'])
+    all_instance_names = {fp.name for fp in instances_all}
+    total = len(all_instance_names)
+    if total == 0:
+        return
+
+    val_str = format_param_value('timeout', timeout_sec)
+    summary_file = outdir / f'alg_{alg}' / f'{val_str}_{size_name}_summary.csv'
+
+    last_done = -1
+    last_log_ts = 0.0
+    while True:
+        completed = read_completed_from_summary(summary_file)
+        done = len(completed.intersection(all_instance_names))
+        if done >= total:
+            if last_done != done:
+                vlog(
+                    f'  [BARRIER] {alg_name} timeout={timeout_sec}s {size_name}: '
+                    f'global complete ({done}/{total}); proceeding.'
+                )
+            return
+
+        now = time.time()
+        if done != last_done or (now - last_log_ts) >= 30.0:
+            vlog(
+                f'  [BARRIER] {alg_name} timeout={timeout_sec}s {size_name}: '
+                f'waiting for global completion ({done}/{total})'
+            )
+            last_done = done
+            last_log_ts = now
+        time.sleep(max(0.2, float(poll_seconds)))
+
+
 def collect_timeout_aggregates(outdir: Path):
     """
     Aggregate summary CSVs into rows per (timeout, puzzle_size, algorithm).
@@ -563,8 +611,23 @@ def run_parallel_timeout_shards(
     log_dir: Path | None,
 ):
     """
-    Parent orchestration mode:
-    For each (size, timeout), launch workers-per-alg shards for each algorithm.
+    Parent orchestration mode (one pass per puzzle size):
+
+    - **Initial phase:** ACO and alg 2 each use ``num_workers = workers_per_alg``
+      and ``worker_id`` in ``0 .. workers_per_alg-1``, so every instance is
+      covered per algorithm (same formula as single-alg parallel mode). Using
+      ``2 * workers_per_alg`` here would assign only half the instances to each
+      algorithm until transfer, so ``--run-all-timeouts`` children could advance
+      to the next timeout while global summaries were still incomplete.
+
+    - **Transfer (symmetric):** once one algorithm has no running workers left
+      for the current size phase, its worker IDs ``wps .. 2*wps-1`` are spawned
+      on the other algorithm (if still running) with
+      ``num_workers = 2 * workers_per_alg``. This donates compute to whichever
+      algorithm is still unfinished, while each algorithm remains checkpointed
+      by its own CSV files.
+
+    - Single-algorithm mode: ``workers_per_alg`` workers, ``num_workers`` = same.
     """
     workers_per_alg = max(1, int(args.workers_per_alg))
     total_workers = workers_per_alg * max(1, len(algs))
@@ -574,9 +637,94 @@ def run_parallel_timeout_shards(
     binary = str(args.binary)
 
     print(
-        f'[ORCHESTRATOR] Parallel timeout transfer mode: {workers_per_alg} worker(s)/algorithm, '
-        f'{total_workers} total process(es) per (size, timeout) phase.'
+        f'[ORCHESTRATOR] Parallel timeout mode: {workers_per_alg} worker(s)/algorithm '
+        f'per alg in the initial phase; up to {total_workers} workers on one '
+        f'algorithm after transfer; each child runs all timeouts for its alg.'
     )
+
+    def _spawn_alltimeouts_worker(
+        *,
+        size_short: str,
+        size_name: str,
+        alg_id: int,
+        alg_name: str,
+        worker_id: int,
+        num_workers: int,
+        stage: str,
+    ) -> dict:
+        session_path: Path | None = None
+        if log_dir is not None:
+            log_dir.mkdir(parents=True, exist_ok=True)
+            sess_dir = log_dir / 'sessions'
+            sess_dir.mkdir(exist_ok=True)
+            safe_stage = stage.replace(' ', '_')
+            session_path = (
+                sess_dir / f'{size_short}_alg{alg_id}_w{worker_id}_{safe_stage}.log'
+            )
+
+        cmd = [
+            sys.executable,
+            str(script_path),
+            '--binary', binary,
+            '--best-config', best_config,
+            '--outdir', outdir,
+            '--reps', str(int(args.reps)),
+            '--size', size_short,
+            '--alg', str(int(alg_id)),
+            '--worker-id', str(int(worker_id)),
+            '--num-workers', str(int(num_workers)),
+            '--run-all-timeouts',
+            '--no-consolidate',
+        ]
+        if args.timeout is not None:
+            cmd.extend(['--timeout', str(int(args.timeout))])
+        if log_dir is not None and session_path is not None:
+            cmd.extend(['--worker-session-log', str(session_path)])
+        if args.no_log_files:
+            cmd.append('--no-log-files')
+        if args.quiet:
+            cmd.append('--quiet')
+        elif args.verbose:
+            cmd.append('--verbose')
+        else:
+            cmd.append('--quiet')
+
+        print(
+            f'[ORCHESTRATOR] Spawn {alg_name} (alg={alg_id}) '
+            f'worker_id={worker_id} num_workers={num_workers} [{stage}] — {size_name}'
+        )
+        return {
+            'alg': alg_id,
+            'alg_name': alg_name,
+            'worker_id': worker_id,
+            'num_workers': num_workers,
+            'stage': stage,
+            'size_name': size_name,
+            'proc': subprocess.Popen(cmd, cwd=str(REPO_ROOT)),
+            'session_path': session_path,
+        }
+
+    def _finalize_worker(task: dict, failed: list[tuple[str, int, int]]) -> None:
+        rc = task['proc'].returncode
+        if rc is None:
+            rc = task['proc'].wait()
+        alg = task['alg']
+        alg_name = task['alg_name']
+        worker_id = task['worker_id']
+        stage = task['stage']
+        size_name = task['size_name']
+        session_path = task['session_path']
+        if log_dir is not None and session_path is not None:
+            _append_session_to_alg_log(
+                log_dir,
+                alg,
+                session_path,
+                f'Merged — {alg_name} (alg={alg}) worker_id={worker_id} '
+                f'num_workers={task["num_workers"]} [{stage}] | {size_name} '
+                f'all timeouts | exit_code={rc}',
+            )
+        if rc != 0:
+            failed.append((alg_name, worker_id, rc))
 
     for size_name, _size_cfg in sizes.items():
         size_short = SIZE_SHORT[size_name]
@@ -585,96 +733,124 @@ def run_parallel_timeout_shards(
             if args.timeout not in timeouts:
                 raise SystemExit(
                     f'--timeout {args.timeout} not in grid for {size_name}: {timeouts}')
-            timeouts = [args.timeout]
 
-        for t in timeouts:
-            print(
-                f'\n[ORCHESTRATOR] Phase start — puzzle={size_name} timeout={t}s '
-                f'— launching {total_workers} workers (first-alg + second-alg switching)'
-            )
-            procs: list[tuple[int, str, int, int, subprocess.Popen, Path | None]] = []
-            for worker_shard_id in range(total_workers):
-                first_alg, first_name = algs[worker_shard_id % len(algs)]
-                second_alg, second_name = algs[(worker_shard_id + 1) % len(algs)]
+        print(
+            f'\n[ORCHESTRATOR] Size phase — puzzle={size_name} '
+            f'timeouts={timeouts if args.timeout is None else [args.timeout]}'
+        )
 
-                session_path: Path | None = None
-                if log_dir is not None:
-                    log_dir.mkdir(parents=True, exist_ok=True)
-                    sess_dir = log_dir / 'sessions'
-                    sess_dir.mkdir(exist_ok=True)
-                    session_path = (
-                        sess_dir
-                        / f'{size_short}_{t}s_firstalg{first_alg}_w{worker_shard_id}.log'
-                    )
+        failed: list[tuple[str, int, int]] = []
 
-                cmd = [
-                    sys.executable,
-                    str(script_path),
-                    '--binary', binary,
-                    '--best-config', best_config,
-                    '--outdir', outdir,
-                    '--reps', str(int(args.reps)),
-                    '--size', size_short,
-                    '--timeout', str(int(t)),
-                    '--alg', str(int(first_alg)),
-                    '--worker-id', str(worker_shard_id),
-                    '--num-workers', str(int(total_workers)),
-                    '--no-consolidate',
-                ]
-                if len(algs) > 1:
-                    cmd.extend(['--second-alg', str(int(second_alg))])
-                if log_dir is not None and session_path is not None:
-                    cmd.extend(['--worker-session-log', str(session_path)])
-                if args.no_log_files:
-                    cmd.append('--no-log-files')
-                if args.quiet:
-                    cmd.append('--quiet')
-                elif args.verbose:
-                    cmd.append('--verbose')
-                else:
-                    cmd.append('--quiet')
-                then_part = f' (then alg={second_alg})' if len(algs) > 1 else ''
-                print(
-                    f'[ORCHESTRATOR] Spawn {first_name} (alg={first_alg}) worker '
-                    f'{worker_shard_id + 1}/{total_workers} pid pending…{then_part}'
+        if len(algs) == 1:
+            alg_id, alg_name = algs[0]
+            tasks = [
+                _spawn_alltimeouts_worker(
+                    size_short=size_short,
+                    size_name=size_name,
+                    alg_id=alg_id,
+                    alg_name=alg_name,
+                    worker_id=w,
+                    num_workers=workers_per_alg,
+                    stage='single_alg',
                 )
-                procs.append((
-                    first_alg,
-                    first_name,
-                    worker_shard_id,
-                    second_alg,
-                    subprocess.Popen(cmd, cwd=str(REPO_ROOT)),
-                    session_path,
-                ))
-
-            failed: list[tuple[str, int, int]] = []
-            for first_alg, first_name, worker_shard_id, second_alg, proc, session_path in procs:
-                rc = proc.wait()
-                if log_dir is not None and session_path is not None:
-                    _append_session_to_alg_log(
-                        log_dir,
-                        first_alg,
-                        session_path,
-                        f'Merged — first alg={first_alg} then alg={second_alg} '
-                        f'worker {worker_shard_id + 1}/{total_workers} | '
-                        f'{size_name} timeout={t}s | exit_code={rc}',
-                    )
-                if rc != 0:
-                    failed.append((first_name, worker_shard_id, rc))
+                for w in range(workers_per_alg)
+            ]
+            for task in tasks:
+                task['proc'].wait()
+                _finalize_worker(task, failed)
             if failed:
-                print(
-                    '[ORCHESTRATOR] ERROR: some workers failed in this phase:',
-                    file=sys.stderr,
-                )
-                for alg_name, worker_id, rc in failed:
-                    print(
-                        f'  {alg_name} worker {worker_id}: exit {rc}',
-                        file=sys.stderr,
-                    )
+                print('[ORCHESTRATOR] ERROR: some workers failed:', file=sys.stderr)
+                for alg_name_f, worker_id_f, rc in failed:
+                    print(f'  {alg_name_f} worker_id={worker_id_f}: exit {rc}', file=sys.stderr)
                 raise SystemExit(1)
-            print(
-                f'[ORCHESTRATOR] Phase complete — puzzle={size_name} timeout={t}s'
-            )
+            print(f'[ORCHESTRATOR] Size phase complete — {size_name}')
+            continue
+
+        if len(algs) != 2:
+            raise SystemExit('Parallel mode with transfer expects exactly 2 algorithms.')
+
+        alg0, alg0_name = algs[0]
+        alg2, alg2_name = algs[1]
+        if alg0 != 0 or alg2 != 2:
+            raise SystemExit('Parallel transfer layout expects ALGORITHMS = (0, ACO), (2, CP-DCM-ACO).')
+
+        running: list[dict] = []
+        # Tracks which receiving algorithm already got a transfer wave.
+        transfer_spawned_for_receiver: set[int] = set()
+
+        for w in range(workers_per_alg):
+            running.append(_spawn_alltimeouts_worker(
+                size_short=size_short,
+                size_name=size_name,
+                alg_id=alg0,
+                alg_name=alg0_name,
+                worker_id=w,
+                num_workers=workers_per_alg,
+                stage='initial_aco',
+            ))
+        for w in range(workers_per_alg):
+            running.append(_spawn_alltimeouts_worker(
+                size_short=size_short,
+                size_name=size_name,
+                alg_id=alg2,
+                alg_name=alg2_name,
+                worker_id=w,
+                num_workers=workers_per_alg,
+                stage='initial_cp_dcm',
+            ))
+
+        while True:
+            for task in list(running):
+                if task['proc'].poll() is None:
+                    continue
+                running.remove(task)
+                _finalize_worker(task, failed)
+
+            if failed:
+                break
+
+            running_by_alg = {int(t['alg']) for t in running}
+
+            transfer_specs = [
+                (alg0, alg0_name, alg2, alg2_name),
+                (alg2, alg2_name, alg0, alg0_name),
+            ]
+            for donor_alg, donor_name, receiver_alg, receiver_name in transfer_specs:
+                donor_done = donor_alg not in running_by_alg
+                receiver_still_running = receiver_alg in running_by_alg
+                if (not donor_done) or (not receiver_still_running):
+                    continue
+                if receiver_alg in transfer_spawned_for_receiver:
+                    continue
+
+                transfer_spawned_for_receiver.add(receiver_alg)
+                print(
+                    f'[ORCHESTRATOR] All {donor_name} (alg={donor_alg}) workers '
+                    f'finished all timeouts; spawning {receiver_name} (alg={receiver_alg}) '
+                    f'on worker IDs {workers_per_alg}..{total_workers - 1}.'
+                )
+                for w in range(workers_per_alg, total_workers):
+                    running.append(_spawn_alltimeouts_worker(
+                        size_short=size_short,
+                        size_name=size_name,
+                        alg_id=receiver_alg,
+                        alg_name=receiver_name,
+                        worker_id=w,
+                        num_workers=total_workers,
+                        stage=f'transfer_alg{receiver_alg}_after_alg{donor_alg}',
+                    ))
+
+            if not running:
+                break
+            time.sleep(0.2)
+
+        if failed:
+            print('[ORCHESTRATOR] ERROR: some workers failed:', file=sys.stderr)
+            for alg_name_f, worker_id_f, rc in failed:
+                print(f'  {alg_name_f} worker_id={worker_id_f}: exit {rc}', file=sys.stderr)
+            raise SystemExit(1)
+
+        print(f'[ORCHESTRATOR] Size phase complete — {size_name}')
 
 
 def main():
@@ -692,15 +868,9 @@ def main():
                     help='Single timeout value (must belong to that size grid)')
     ap.add_argument('--alg', type=int, default=None, choices=[0, 2],
                     help='Run only this algorithm ID (default: both)')
-    ap.add_argument(
-        '--second-alg',
-        type=int,
-        default=None,
-        choices=[0, 2],
-        help='Run --alg first, then --second-alg inside the same worker (timeout transfer mode).',
-    )
     ap.add_argument('--workers-per-alg', type=int, default=1,
-                    help='When >1, parent spawns shard workers per algorithm per (size, timeout) phase')
+                    help='When >1, parallel parent runs all timeouts per size; '
+                         'N workers per algorithm, then transfer to whichever alg is unfinished')
     ap.add_argument('--consolidate', action='store_true',
                     help='Only build timeout_comparison.xlsx from existing CSVs')
     ap.add_argument('--no-consolidate', action='store_true',
@@ -727,6 +897,11 @@ def main():
     ap.add_argument(
         '--worker-session-log',
         default=None,
+        help=argparse.SUPPRESS,
+    )
+    ap.add_argument(
+        '--run-all-timeouts',
+        action='store_true',
         help=argparse.SUPPRESS,
     )
     args = ap.parse_args()
@@ -825,19 +1000,66 @@ def main():
 
         algs = ALGORITHMS if args.alg is None else tuple(
             (a, n) for a, n in ALGORITHMS if a == args.alg)
-        if args.second_alg is not None:
-            # Force ordered (first alg -> second alg) run inside the same worker.
-            if args.alg is None:
-                raise SystemExit('ERROR: --second-alg requires --alg to be set.')
-            alg_map = {a: n for a, n in ALGORITHMS}
-            if args.alg not in alg_map or args.second_alg not in alg_map:
-                raise SystemExit(f'ERROR: invalid alg ids: {args.alg}, {args.second_alg}')
-            algs = ((args.alg, alg_map[args.alg]), (args.second_alg, alg_map[args.second_alg]))
 
         best_path = Path(args.best_config)
         per_size_cfg = None
         if any(a == 2 for a, _ in algs):
             per_size_cfg = load_best_config(best_path)
+
+        # Parallel child: run every timeout for this size in one process (orchestrator spawns us).
+        if getattr(args, 'run_all_timeouts', False):
+            if args.size is None:
+                raise SystemExit('ERROR: internal --run-all-timeouts requires --size')
+            if args.alg is None:
+                raise SystemExit('ERROR: internal --run-all-timeouts requires --alg')
+            size_name = size_map[args.size]
+            size_cfg = SIZE_CONFIGS[size_name]
+            timeouts_list = list(TIMEOUTS_PER_SIZE.get(size_name, []))
+            if args.timeout is not None:
+                if args.timeout not in timeouts_list:
+                    raise SystemExit(
+                        f'--timeout {args.timeout} not in grid for {size_name}: {timeouts_list}')
+                timeouts_list = [args.timeout]
+            alg_map = {a: n for a, n in ALGORITHMS}
+            if args.alg not in alg_map:
+                raise SystemExit(f'ERROR: unknown --alg {args.alg}')
+            alg_name = alg_map[args.alg]
+            for idx_t, t in enumerate(timeouts_list):
+                if args.alg == 0:
+                    extra_args: list = []
+                    vlog(
+                        f'[ACO alg=0] {size_name} timeout={t}s: binary defaults '
+                        f'(worker {args.worker_id}/{args.num_workers})'
+                    )
+                else:
+                    assert per_size_cfg is not None
+                    cfg = per_size_cfg[size_name]
+                    extra_args, _ = build_solver_args_from_full_config(cfg)
+                    vlog(
+                        f'[CP-DCM-ACO alg=2] {size_name} timeout={t}s '
+                        f'(worker {args.worker_id}/{args.num_workers}) config: {cfg}'
+                    )
+                vlog(
+                    f'\n[RUN] {alg_name} (alg={args.alg}) timeout={t}s puzzle={size_name} — '
+                    f'starting instances…'
+                )
+                run_timeout_job(
+                    binary, args.alg, alg_name, t, size_name, size_cfg,
+                    extra_args, args.reps, outdir, vlog,
+                    worker_id=args.worker_id, num_workers=args.num_workers)
+                # Strict timeout ordering across workers:
+                # do not start next timeout until this timeout matrix is globally complete.
+                if idx_t + 1 < len(timeouts_list):
+                    wait_for_timeout_matrix_complete(
+                        outdir=outdir,
+                        alg=args.alg,
+                        timeout_sec=t,
+                        size_name=size_name,
+                        size_cfg=size_cfg,
+                        alg_name=alg_name,
+                        vlog=vlog,
+                    )
+            return
 
         if parallel_parent:
             run_parallel_timeout_shards(args, sizes, algs, log_dir)

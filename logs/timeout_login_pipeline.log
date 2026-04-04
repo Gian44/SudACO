@@ -12,3 +12,48 @@ Detailed logs: logs\timeout_comparison\timeout_orchestrator.log
                 logs\timeout_comparison\timeout_alg0.log  (ACO)
                 logs\timeout_comparison\timeout_alg2.log  (CP-DCM-ACO)
 ================================================================
+
+================================================================
+[Sat 04/04/2026 12:51:15.32] Timeout comparison start
+Detailed logs: logs\timeout_comparison\timeout_orchestrator.log
+                logs\timeout_comparison\timeout_alg0.log  (ACO)
+                logs\timeout_comparison\timeout_alg2.log  (CP-DCM-ACO)
+================================================================
+
+================================================================
+[Sat 04/04/2026 20:49:37.88] Timeout comparison start
+Detailed logs: logs\timeout_comparison\timeout_orchestrator.log
+                logs\timeout_comparison\timeout_alg0.log  (ACO)
+                logs\timeout_comparison\timeout_alg2.log  (CP-DCM-ACO)
+================================================================
+
+================================================================
+[Sat 04/04/2026 23:50:53.47] Timeout comparison start
+Detailed logs: logs\timeout_comparison\timeout_orchestrator.log
+                logs\timeout_comparison\timeout_alg0.log  (ACO)
+                logs\timeout_comparison\timeout_alg2.log  (CP-DCM-ACO)
+================================================================
+[Sat 04/04/2026 23:52:21.63] Timeout comparison end exit_code=
+
+================================================================
+[Sun 04/05/2026  0:03:15.75] Timeout comparison start
+Detailed logs: logs\timeout_comparison\timeout_orchestrator.log
+                logs\timeout_comparison\timeout_alg0.log  (ACO)
+                logs\timeout_comparison\timeout_alg2.log  (CP-DCM-ACO)
+================================================================
+[Sun 04/05/2026  0:04:04.83] Timeout comparison end exit_code=
+
+================================================================
+[Sun 04/05/2026  0:04:27.03] Timeout comparison start
+Detailed logs: logs\timeout_comparison\timeout_orchestrator.log
+                logs\timeout_comparison\timeout_alg0.log  (ACO)
+                logs\timeout_comparison\timeout_alg2.log  (CP-DCM-ACO)
+================================================================
+[Sun 04/05/2026  0:05:17.24] Timeout comparison end exit_code=
+
+================================================================
+[Sun 04/05/2026  0:09:13.95] Timeout comparison start
+Detailed logs: logs\timeout_comparison\timeout_orchestrator.log
+                logs\timeout_comparison\timeout_alg0.log  (ACO)
+                logs\timeout_comparison\timeout_alg2.log  (CP-DCM-ACO)
+================================================================
