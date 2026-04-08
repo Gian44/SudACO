@@ -17,9 +17,10 @@ Outputs (default ``results/ablation/timeout``):
 Parallel mode:
   --workers-per-alg 4
     Per puzzle size, each worker runs the full timeout grid for its algorithm.
-    Start 4 workers on ACO (alg 0) and 4 on CP-DCM-ACO (alg 2); when all alg 2
-    workers finish every timeout, spawn ACO on the freed worker IDs to cover
-    the remaining instance shard (resume-safe). No mid-timeout transfer.
+    Start 4 workers on ACO (alg 0) and 4 on CP-DCM-ACO (alg 2).
+    Workers use atomic per-instance claims (safe work-stealing), and once one
+    algorithm finishes, those worker slots can transfer to help the other
+    algorithm finish the same size phase.
 
 Logging (default ``logs/timeout_comparison/``):
   timeout_orchestrator.log — parent process: phases, worker launches, Excel consolidation
@@ -35,6 +36,7 @@ import argparse
 import csv
 import json
 import math
+import os
 import shutil
 import subprocess
 import sys
@@ -139,6 +141,67 @@ def _append_session_to_alg_log(
         pass
 
 
+def _try_claim_instance(
+    claim_dir: Path,
+    instance_name: str,
+    *,
+    worker_id: int,
+    num_workers: int,
+    stale_seconds: int = 12 * 60 * 60,
+) -> Path | None:
+    """
+    Atomically claim one instance using O_EXCL file creation.
+    Returns claim path on success, else None.
+    """
+    claim_dir.mkdir(parents=True, exist_ok=True)
+    claim_path = claim_dir / f'{instance_name}.claim'
+
+    def _create() -> bool:
+        try:
+            fd = os.open(str(claim_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            try:
+                msg = (
+                    f'worker_id={worker_id}\n'
+                    f'num_workers={num_workers}\n'
+                    f'claimed_at={time.time():.6f}\n'
+                )
+                os.write(fd, msg.encode('utf-8', errors='replace'))
+            finally:
+                os.close(fd)
+            return True
+        except FileExistsError:
+            return False
+        except OSError:
+            return False
+
+    if _create():
+        return claim_path
+
+    # Reclaim stale claims from crashed workers.
+    try:
+        age = time.time() - claim_path.stat().st_mtime
+        if age > float(stale_seconds):
+            try:
+                claim_path.unlink()
+            except OSError:
+                return None
+            if _create():
+                return claim_path
+    except OSError:
+        return None
+
+    return None
+
+
+def _release_claim(claim_path: Path | None) -> None:
+    if claim_path is None:
+        return
+    try:
+        claim_path.unlink()
+    except OSError:
+        pass
+
+
 def load_best_config(path: Path) -> dict:
     """
     Return ``{ '9x9': cfg, '16x16': cfg, '25x25': cfg }`` with the same hyperparameters
@@ -187,6 +250,7 @@ def run_timeout_job(
     vlog,
     worker_id: int = 0,
     num_workers: int = 1,
+    dynamic_claims: bool = False,
 ):
     """One (algorithm, timeout, size) matrix; param_value column stores timeout for traceability."""
     val_str = format_param_value('timeout', timeout_sec)
@@ -207,13 +271,18 @@ def run_timeout_job(
     all_instance_names = {fp.name for fp in instances_all}
     num_workers = max(1, int(num_workers))
     worker_id = int(worker_id) % num_workers
-    instances = [
-        fp for i, fp in enumerate(instances_all)
-        if (i % num_workers) == worker_id
-    ]
-    if not instances:
-        vlog(f'  Worker {worker_id}/{num_workers} has no instances')
-        return
+    dynamic_claims = bool(dynamic_claims and num_workers > 1)
+
+    if dynamic_claims:
+        instances = instances_all
+    else:
+        instances = [
+            fp for i, fp in enumerate(instances_all)
+            if (i % num_workers) == worker_id
+        ]
+        if not instances:
+            vlog(f'  Worker {worker_id}/{num_workers} has no instances')
+            return
 
     completed = read_completed_from_summary(summary_file)
     completed_overall = len(completed.intersection(all_instance_names))
@@ -231,15 +300,14 @@ def run_timeout_job(
     subset_names = {fp.name for fp in instances}
     completed_in_subset = completed.intersection(subset_names)
     total = len(instances)
-
     if completed_in_subset:
-        vlog(f'  [{tag}] Worker {worker_id}/{num_workers} resuming '
+        mode = 'claim' if dynamic_claims else 'shard'
+        vlog(f'  [{tag}] Worker {worker_id}/{num_workers} ({mode}) resuming '
              f'{len(completed_in_subset)}/{total} instances')
 
-    for idx, fp in enumerate(instances, 1):
-        if fp.name in completed:
-            continue
+    claim_dir = sub / '.claims' / f'{val_str}_{size_name}'
 
+    def _process_instance(fp: Path, idx_label: str):
         rep_map = progress.get(fp.name, {})
         done_reps = set(rep_map.keys())
 
@@ -254,19 +322,16 @@ def run_timeout_job(
                     cycles_solved.append(cyc)
 
         status = f'RESUME {len(done_reps)}/{reps}' if done_reps else ''
-        vlog(f'  [{tag}] ({idx}/{total}) {fp.name} {status}')
+        vlog(f'  [{tag}] {idx_label} {fp.name} {status}')
 
         for rep in range(1, reps + 1):
             if rep in done_reps:
                 continue
-
             try:
                 success, t, cyc, out = run_solver(
                     binary, fp, alg, timeout, extra_args=extra_args)
             except SolverInterruptedError:
-                # User aborted this rep: do not record a fake FAIL row.
-                vlog(
-                    f'    Rep {rep}/{reps}: INTERRUPTED; not recorded (will resume)')
+                vlog(f'    Rep {rep}/{reps}: INTERRUPTED; not recorded (will resume)')
                 break
 
             status_str = 'OK' if success else 'FAIL'
@@ -289,7 +354,7 @@ def run_timeout_job(
         if len(done_reps) < reps:
             vlog(f'    => partial ({len(done_reps)}/{reps})')
             progress[fp.name] = rep_map
-            continue
+            return
 
         succ_pct = (successes / float(reps)) * 100.0
         tm = safe_mean(times)
@@ -306,7 +371,6 @@ def run_timeout_job(
             round(cm, 3) if not math.isnan(cm) else '',
             round(cs, 3) if not math.isnan(cs) else '',
         ]
-
         if append_csv_row(summary_file, row):
             completed.add(fp.name)
             completed_now = read_completed_from_summary(summary_file)
@@ -316,8 +380,50 @@ def run_timeout_job(
                     progress_file, summary_file, all_instance_names, vlog, tag)
         else:
             vlog(f'    ERROR: could not write summary for {fp.name}')
-
         progress[fp.name] = rep_map
+
+    if dynamic_claims:
+        idle_loops = 0
+        while True:
+            completed_now = read_completed_from_summary(summary_file)
+            done_global = len(completed_now.intersection(all_instance_names))
+            if done_global >= len(instances_all):
+                break
+
+            claimed_fp = None
+            claimed_path = None
+            for idx, fp in enumerate(instances_all, 1):
+                if fp.name in completed_now:
+                    continue
+                cp = _try_claim_instance(
+                    claim_dir,
+                    fp.name,
+                    worker_id=worker_id,
+                    num_workers=num_workers,
+                )
+                if cp is not None:
+                    claimed_fp = fp
+                    claimed_path = cp
+                    try:
+                        _process_instance(fp, f'({idx}/{len(instances_all)}) [claim]')
+                    finally:
+                        _release_claim(claimed_path)
+                    idle_loops = 0
+                    break
+
+            if claimed_fp is None:
+                idle_loops += 1
+                if idle_loops == 1 or idle_loops % 20 == 0:
+                    vlog(
+                        f'  [{tag}] Worker {worker_id}/{num_workers} waiting for claimable '
+                        f'instances ({done_global}/{len(instances_all)} complete)'
+                    )
+                time.sleep(0.5)
+    else:
+        for idx, fp in enumerate(instances, 1):
+            if fp.name in completed:
+                continue
+            _process_instance(fp, f'({idx}/{total})')
 
     delete_ablation_progress_if_summary_done(
         progress_file, summary_file, all_instance_names, vlog, tag)
@@ -387,39 +493,46 @@ def collect_timeout_aggregates(outdir: Path):
             if size_name not in SIZE_CONFIGS:
                 continue
 
+            by_instance = {}
+            try:
+                with open(csv_file, 'r', newline='') as f:
+                    for row in csv.DictReader(f):
+                        inst = (row.get('instance') or '').strip()
+                        if inst:
+                            # Defensive de-dup: keep last row per instance.
+                            by_instance[inst] = row
+            except Exception:
+                continue
+
+            if not by_instance:
+                continue
+
             succ_vals = []
             tmean_vals = []
             tstd_vals = []
             cmean_vals = []
             cstd_vals = []
-            try:
-                with open(csv_file, 'r', newline='') as f:
-                    for row in csv.DictReader(f):
-                        try:
-                            succ_vals.append(float(row.get('success_%') or 'nan'))
-                        except Exception:
-                            succ_vals.append(float('nan'))
-                        try:
-                            tmean_vals.append(float(row.get('time_mean') or 'nan'))
-                        except Exception:
-                            tmean_vals.append(float('nan'))
-                        try:
-                            tstd_vals.append(float(row.get('time_std') or 'nan'))
-                        except Exception:
-                            tstd_vals.append(float('nan'))
-                        try:
-                            cmean_vals.append(float(row.get('cycles_mean') or 'nan'))
-                        except Exception:
-                            cmean_vals.append(float('nan'))
-                        try:
-                            cstd_vals.append(float(row.get('cycles_std') or 'nan'))
-                        except Exception:
-                            cstd_vals.append(float('nan'))
-            except Exception:
-                continue
-
-            if not succ_vals:
-                continue
+            for row in by_instance.values():
+                try:
+                    succ_vals.append(float(row.get('success_%') or 'nan'))
+                except Exception:
+                    succ_vals.append(float('nan'))
+                try:
+                    tmean_vals.append(float(row.get('time_mean') or 'nan'))
+                except Exception:
+                    tmean_vals.append(float('nan'))
+                try:
+                    tstd_vals.append(float(row.get('time_std') or 'nan'))
+                except Exception:
+                    tstd_vals.append(float('nan'))
+                try:
+                    cmean_vals.append(float(row.get('cycles_mean') or 'nan'))
+                except Exception:
+                    cmean_vals.append(float('nan'))
+                try:
+                    cstd_vals.append(float(row.get('cycles_std') or 'nan'))
+                except Exception:
+                    cstd_vals.append(float('nan'))
 
             rows_agg.append({
                 'timeout_s': timeout_part,
@@ -612,21 +725,10 @@ def run_parallel_timeout_shards(
 ):
     """
     Parent orchestration mode (one pass per puzzle size):
-
-    - **Initial phase:** ACO and alg 2 each use ``num_workers = workers_per_alg``
-      and ``worker_id`` in ``0 .. workers_per_alg-1``, so every instance is
-      covered per algorithm (same formula as single-alg parallel mode). Using
-      ``2 * workers_per_alg`` here would assign only half the instances to each
-      algorithm until transfer, so ``--run-all-timeouts`` children could advance
-      to the next timeout while global summaries were still incomplete.
-
-    - **Transfer (symmetric):** once one algorithm has no running workers left
-      for the current size phase, its worker IDs ``wps .. 2*wps-1`` are spawned
-      on the other algorithm (if still running) with
-      ``num_workers = 2 * workers_per_alg``. This donates compute to whichever
-      algorithm is still unfinished, while each algorithm remains checkpointed
-      by its own CSV files.
-
+    - Each selected algorithm starts with ``workers_per_alg`` workers.
+    - Workers use dynamic per-instance claims (work-stealing safe).
+    - If one algorithm finishes early, its worker slots are transferred to the
+      other algorithm to help finish remaining instances.
     - Single-algorithm mode: ``workers_per_alg`` workers, ``num_workers`` = same.
     """
     workers_per_alg = max(1, int(args.workers_per_alg))
@@ -637,9 +739,8 @@ def run_parallel_timeout_shards(
     binary = str(args.binary)
 
     print(
-        f'[ORCHESTRATOR] Parallel timeout mode: {workers_per_alg} worker(s)/algorithm '
-        f'per alg in the initial phase; up to {total_workers} workers on one '
-        f'algorithm after transfer; each child runs all timeouts for its alg.'
+        f'[ORCHESTRATOR] Parallel timeout mode: {workers_per_alg} worker(s)/algorithm; '
+        f'dynamic claims enabled (safe work-stealing); transfer enabled.'
     )
 
     def _spawn_alltimeouts_worker(
@@ -674,6 +775,7 @@ def run_parallel_timeout_shards(
             '--worker-id', str(int(worker_id)),
             '--num-workers', str(int(num_workers)),
             '--run-all-timeouts',
+            '--dynamic-claims',
             '--no-consolidate',
         ]
         if args.timeout is not None:
@@ -775,9 +877,7 @@ def run_parallel_timeout_shards(
             raise SystemExit('Parallel transfer layout expects ALGORITHMS = (0, ACO), (2, CP-DCM-ACO).')
 
         running: list[dict] = []
-        # Tracks which receiving algorithm already got a transfer wave.
         transfer_spawned_for_receiver: set[int] = set()
-
         for w in range(workers_per_alg):
             running.append(_spawn_alltimeouts_worker(
                 size_short=size_short,
@@ -810,7 +910,6 @@ def run_parallel_timeout_shards(
                 break
 
             running_by_alg = {int(t['alg']) for t in running}
-
             transfer_specs = [
                 (alg0, alg0_name, alg2, alg2_name),
                 (alg2, alg2_name, alg0, alg0_name),
@@ -825,9 +924,9 @@ def run_parallel_timeout_shards(
 
                 transfer_spawned_for_receiver.add(receiver_alg)
                 print(
-                    f'[ORCHESTRATOR] All {donor_name} (alg={donor_alg}) workers '
-                    f'finished all timeouts; spawning {receiver_name} (alg={receiver_alg}) '
-                    f'on worker IDs {workers_per_alg}..{total_workers - 1}.'
+                    f'[ORCHESTRATOR] All {donor_name} (alg={donor_alg}) workers finished; '
+                    f'transferring worker IDs {workers_per_alg}..{total_workers - 1} '
+                    f'to {receiver_name} (alg={receiver_alg}).'
                 )
                 for w in range(workers_per_alg, total_workers):
                     running.append(_spawn_alltimeouts_worker(
@@ -870,7 +969,7 @@ def main():
                     help='Run only this algorithm ID (default: both)')
     ap.add_argument('--workers-per-alg', type=int, default=1,
                     help='When >1, parallel parent runs all timeouts per size; '
-                         'N workers per algorithm, then transfer to whichever alg is unfinished')
+                         'N workers per algorithm with safe work-stealing + transfer')
     ap.add_argument('--consolidate', action='store_true',
                     help='Only build timeout_comparison.xlsx from existing CSVs')
     ap.add_argument('--no-consolidate', action='store_true',
@@ -881,6 +980,11 @@ def main():
                     help='Ablation workbook to update with timeout tables')
     ap.add_argument('--worker-id', type=int, default=0)
     ap.add_argument('--num-workers', type=int, default=1)
+    ap.add_argument(
+        '--dynamic-claims',
+        action='store_true',
+        help='Use atomic per-instance claims instead of static modulo sharding',
+    )
     ap.add_argument('--verbose', action='store_true', default=True)
     ap.add_argument('--quiet', action='store_true')
     ap.add_argument(
@@ -1046,7 +1150,10 @@ def main():
                 run_timeout_job(
                     binary, args.alg, alg_name, t, size_name, size_cfg,
                     extra_args, args.reps, outdir, vlog,
-                    worker_id=args.worker_id, num_workers=args.num_workers)
+                    worker_id=args.worker_id,
+                    num_workers=args.num_workers,
+                    dynamic_claims=args.dynamic_claims,
+                )
                 # Strict timeout ordering across workers:
                 # do not start next timeout until this timeout matrix is globally complete.
                 if idx_t + 1 < len(timeouts_list):
@@ -1101,7 +1208,10 @@ def main():
                     run_timeout_job(
                         binary, alg, alg_name, t, size_name, size_cfg,
                         extra_args, args.reps, outdir, vlog,
-                        worker_id=args.worker_id, num_workers=args.num_workers)
+                        worker_id=args.worker_id,
+                        num_workers=args.num_workers,
+                        dynamic_claims=args.dynamic_claims,
+                    )
 
         if not args.no_consolidate:
             _close_alg_log()

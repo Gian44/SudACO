@@ -18,6 +18,9 @@ export default defineConfig({
     // Ensure index.json is copied to dist
     copyPublicDir: true
   },
+  worker: {
+    format: 'es'
+  },
   optimizeDeps: {
     exclude: []
   },

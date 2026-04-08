@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <iomanip>
+#include <cmath>
 using namespace std;
 
 string ReadFile( string fileName )
@@ -131,18 +132,21 @@ int main( int argc, char *argv[] )
 
     int algorithm = a.GetArg("alg", 0);
     int timeOutSecs = a.GetArg("timeout", 10);
-    // Algorithm-specific defaults:
-    int nAntsDefault = (algorithm == 2 ? 3 : 10);  // DCM-ACO: 10 (was 3)
+    // Keep alg0 defaults unchanged; apply best config defaults only to alg2.
+    int nAntsDefault = (algorithm == 2 ? 3 : 10);
     int nAnts = a.GetArg("nAnts", a.GetArg("ants", nAntsDefault));
     float q0 = a.GetArg("q0", 0.9f);  // 0.9 
     float rho = a.GetArg("rho", 0.9f);  // 0.9
-    float evap = a.GetArg("evap", 0.005f );  // 0.005
+    float evapDefault = (algorithm == 2 ? 0.0125f : 0.005f);
+    float evap = a.GetArg("evap", evapDefault);
     float xi = a.GetArg("xi", 0.1f);  // local pheromone update rate
     // DCM-ACO parameters :
-    int numACS = a.GetArg("numACS", 2);  // number of ACS colonies
+    int numACS = a.GetArg("numACS", 6);  // number of ACS colonies
     int numColonies = a.GetArg("numColonies", numACS + 1);  // number of colonies
     float convThresh  = a.GetArg("convThresh", 0.8f);  // convergence threshold
-    float entropyThreshold = a.GetArg("entropythreshold", 1.47f);  // threshold for pheromone fusion 
+    float entropyPctDefault = 92.5f;
+    float entropyThresholdDefault = static_cast<float>(log2(static_cast<double>(nAnts)) * (entropyPctDefault / 100.0f));
+    float entropyThreshold = a.GetArg("entropythreshold", entropyThresholdDefault);  // threshold for pheromone fusion
     bool blank = a.GetArg("blank", false );
     bool verbose = a.GetArg("verbose", 0);
     bool showInitial = a.GetArg("showinitial", 0);

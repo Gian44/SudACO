@@ -3,10 +3,11 @@
 Ablation study for CP-DCM-ACO (Algorithm 2).
 
 Tests one parameter at a time while keeping all others at default values.
-Results are consolidated into ``results/ablation/ablation_results.xlsx`` (one sheet per
-parameter) plus sheets for the best value per parameter and the recommended config
-for follow-up experiments. ``best_config.json`` (one overall hyperparameter vector) is
-written beside the Excel
+Results are consolidated into ``results/ablation/ablation_results.xlsx`` using the
+latest 2-sheet report format:
+1) Parameter tuning results
+2) Timeout results
+``best_config.json`` (one overall hyperparameter vector) is written beside the Excel
 file and is consumed by ``scripts/run_algo_timeout_comparison.py``.
 
 Wall-clock timeout sweeps comparing ACO vs CP-DCM-ACO are *not* part of this script;
@@ -701,133 +702,8 @@ def parse_floatish(s):
 # ============================================================
 
 def consolidate_to_excel(outdir, excel_path):
-    """Read all summary CSVs and write a single Excel workbook."""
-    try:
-        from openpyxl import Workbook
-        from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
-    except ImportError:
-        print('ERROR: openpyxl is required for Excel output.  pip install openpyxl')
-        return False
-
-    wb = Workbook()
-    wb.remove(wb.active)
-
-    header_font = Font(bold=True)
-    header_fill = PatternFill(start_color='D9E1F2', end_color='D9E1F2', fill_type='solid')
-    default_fill = PatternFill(start_color='E2EFDA', end_color='E2EFDA', fill_type='solid')
-    thin_border = Border(
-        left=Side(style='thin'), right=Side(style='thin'),
-        top=Side(style='thin'), bottom=Side(style='thin'))
-
-    size_order_excel = {'9x9': 0, '16x16': 1, '25x25': 2}
-
-    def ablation_summary_sort_key(r):
-        pv = str(r.get('param_value', '')).strip()
-        try:
-            pn = float(pv)
-        except ValueError:
-            pn = float('nan')
-        sz = r.get('puzzle_size', '')
-        return (pn, size_order_excel.get(sz, 99), r.get('instance', ''))
-
-    for param_name, pcfg in PARAM_TESTS.items():
-        param_dir = outdir / param_name
-        all_rows = []
-
-        if param_dir.exists():
-            for csv_file in sorted(param_dir.glob('*_summary.csv')):
-                sz = size_name_from_summary_filename(csv_file.name)
-                if sz:
-                    canon = [fp.name for fp in scan_instances(Path('instances') / sz)]
-                    if canon:
-                        sort_summary_csv_if_complete(csv_file, canon)
-                        canon_set = set(canon)
-                        if canon_set <= read_completed_from_summary(csv_file):
-                            prog_path = csv_file.parent / csv_file.name.replace(
-                                '_summary.csv', '_progress.csv')
-                            if prog_path.exists():
-                                try:
-                                    prog_path.unlink()
-                                except OSError:
-                                    pass
-                try:
-                    with open(csv_file, 'r', newline='') as f:
-                        reader = csv.DictReader(f)
-                        for row in reader:
-                            all_rows.append(row)
-                except Exception:
-                    continue
-
-        existing_pv = {str(r.get('param_value', '')).strip() for r in all_rows}
-        dkey = format_param_value(param_name, DEFAULTS[param_name])
-        if dkey not in existing_pv:
-            all_rows.extend(_default_baseline_summary_rows(param_name))
-
-        if not all_rows:
-            continue
-
-        all_rows.sort(key=ablation_summary_sort_key)
-
-        label = pcfg['label']
-        sheet_name = label[:31]  # Excel sheet name limit
-        ws = wb.create_sheet(title=sheet_name)
-
-        headers = [
-            pcfg['label'], 'Puzzle Size', 'Instance',
-            'Algorithm', 'Algorithm Name',
-            'Success %', 'Time Mean (s)', 'Time Std (s)',
-            'Cycles Mean', 'Cycles Std',
-        ]
-        for col_idx, h in enumerate(headers, 1):
-            cell = ws.cell(row=1, column=col_idx, value=h)
-            cell.font = header_font
-            cell.fill = header_fill
-            cell.alignment = Alignment(horizontal='center', wrap_text=True)
-            cell.border = thin_border
-
-        # Determine which param values are default (for row highlighting)
-        if param_name in DEFAULTS:
-            dv = DEFAULTS[param_name]
-            default_vals = {str(dv), format_param_value(param_name, dv)}
-        else:
-            default_vals = set()
-
-        for r_idx, row in enumerate(all_rows, 2):
-            vals = [
-                row.get('param_value', ''),
-                row.get('puzzle_size', ''),
-                row.get('instance', ''),
-                row.get('alg', ''),
-                row.get('alg_name', ''),
-                row.get('success_%', ''),
-                row.get('time_mean', ''),
-                row.get('time_std', ''),
-                row.get('cycles_mean', ''),
-                row.get('cycles_std', ''),
-            ]
-            for col_idx, v in enumerate(vals, 1):
-                try:
-                    v_num = float(v) if v != '' else v
-                    if v_num == int(v_num) and col_idx not in (7, 8, 9, 10):
-                        v_num = int(v_num)
-                    cell = ws.cell(row=r_idx, column=col_idx, value=v_num)
-                except (ValueError, TypeError, OverflowError):
-                    cell = ws.cell(row=r_idx, column=col_idx, value=v)
-                cell.border = thin_border
-
-                is_default = str(row.get('param_value', '')) in default_vals
-                if is_default:
-                    cell.fill = default_fill
-
-        for col_idx in range(1, len(headers) + 1):
-            ws.column_dimensions[ws.cell(row=1, column=col_idx).column_letter].width = 18
-        ws.auto_filter.ref = ws.dimensions
-        ws.freeze_panes = 'A2'
-
-    if not wb.sheetnames:
-        print('No ablation data found to consolidate.')
-        return False
-
+    """Consolidate ablation outputs into the latest 2-sheet workbook format."""
+    # Keep best_config.json generation here because downstream scripts consume it.
     detail_rows, best_config = compute_best_config_overall(outdir)
 
     best_json_path = outdir / 'best_config.json'
@@ -842,54 +718,30 @@ def consolidate_to_excel(outdir, excel_path):
         print(f'Best-config JSON saved: {best_json_path}')
     except Exception as e:
         print(f'WARNING: could not write {best_json_path}: {e}')
+    if not detail_rows:
+        print('No ablation data found to consolidate.')
+        return False
 
-    if detail_rows:
-        ws_b = wb.create_sheet(title='Best per parameter')
-        bh = ['Scope', 'Parameter', 'Label', 'Best value',
-              'Mean success %', 'Mean time (s)', 'N instances']
-        for col_idx, h in enumerate(bh, 1):
-            cell = ws_b.cell(row=1, column=col_idx, value=h)
-            cell.font = header_font
-            cell.fill = header_fill
-            cell.border = thin_border
-        for r_idx, dr in enumerate(detail_rows, 2):
-            row_vals = [
-                'all sizes (pooled)',
-                dr['param_name'],
-                dr['label'],
-                dr['best_value'],
-                dr['mean_success_pct'],
-                dr['mean_time_s'],
-                dr['n_instances'],
-            ]
-            for col_idx, v in enumerate(row_vals, 1):
-                cell = ws_b.cell(row=r_idx, column=col_idx, value=v)
-                cell.border = thin_border
-        for col_idx in range(1, len(bh) + 1):
-            ws_b.column_dimensions[
-                ws_b.cell(row=1, column=col_idx).column_letter].width = 18
-        ws_b.freeze_panes = 'A2'
+    # Delegate workbook construction to the dedicated builder script.
+    try:
+        # Works when running from scripts/ and also from repo root with module path.
+        from build_ablation_results_excel import build_workbook
+    except ImportError:
+        try:
+            from scripts.build_ablation_results_excel import build_workbook
+        except ImportError as e:
+            print(f'ERROR: could not import workbook builder: {e}')
+            return False
 
-    ws_c = wb.create_sheet(title='Timeout study config')
-    ch = ['Scope'] + list(DEFAULTS.keys())
-    for col_idx, h in enumerate(ch, 1):
-        cell = ws_c.cell(row=1, column=col_idx, value=h)
-        cell.font = header_font
-        cell.fill = header_fill
-        cell.border = thin_border
-    vals = ['all sizes'] + [best_config[k] for k in DEFAULTS]
-    for col_idx, v in enumerate(vals, 1):
-        cell = ws_c.cell(row=2, column=col_idx, value=v)
-        cell.border = thin_border
-    for col_idx in range(1, len(ch) + 1):
-        ws_c.column_dimensions[
-            ws_c.cell(row=1, column=col_idx).column_letter].width = 14
-    ws_c.freeze_panes = 'A2'
-
-    excel_path.parent.mkdir(parents=True, exist_ok=True)
-    wb.save(str(excel_path))
-    print(f'Excel file saved: {excel_path}')
-    return True
+    try:
+        repo_root = Path(__file__).resolve().parents[1]
+        excel_path.parent.mkdir(parents=True, exist_ok=True)
+        build_workbook(repo_root, excel_path)
+        print(f'Excel file saved: {excel_path}')
+        return True
+    except Exception as e:
+        print(f'ERROR: failed to build Excel workbook: {e}')
+        return False
 
 
 # ============================================================

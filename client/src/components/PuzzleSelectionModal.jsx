@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { getDailyPuzzle, getDailyPuzzleForDate, isDailyCompleted, getDifficultyInfo, calculateDifficulty, getDailyPuzzleInfo, getTodayISOString } from '../utils/dailyPuzzleService';
 import { parseInstanceFile, getInstanceFileFormatDescription } from '../utils/fileParser';
 import { stringToGrid, getBoxDimensions } from '../utils/sudokuUtils';
@@ -10,8 +10,26 @@ import { getUserCreatedPuzzles, saveUserCreatedPuzzle, deleteUserCreatedPuzzle }
 import DifficultyBadge from './DifficultyBadge';
 import DailyCalendar from './DailyCalendar';
 
-const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
-  const [activeTab, setActiveTab] = useState('daily');
+const ALL_TABS = ['daily', 'library', 'upload', 'create', 'mypuzzles'];
+
+const PuzzleSelectionModal = ({
+  isOpen,
+  onClose = () => {},
+  onPuzzleSelect,
+  initialTab = 'daily',
+  allowedTabs = null,
+  embedded = false,
+  title = 'Select Puzzle',
+  showCloseButton = true
+}) => {
+  const visibleTabs = useMemo(() => {
+    if (!Array.isArray(allowedTabs) || allowedTabs.length === 0) {
+      return ALL_TABS;
+    }
+    return ALL_TABS.filter(tab => allowedTabs.includes(tab));
+  }, [allowedTabs]);
+  const defaultActiveTab = visibleTabs.includes(initialTab) ? initialTab : (visibleTabs[0] || 'daily');
+  const [activeTab, setActiveTab] = useState(defaultActiveTab);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
@@ -172,6 +190,10 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
       loadData();
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    setActiveTab(defaultActiveTab);
+  }, [defaultActiveTab, isOpen]);
 
   // Initialize selected values when categories are loaded
   useEffect(() => {
@@ -492,79 +514,90 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
 
   const difficultyInfo = dailyInfo ? getDifficultyInfo(dailyInfo.difficulty) : null;
 
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content w-full max-w-2xl" onClick={e => e.stopPropagation()}>
+  const modalBody = (
+    <div className="modal-content w-full max-w-2xl" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-gradient">Select Puzzle</h2>
-          <button
-            onClick={onClose}
-            className="p-1.5 sm:p-2 rounded-lg hover:bg-[var(--color-bg-elevated)] transition-colors flex-shrink-0"
-          >
-            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <h2 className="text-xl sm:text-2xl font-bold text-gradient">{title}</h2>
+          {showCloseButton && (
+            <button
+              onClick={onClose}
+              className="p-1.5 sm:p-2 rounded-lg hover:bg-[var(--color-bg-elevated)] transition-colors flex-shrink-0"
+            >
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
         
         {/* Tabs */}
         <div className="tab-list">
-          <button
-            className={`tab ${activeTab === 'daily' ? 'active' : ''}`}
-            onClick={() => setActiveTab('daily')}
-          >
-            <span className="flex items-center gap-1 sm:gap-2">
-              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-              </svg>
-              <span className="text-xs sm:text-sm">Daily</span>
-            </span>
-          </button>
-          <button
-            className={`tab ${activeTab === 'library' ? 'active' : ''}`}
-            onClick={() => setActiveTab('library')}
-          >
-            <span className="flex items-center gap-1 sm:gap-2">
-              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-              </svg>
-              <span className="text-xs sm:text-sm">Library</span>
-            </span>
-          </button>
-          <button
-            className={`tab ${activeTab === 'upload' ? 'active' : ''}`}
-            onClick={() => setActiveTab('upload')}
-          >
-            <span className="flex items-center gap-1 sm:gap-2">
-              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-              </svg>
-              <span className="text-xs sm:text-sm">Upload</span>
-            </span>
-          </button>
-          <button
-            className={`tab ${activeTab === 'create' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('create'); setCreateError(''); setGeneratedPuzzle(null); }}
-          >
-            <span className="flex items-center gap-1 sm:gap-2">
-              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-              </svg>
-              <span className="text-xs sm:text-sm">Create</span>
-            </span>
-          </button>
-          <button
-            className={`tab ${activeTab === 'mypuzzles' ? 'active' : ''}`}
-            onClick={() => setActiveTab('mypuzzles')}
-          >
-            <span className="flex items-center gap-1 sm:gap-2">
-              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
-              </svg>
-              <span className="text-xs sm:text-sm">My puzzles</span>
-            </span>
-          </button>
+          {visibleTabs.includes('daily') && (
+            <button
+              className={`tab ${activeTab === 'daily' ? 'active' : ''}`}
+              onClick={() => setActiveTab('daily')}
+            >
+              <span className="flex items-center gap-1 sm:gap-2">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                </svg>
+                <span className="text-xs sm:text-sm">Daily</span>
+              </span>
+            </button>
+          )}
+          {visibleTabs.includes('library') && (
+            <button
+              className={`tab ${activeTab === 'library' ? 'active' : ''}`}
+              onClick={() => setActiveTab('library')}
+            >
+              <span className="flex items-center gap-1 sm:gap-2">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                </svg>
+                <span className="text-xs sm:text-sm">Library</span>
+              </span>
+            </button>
+          )}
+          {visibleTabs.includes('upload') && (
+            <button
+              className={`tab ${activeTab === 'upload' ? 'active' : ''}`}
+              onClick={() => setActiveTab('upload')}
+            >
+              <span className="flex items-center gap-1 sm:gap-2">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                </svg>
+                <span className="text-xs sm:text-sm">Upload</span>
+              </span>
+            </button>
+          )}
+          {visibleTabs.includes('create') && (
+            <button
+              className={`tab ${activeTab === 'create' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('create'); setCreateError(''); setGeneratedPuzzle(null); }}
+            >
+              <span className="flex items-center gap-1 sm:gap-2">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                </svg>
+                <span className="text-xs sm:text-sm">Create</span>
+              </span>
+            </button>
+          )}
+          {visibleTabs.includes('mypuzzles') && (
+            <button
+              className={`tab ${activeTab === 'mypuzzles' ? 'active' : ''}`}
+              onClick={() => setActiveTab('mypuzzles')}
+            >
+              <span className="flex items-center gap-1 sm:gap-2">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+                </svg>
+                <span className="text-xs sm:text-sm">My puzzles</span>
+              </span>
+            </button>
+          )}
         </div>
         
         {/* Error display */}
@@ -1027,6 +1060,15 @@ const PuzzleSelectionModal = ({ isOpen, onClose, onPuzzleSelect }) => {
           </div>
         )}
       </div>
+  );
+
+  if (embedded) {
+    return <div className="w-full max-w-2xl mx-auto">{modalBody}</div>;
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      {modalBody}
     </div>
   );
 };

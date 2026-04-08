@@ -221,7 +221,9 @@ def main():
             time.sleep(args.poll_seconds)
 
     # Consolidate once at the end (avoid concurrent Excel writers).
-    print("All worker tasks done. Consolidating to Excel...")
+    # run_ablation.py now delegates to scripts/build_ablation_results_excel.py
+    # to generate the updated 2-sheet workbook layout.
+    print("All worker tasks done. Consolidating to updated Excel format...")
     cmd = [
         python,
         str(runner),
@@ -230,7 +232,9 @@ def main():
         str(outdir),
         "--quiet",
     ]
-    subprocess.run(cmd, cwd=str(REPO_ROOT), check=False)
+    result = subprocess.run(cmd, cwd=str(REPO_ROOT), check=False)
+    if result.returncode != 0:
+        print("WARNING: consolidation returned a non-zero exit code.")
 
 
 if __name__ == "__main__":
