@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 #include <random>
+#include <functional>
+#include <utility>
 #include "board.h"
 #include "timer.h"
 #include "sudokusolver.h"
@@ -55,6 +57,7 @@ class MultiColonyAntSystem : public SudokuSolver
     float cooperativeGameTime;
     float pheromoneFusionTime;
     float publicPathRecommendationTime;
+    std::function<void(int, const Board&, int)> progressCallback;
 
     std::vector<Colony> colonies;
 
@@ -113,6 +116,7 @@ public:
     virtual float GetSolutionTime() { return solTime; }
     virtual const Board &GetSolution() { return globalBestSol; }
     virtual int GetIterationCount() { return iterationCount; }
+    void SetProgressCallback(std::function<void(int, const Board&, int)> callback) { progressCallback = std::move(callback); }
     
     // Timing getters for multi-colony operations
     float GetDCMAcoTime() const { return dcmAcoTime; }

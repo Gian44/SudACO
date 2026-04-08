@@ -1,4 +1,4 @@
-import { solveSudoku } from '../utils/wasmBridge';
+import { solveSudoku, solveSudokuWithProgress } from '../utils/wasmBridge';
 
 self.onmessage = async (event) => {
   const { type, payload } = event.data || {};
@@ -7,8 +7,10 @@ self.onmessage = async (event) => {
   }
 
   try {
-    const { puzzleString, algorithm, params } = payload;
-    const result = await solveSudoku(puzzleString, algorithm, params);
+    const { puzzleString, algorithm, params, withProgress } = payload;
+    const result = withProgress
+      ? await solveSudokuWithProgress(puzzleString, algorithm, params)
+      : await solveSudoku(puzzleString, algorithm, params);
     self.postMessage({ type: 'result', payload: result });
   } catch (error) {
     self.postMessage({

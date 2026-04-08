@@ -1,7 +1,9 @@
 export function createSolverWorkerRunner() {
   let worker = null;
 
-  const start = (puzzleString, algorithm, params) => {
+  const start = (puzzleString, algorithm, params, options = {}) => {
+    const onProgress = typeof options.onProgress === 'function' ? options.onProgress : null;
+    const withProgress = Boolean(options.withProgress);
     if (worker) {
       worker.terminate();
     }
@@ -13,6 +15,12 @@ export function createSolverWorkerRunner() {
     return new Promise((resolve) => {
       worker.onmessage = (event) => {
         const { type, payload } = event.data || {};
+        if (type === 'progress') {
+          if (onProgress) {
+            onProgress(payload);
+          }
+          return;
+        }
         if (type === 'result') {
           worker.terminate();
           worker = null;
@@ -26,7 +34,10 @@ export function createSolverWorkerRunner() {
         }
         resolve({ success: false, error: event.message || 'Solver worker crashed' });
       };
-      worker.postMessage({ type: 'solve', payload: { puzzleString, algorithm, params } });
+      worker.postMessage({
+        type: 'solve',
+        payload: { puzzleString, algorithm, params, withProgress }
+      });
     });
   };
 

@@ -35,12 +35,27 @@ function computeEntropyThreshold(nAnts, entropyPct) {
   return Math.log2(nAnts) * (entropyPct / 100);
 }
 
+function computeChangedCells(previousGrid, nextGrid) {
+  const changed = new Set();
+  for (let row = 0; row < nextGrid.length; row += 1) {
+    for (let col = 0; col < nextGrid[row].length; col += 1) {
+      if (previousGrid?.[row]?.[col] !== nextGrid[row][col]) {
+        changed.add(`${row}-${col}`);
+      }
+    }
+  }
+  return changed;
+}
+
 function PlayModePage({ mode }) {
   const isGameMode = mode === 'game';
   const location = useLocation();
   const workerRunnerRef = useRef(null);
+  const latestGridRef = useRef(null);
+  const activeSolveSessionRef = useRef(0);
   const timerRef = useRef(0);
   const saveTimeoutRef = useRef(null);
+  const animationClearTimeoutRef = useRef(null);
 
   const [grid, setGrid] = useState(() => createEmptyGrid(9));
   const [size, setSize] = useState(9);
@@ -62,12 +77,17 @@ function PlayModePage({ mode }) {
   const [error, setError] = useState('');
   const [algorithmSolveTime, setAlgorithmSolveTime] = useState(null);
   const [isSolving, setIsSolving] = useState(false);
+  const [animatingCells, setAnimatingCells] = useState(() => new Set());
   const [lastSolveMeta, setLastSolveMeta] = useState(null);
   const [solverParams, setSolverParams] = useState(() => ({ ...getDefaultParameters(9)[2], entropyPct: 92.5 }));
 
   useEffect(() => {
     setSolverParams({ ...getDefaultParameters(size)[2], entropyPct: 92.5 });
   }, [size]);
+
+  useEffect(() => {
+    latestGridRef.current = grid;
+  }, [grid]);
 
   const resetTransientState = useCallback(() => {
     setSelectedCell(null);
@@ -77,6 +97,7 @@ function PlayModePage({ mode }) {
     setError('');
     setAlgorithmSolveTime(null);
     setLastSolveMeta(null);
+    setAnimatingCells(new Set());
   }, []);
 
   const handlePuzzleSelect = useCallback((puzzleData) => {
@@ -196,6 +217,8 @@ function PlayModePage({ mode }) {
       const ms = result.time != null ? result.time * 1000 : null;
       if (ms != null) setAlgorithmSolveTime(ms);
       setGrid(solvedGrid);
+      latestGridRef.current = solvedGrid;
+      setAnimatingCells(new Set());
       setLastSolveMeta({
         algorithm: 2,
         algorithmName: 'Multi-Colony DCM-ACO',
@@ -251,20 +274,71 @@ function PlayModePage({ mode }) {
 
   const runGameSolve = useCallback(async () => {
     if (!originalGrid || isSolving) return;
+    const solveSessionId = Date.now();
+    activeSolveSessionRef.current = solveSessionId;
     setError('');
     setIsSolving(true);
+    setAnimatingCells(new Set());
     const puzzleString = gridToString(originalGrid, size);
     const defaultParams = { ...getDefaultParameters(size)[2], entropyPct: 92.5, timeout: getDefaultTimeout(size) };
     if (!workerRunnerRef.current) {
       workerRunnerRef.current = createSolverWorkerRunner();
     }
-    const result = await workerRunnerRef.current.start(puzzleString, 2);
-    await finalizeSolveResult(result, defaultParams, puzzleString);
-    setIsSolving(false);
+    try {
+      const result = await workerRunnerRef.current.start(
+        puzzleString,
+        2,
+        undefined,
+        {
+          withProgress: true,
+          onProgress: (progressPayload) => {
+            if (activeSolveSessionRef.current !== solveSessionId) {
+              return;
+            }
+            if (!progressPayload?.solution) {
+              return;
+            }
+            try {
+              const nextGrid = stringToGrid(progressPayload.solution, size);
+              const previousGrid = latestGridRef.current ?? originalGrid;
+              const changed = computeChangedCells(previousGrid, nextGrid);
+              latestGridRef.current = nextGrid;
+              setGrid(nextGrid);
+              setAnimatingCells(changed);
+              if (animationClearTimeoutRef.current) {
+                clearTimeout(animationClearTimeoutRef.current);
+              }
+              animationClearTimeoutRef.current = setTimeout(() => {
+                setAnimatingCells(new Set());
+              }, 180);
+            } catch {
+              // Ignore malformed progress payloads and continue solving.
+            }
+          }
+        }
+      );
+      if (activeSolveSessionRef.current === solveSessionId) {
+        await finalizeSolveResult(result, defaultParams, puzzleString);
+      }
+    } catch (err) {
+      if (activeSolveSessionRef.current === solveSessionId) {
+        setError(`Solving failed: ${err.message}`);
+      }
+    } finally {
+      if (activeSolveSessionRef.current === solveSessionId) {
+        setIsSolving(false);
+      }
+    }
   }, [finalizeSolveResult, isSolving, originalGrid, size]);
 
   const stopGameSolve = useCallback(() => {
+    activeSolveSessionRef.current = Date.now();
     workerRunnerRef.current?.stop();
+    if (animationClearTimeoutRef.current) {
+      clearTimeout(animationClearTimeoutRef.current);
+      animationClearTimeoutRef.current = null;
+    }
+    setAnimatingCells(new Set());
     setIsSolving(false);
     setAlgorithmSolveTime(null);
     setError('Solving stopped. Puzzle not solved.');
@@ -272,6 +346,10 @@ function PlayModePage({ mode }) {
 
   useEffect(() => () => {
     workerRunnerRef.current?.dispose();
+    if (animationClearTimeoutRef.current) {
+      clearTimeout(animationClearTimeoutRef.current);
+      animationClearTimeoutRef.current = null;
+    }
   }, []);
 
   useEffect(() => {
@@ -463,7 +541,7 @@ function PlayModePage({ mode }) {
                 notesMode={notesMode}
                 selectedCell={selectedCell}
                 onCellSelect={setSelectedCell}
-                animatingCells={new Set()}
+                animatingCells={animatingCells}
                 isPaused={effectivePaused}
               />
             </div>

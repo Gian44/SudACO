@@ -108,41 +108,33 @@ export async function solveSudoku(puzzleString, algorithm, params) {
   const module = await initWasm();
   
   try {
-    const requested = params ?? {};
-    const size = detectPuzzleSizeFromString(puzzleString);
-    const timeoutDefault = getDefaultTimeout(size);
-    const nAnts = requested.nAnts ?? (algorithm === 2 ? 3 : 10);
-    const numACS = requested.numACS ?? 6;
-    const numColonies = requested.numColonies ?? (numACS + 1);
-    const q0 = requested.q0 ?? 0.9;
-    const rho = requested.rho ?? 0.9;
-    const evap = requested.evap ?? (algorithm === 2 ? 0.0125 : 0.005);
-    const convThresh = requested.convThresh ?? 0.8;
-    const xi = requested.xi ?? 0.1;
-    const entropyPct = requested.entropyPct ?? 92.5;
-    const entropyThresh = requested.entropyThresh ?? (Math.log2(nAnts) * (entropyPct / 100));
-    const timeout = requested.timeout ?? timeoutDefault;
+    const {
+      nAnts,
+      numColonies,
+      numACS,
+      q0,
+      rho,
+      evap,
+      convThresh,
+      entropyThresh,
+      timeout,
+      xi
+    } = resolveSolverArgs(puzzleString, algorithm, params);
 
-    // Call the WASM function (signature matches wasm_interface.cpp solve_sudoku)
-    const resultPtr = module.ccall(
-      'solve_sudoku',
-      'number', // returns pointer
-      ['string', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number'],
-      [
-        puzzleString,
-        algorithm,
-        nAnts,
-        numColonies,
-        numACS,
-        q0,
-        rho,
-        evap,
-        convThresh,
-        entropyThresh,
-        timeout,
-        xi
-      ]
-    );
+    const resultPtr = callSolverFunction(module, 'solve_sudoku', {
+      puzzleString,
+      algorithm,
+      nAnts,
+      numColonies,
+      numACS,
+      q0,
+      rho,
+      evap,
+      convThresh,
+      entropyThresh,
+      timeout,
+      xi
+    });
     
     // Convert pointer to string
     const resultString = module.UTF8ToString(resultPtr);
@@ -162,6 +154,102 @@ export async function solveSudoku(puzzleString, algorithm, params) {
       error: error.message || 'Unknown error occurred during solving'
     };
   }
+}
+
+export async function solveSudokuWithProgress(puzzleString, algorithm, params) {
+  const module = await initWasm();
+
+  try {
+    const {
+      nAnts,
+      numColonies,
+      numACS,
+      q0,
+      rho,
+      evap,
+      convThresh,
+      entropyThresh,
+      timeout,
+      xi
+    } = resolveSolverArgs(puzzleString, algorithm, params);
+
+    const resultPtr = callSolverFunction(module, 'solve_sudoku_with_progress', {
+      puzzleString,
+      algorithm,
+      nAnts,
+      numColonies,
+      numACS,
+      q0,
+      rho,
+      evap,
+      convThresh,
+      entropyThresh,
+      timeout,
+      xi
+    });
+
+    const resultString = module.UTF8ToString(resultPtr);
+    module._free(resultPtr);
+    return parseSolverOutput(resultString);
+  } catch (error) {
+    console.error('Error calling WASM solver with progress:', error);
+    return {
+      success: false,
+      error: error.message || 'Unknown error occurred during solving'
+    };
+  }
+}
+
+function resolveSolverArgs(puzzleString, algorithm, params) {
+  const requested = params ?? {};
+  const size = detectPuzzleSizeFromString(puzzleString);
+  const timeoutDefault = getDefaultTimeout(size);
+  const nAnts = requested.nAnts ?? (algorithm === 2 ? 3 : 10);
+  const numACS = requested.numACS ?? 6;
+  const numColonies = requested.numColonies ?? (numACS + 1);
+  const q0 = requested.q0 ?? 0.9;
+  const rho = requested.rho ?? 0.9;
+  const evap = requested.evap ?? (algorithm === 2 ? 0.0125 : 0.005);
+  const convThresh = requested.convThresh ?? 0.8;
+  const xi = requested.xi ?? 0.1;
+  const entropyPct = requested.entropyPct ?? 92.5;
+  const entropyThresh = requested.entropyThresh ?? (Math.log2(nAnts) * (entropyPct / 100));
+  const timeout = requested.timeout ?? timeoutDefault;
+
+  return {
+    nAnts,
+    numACS,
+    numColonies,
+    q0,
+    rho,
+    evap,
+    convThresh,
+    entropyThresh,
+    timeout,
+    xi
+  };
+}
+
+function callSolverFunction(module, functionName, args) {
+  return module.ccall(
+    functionName,
+    'number',
+    ['string', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number'],
+    [
+      args.puzzleString,
+      args.algorithm,
+      args.nAnts,
+      args.numColonies,
+      args.numACS,
+      args.q0,
+      args.rho,
+      args.evap,
+      args.convThresh,
+      args.entropyThresh,
+      args.timeout,
+      args.xi
+    ]
+  );
 }
 
 /**

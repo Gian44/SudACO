@@ -106,6 +106,11 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
 
     while (!solved)
     {
+        Board iterBestSol;
+        float iterBestPher = 0.0f;
+        int iterBestVal = 0;
+        bool hasIterBest = false;
+
         // init ant solutions with different starts
         for (int c = 0; c < numColonies; ++c)
         {
@@ -138,6 +143,13 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
                 }
             }
             float pherToAdd = PherAdd(colonies[c].numCells, bestVal);
+            if (!hasIterBest || pherToAdd > iterBestPher)
+            {
+                iterBestSol.Copy(ants[iBest]->GetSolution());
+                iterBestPher = pherToAdd;
+                iterBestVal = bestVal;
+                hasIterBest = true;
+            }
             if (pherToAdd > colonies[c].bestPher)
             {
                 colonies[c].bestSol.Copy(ants[iBest]->GetSolution());
@@ -169,6 +181,10 @@ bool MultiColonyAntSystem::Solve(const Board &puzzle, float maxTime)
                     solTime = solutionTimer.Elapsed();
                 }
             }
+        }
+        if (progressCallback && hasIterBest && iterBestVal > 0)
+        {
+            progressCallback(iter, iterBestSol, iterBestVal);
         }
 
         // partition indices by type
