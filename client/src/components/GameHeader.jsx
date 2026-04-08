@@ -10,6 +10,7 @@ const GameHeader = ({
   onNewPuzzle,
   onPause,
   onResume,
+  showPauseControl = true,
   timerRef,
   isDaily = false,
   algorithmSolveTime = null,
@@ -112,7 +113,7 @@ const GameHeader = ({
             </div>
             
             {/* Pause/Resume button - next to timer on mobile, separate on desktop */}
-            {isPlaying && (
+            {isPlaying && showPauseControl && (
               <button
                 onClick={isPaused ? onResume : onPause}
                 className="p-1.5 sm:p-2 rounded-lg bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors flex-shrink-0 sm:ml-3"

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   clearCellNotes,
@@ -18,7 +18,7 @@ import {
 } from '../utils/gameStatePersistence';
 import { loadRandomLibraryPuzzle } from '../utils/randomPuzzleLoader';
 import {
-  getAlgorithmNames,
+  getDefaultTimeout,
   getDefaultParameters,
   solveSudoku
 } from '../utils/wasmBridge';
@@ -31,12 +31,13 @@ import NumberPad from '../components/NumberPad';
 import PuzzleSelectionModal from '../components/PuzzleSelectionModal';
 import CompletionModal from '../components/CompletionModal';
 
-const ANIMATION_SPEEDS = { fast: 20, medium: 50, slow: 100 };
+function computeEntropyThreshold(nAnts, entropyPct) {
+  return Math.log2(nAnts) * (entropyPct / 100);
+}
 
 function PlayModePage({ mode }) {
   const isGameMode = mode === 'game';
   const location = useLocation();
-  const algorithmNames = getAlgorithmNames();
   const workerRunnerRef = useRef(null);
   const timerRef = useRef(0);
   const saveTimeoutRef = useRef(null);
@@ -58,18 +59,15 @@ function PlayModePage({ mode }) {
   const [showPuzzleModal, setShowPuzzleModal] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [wasAlgorithmSolved, setWasAlgorithmSolved] = useState(false);
-  const [animatingCells, setAnimatingCells] = useState(new Set());
   const [error, setError] = useState('');
   const [algorithmSolveTime, setAlgorithmSolveTime] = useState(null);
   const [isSolving, setIsSolving] = useState(false);
   const [lastSolveMeta, setLastSolveMeta] = useState(null);
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState(2);
-  const [animationSpeed, setAnimationSpeed] = useState('medium');
-  const [solverParams, setSolverParams] = useState(() => getDefaultParameters(9)[2]);
+  const [solverParams, setSolverParams] = useState(() => ({ ...getDefaultParameters(9)[2], entropyPct: 92.5 }));
 
   useEffect(() => {
-    setSolverParams(getDefaultParameters(size)[selectedAlgorithm]);
-  }, [size, selectedAlgorithm]);
+    setSolverParams({ ...getDefaultParameters(size)[2], entropyPct: 92.5 });
+  }, [size]);
 
   const resetTransientState = useCallback(() => {
     setSelectedCell(null);
@@ -191,57 +189,19 @@ function PlayModePage({ mode }) {
     }
   }, [selectedCell, originalGrid, notesMode, handleCellChange]);
 
-  const handleSolutionStep = useCallback((row, col, value) => {
-    setGrid((prevGrid) => {
-      const newGrid = prevGrid.map((r) => [...r]);
-      newGrid[row][col] = value;
-      return newGrid;
-    });
-    setAnimatingCells((prev) => new Set([...prev, `${row}-${col}`]));
-    setTimeout(() => {
-      setAnimatingCells((prev) => {
-        const next = new Set(prev);
-        next.delete(`${row}-${col}`);
-        return next;
-      });
-    }, 300);
-  }, []);
-
-  const animateSolution = useCallback(async (solution, originalPuzzleString) => {
-    const solvedGrid = stringToGrid(solution, size);
-    const startGrid = stringToGrid(originalPuzzleString, size);
-    const delay = ANIMATION_SPEEDS[animationSpeed] || ANIMATION_SPEEDS.medium;
-    const cells = [];
-    for (let row = 0; row < size; row += 1) {
-      for (let col = 0; col < size; col += 1) {
-        if (startGrid[row][col] === '' && solvedGrid[row][col] !== '') {
-          cells.push({ row, col, value: solvedGrid[row][col] });
-        }
-      }
-    }
-    for (let i = cells.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [cells[i], cells[j]] = [cells[j], cells[i]];
-    }
-    for (const cell of cells) {
-      handleSolutionStep(cell.row, cell.col, cell.value);
-      // eslint-disable-next-line no-await-in-loop
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    }
-  }, [animationSpeed, handleSolutionStep, size]);
-
-  const finalizeSolveResult = useCallback(async (result, algorithm, params, puzzleString) => {
+  const finalizeSolveResult = useCallback(async (result, params, puzzleString) => {
     if (result?.success && result.solution) {
+      const solvedGrid = stringToGrid(result.solution, size);
       setWasAlgorithmSolved(true);
       const ms = result.time != null ? result.time * 1000 : null;
       if (ms != null) setAlgorithmSolveTime(ms);
-      await animateSolution(result.solution, puzzleString);
+      setGrid(solvedGrid);
       setLastSolveMeta({
-        algorithm,
-        algorithmName: algorithmNames[algorithm],
+        algorithm: 2,
+        algorithmName: 'Multi-Colony DCM-ACO',
         params,
         originalGrid: (originalGrid || grid).map((row) => [...row]),
-        solvedGrid: stringToGrid(result.solution, size),
+        solvedGrid,
         solvedAt: Date.now()
       });
       setTimeout(() => {
@@ -251,48 +211,61 @@ function PlayModePage({ mode }) {
     } else {
       setAlgorithmSolveTime(null);
       setError(result?.error || 'Puzzle not solved.');
-      setIsPaused(false);
     }
-  }, [algorithmNames, animateSolution, grid, originalGrid, size]);
+  }, [grid, originalGrid, size]);
 
   const runExperimentSolve = useCallback(async () => {
     if (!originalGrid || isSolving) return;
     setIsSolving(true);
     setError('');
-    setIsPaused(true);
     const puzzleString = gridToString(originalGrid, size);
-    const paramsSnapshot = { ...solverParams };
+    const nAnts = Number(solverParams.nAnts);
+    const numACS = Number(solverParams.numACS);
+    const entropyPct = Number(solverParams.entropyPct);
+    const entropyThresh = computeEntropyThreshold(nAnts, entropyPct);
+    const paramsSnapshot = {
+      nAnts,
+      numACS,
+      numColonies: numACS + 1,
+      q0: Number(solverParams.q0),
+      xi: Number(solverParams.xi),
+      rho: Number(solverParams.rho),
+      evap: Number(solverParams.evap),
+      convThresh: Number(solverParams.convThresh),
+      entropyThresh,
+      timeout: Number(solverParams.timeout)
+    };
     try {
-      const result = await solveSudoku(puzzleString, selectedAlgorithm, paramsSnapshot);
-      await finalizeSolveResult(result, selectedAlgorithm, paramsSnapshot, puzzleString);
+      const result = await solveSudoku(puzzleString, 2, paramsSnapshot);
+      await finalizeSolveResult(
+        result,
+        { ...paramsSnapshot, entropyPct, entropyThresh: Number(entropyThresh.toFixed(6)) },
+        puzzleString
+      );
     } catch (err) {
       setError(`Solving failed: ${err.message}`);
-      setIsPaused(false);
     } finally {
       setIsSolving(false);
     }
-  }, [finalizeSolveResult, isSolving, originalGrid, selectedAlgorithm, size, solverParams]);
+  }, [finalizeSolveResult, isSolving, originalGrid, size, solverParams]);
 
   const runGameSolve = useCallback(async () => {
     if (!originalGrid || isSolving) return;
     setError('');
-    setIsPaused(true);
     setIsSolving(true);
     const puzzleString = gridToString(originalGrid, size);
-    const defaultParams = getDefaultParameters(size)[2];
-    setSelectedAlgorithm(2);
+    const defaultParams = { ...getDefaultParameters(size)[2], entropyPct: 92.5, timeout: getDefaultTimeout(size) };
     if (!workerRunnerRef.current) {
       workerRunnerRef.current = createSolverWorkerRunner();
     }
-    const result = await workerRunnerRef.current.start(puzzleString, 2, defaultParams);
-    await finalizeSolveResult(result, 2, defaultParams, puzzleString);
+    const result = await workerRunnerRef.current.start(puzzleString, 2);
+    await finalizeSolveResult(result, defaultParams, puzzleString);
     setIsSolving(false);
   }, [finalizeSolveResult, isSolving, originalGrid, size]);
 
   const stopGameSolve = useCallback(() => {
     workerRunnerRef.current?.stop();
     setIsSolving(false);
-    setIsPaused(false);
     setAlgorithmSolveTime(null);
     setError('Solving stopped. Puzzle not solved.');
   }, []);
@@ -338,38 +311,7 @@ function PlayModePage({ mode }) {
   }, [isPlaying, persistState, puzzleKey]);
 
   const startSolve = isGameMode ? runGameSolve : runExperimentSolve;
-
-  const gameControls = (
-    <div className="flex items-center gap-2 flex-wrap justify-center mt-3">
-      <button type="button" className="btn btn-secondary" onClick={() => setShowPuzzleModal(true)} disabled={isSolving}>
-        Choose Puzzle
-      </button>
-      <button type="button" className="btn btn-primary" onClick={startSolve} disabled={isSolving || !originalGrid}>
-        Solve
-      </button>
-      {isGameMode && isSolving && (
-        <button type="button" className="btn btn-danger" onClick={stopGameSolve}>
-          Stop
-        </button>
-      )}
-      {isGameMode && lastSolveMeta?.solvedGrid && (
-        <button
-          type="button"
-          className="btn btn-success"
-          onClick={() => downloadSolvedPuzzlePdf({
-            originalGrid: lastSolveMeta.originalGrid,
-            solvedGrid: lastSolveMeta.solvedGrid,
-            size,
-            difficulty,
-            algorithmName: lastSolveMeta.algorithmName,
-            params: lastSolveMeta.params
-          })}
-        >
-          Download PDF
-        </button>
-      )}
-    </div>
-  );
+  const effectivePaused = !isGameMode && isPaused;
 
   const experimentPanel = (
     <aside className="card w-full lg:w-[350px] self-start">
@@ -378,16 +320,7 @@ function PlayModePage({ mode }) {
         Open Puzzle Library
       </button>
       <label className="block text-sm mb-1">Algorithm</label>
-      <select
-        className="select w-full mb-3"
-        value={selectedAlgorithm}
-        onChange={(e) => setSelectedAlgorithm(Number(e.target.value))}
-        disabled={isSolving}
-      >
-        {[1, 0, 2].map((algo) => (
-          <option key={algo} value={algo}>{algorithmNames[algo]}</option>
-        ))}
-      </select>
+      <input className="input mb-3" value="Multi-Colony DCM-ACO" disabled />
 
       <label className="block text-sm mb-1">Timeout (sec)</label>
       <input
@@ -400,27 +333,59 @@ function PlayModePage({ mode }) {
         disabled={isSolving}
       />
 
-      {(selectedAlgorithm === 0 || selectedAlgorithm === 2) && (
-        <>
-          <label className="block text-sm mb-1">Number of Ants</label>
-          <input
-            className="input mb-3"
-            type="number"
-            min="1"
-            max="50"
-            value={solverParams.nAnts ?? 4}
-            onChange={(e) => setSolverParams((prev) => ({ ...prev, nAnts: Number(e.target.value) }))}
-            disabled={isSolving}
-          />
-        </>
-      )}
+      <label className="block text-sm mb-1">Number of Ants</label>
+      <input
+        className="input mb-3"
+        type="number"
+        min="1"
+        max="50"
+        value={solverParams.nAnts ?? 3}
+        onChange={(e) => setSolverParams((prev) => ({ ...prev, nAnts: Number(e.target.value) }))}
+        disabled={isSolving}
+      />
 
-      <label className="block text-sm mb-1">Animation Speed</label>
-      <select className="select w-full mb-4" value={animationSpeed} onChange={(e) => setAnimationSpeed(e.target.value)} disabled={isSolving}>
-        <option value="fast">Fast</option>
-        <option value="medium">Medium</option>
-        <option value="slow">Slow</option>
-      </select>
+      <label className="block text-sm mb-1">ACS Colonies (numACS)</label>
+      <input
+        className="input mb-3"
+        type="number"
+        min="1"
+        max="12"
+        value={solverParams.numACS ?? 6}
+        onChange={(e) => setSolverParams((prev) => ({ ...prev, numACS: Number(e.target.value) }))}
+        disabled={isSolving}
+      />
+
+      <label className="block text-sm mb-1">q0</label>
+      <input className="input mb-3" type="number" step="0.01" min="0" max="1" value={solverParams.q0 ?? 0.9} onChange={(e) => setSolverParams((prev) => ({ ...prev, q0: Number(e.target.value) }))} disabled={isSolving} />
+
+      <label className="block text-sm mb-1">xi</label>
+      <input className="input mb-3" type="number" step="0.01" min="0" max="1" value={solverParams.xi ?? 0.1} onChange={(e) => setSolverParams((prev) => ({ ...prev, xi: Number(e.target.value) }))} disabled={isSolving} />
+
+      <label className="block text-sm mb-1">rho</label>
+      <input className="input mb-3" type="number" step="0.01" min="0" max="1" value={solverParams.rho ?? 0.9} onChange={(e) => setSolverParams((prev) => ({ ...prev, rho: Number(e.target.value) }))} disabled={isSolving} />
+
+      <label className="block text-sm mb-1">evap</label>
+      <input className="input mb-3" type="number" step="0.0001" min="0" max="1" value={solverParams.evap ?? 0.0125} onChange={(e) => setSolverParams((prev) => ({ ...prev, evap: Number(e.target.value) }))} disabled={isSolving} />
+
+      <label className="block text-sm mb-1">convThresh</label>
+      <input className="input mb-3" type="number" step="0.01" min="0" max="1" value={solverParams.convThresh ?? 0.8} onChange={(e) => setSolverParams((prev) => ({ ...prev, convThresh: Number(e.target.value) }))} disabled={isSolving} />
+
+      <label className="block text-sm mb-1">Entropy %</label>
+      <input
+        className="input mb-3"
+        type="number"
+        step="0.001"
+        min="0"
+        max="100"
+        value={solverParams.entropyPct ?? 92.5}
+        onChange={(e) => setSolverParams((prev) => ({ ...prev, entropyPct: Number(e.target.value) }))}
+        disabled={isSolving}
+      />
+      <p className="text-xs text-[var(--color-text-muted)] mb-4">
+        Computed entropyThresh: {Number.isFinite(solverParams.nAnts) && Number.isFinite(solverParams.entropyPct)
+          ? computeEntropyThreshold(Number(solverParams.nAnts), Number(solverParams.entropyPct)).toFixed(6)
+          : 'N/A'}
+      </p>
 
       <button type="button" className="btn btn-primary w-full" onClick={startSolve} disabled={isSolving || !originalGrid}>
         {isSolving ? 'Solving...' : 'Solve'}
@@ -442,19 +407,46 @@ function PlayModePage({ mode }) {
       <GameHeader
         key={puzzleKey || 'no-puzzle'}
         isPlaying={isPlaying}
-        isPaused={isPaused}
+        isPaused={effectivePaused}
         difficulty={difficulty}
         puzzleSize={size}
-        onNewPuzzle={() => { setShowPuzzleModal(true); if (isPlaying) setIsPaused(true); }}
+        onNewPuzzle={() => {
+          setShowPuzzleModal(true);
+          if (!isGameMode && isPlaying) setIsPaused(true);
+        }}
         onPause={() => setIsPaused(true)}
         onResume={() => setIsPaused(false)}
+        showPauseControl={!isGameMode}
         timerRef={timerRef}
         isDaily={isDaily}
         algorithmSolveTime={algorithmSolveTime}
         initialSeconds={initialTimerSeconds}
       />
-
-      {gameControls}
+      {isGameMode && (
+        <div className="flex items-center gap-2 flex-wrap justify-center mt-3">
+          {isSolving && (
+            <button type="button" className="btn btn-danger" onClick={stopGameSolve}>
+              Stop
+            </button>
+          )}
+          {lastSolveMeta?.solvedGrid && (
+            <button
+              type="button"
+              className="btn btn-success"
+              onClick={() => downloadSolvedPuzzlePdf({
+                originalGrid: lastSolveMeta.originalGrid,
+                solvedGrid: lastSolveMeta.solvedGrid,
+                size,
+                difficulty,
+                algorithmName: lastSolveMeta.algorithmName,
+                params: lastSolveMeta.params
+              })}
+            >
+              Download PDF
+            </button>
+          )}
+        </div>
+      )}
 
       <main className={`flex w-full max-w-6xl gap-4 mt-3 ${isGameMode ? 'justify-center' : 'flex-col lg:flex-row items-center lg:items-start'}`}>
         <div className="flex-1 w-full flex flex-col items-center">
@@ -471,17 +463,19 @@ function PlayModePage({ mode }) {
                 notesMode={notesMode}
                 selectedCell={selectedCell}
                 onCellSelect={setSelectedCell}
-                animatingCells={animatingCells}
-                isPaused={isPaused}
+                animatingCells={new Set()}
+                isPaused={effectivePaused}
               />
             </div>
           </div>
-          {isPlaying && !isPaused && (
+          {isPlaying && !effectivePaused && (
             <NumberPad
               size={size}
               onNumberClick={handleNumberClick}
               onDelete={handleDelete}
-              onGiveUp={startSolve}
+              onAction={startSolve}
+              actionLabel="Solve"
+              actionClassName="btn btn-primary"
               notesMode={notesMode}
               onToggleNotes={() => setNotesMode(!notesMode)}
               grid={grid}
@@ -501,9 +495,12 @@ function PlayModePage({ mode }) {
 
       <PuzzleSelectionModal
         isOpen={showPuzzleModal}
-        onClose={() => { setShowPuzzleModal(false); if (originalGrid) setIsPaused(false); }}
+        onClose={() => {
+          setShowPuzzleModal(false);
+          if (originalGrid && !isGameMode) setIsPaused(false);
+        }}
         onPuzzleSelect={handlePuzzleSelect}
-        allowedTabs={isGameMode ? ['library', 'daily', 'upload', 'mypuzzles'] : null}
+        allowedTabs={['library', 'daily', 'mypuzzles']}
         initialTab={isGameMode ? 'library' : 'daily'}
       />
 

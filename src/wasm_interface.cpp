@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iomanip>
 #include <limits>
+#include <cmath>
 #include "board.h"
 #include "sudokusolver.h"
 #include "backtracksearch.h"
@@ -43,6 +44,38 @@ char* solve_sudoku(
     try {
         // Create board from puzzle string
         Board board{std::string(puzzleString)};
+
+        // Mirror solvermain defaults/safety fallbacks when values are not sensible.
+        if (algorithm == 2) {
+            if (nAnts <= 0) {
+                nAnts = 3;
+            }
+            if (numACS <= 0) {
+                numACS = 6;
+            }
+            if (numColonies <= 0) {
+                numColonies = numACS + 1;
+            }
+            if (evap <= 0.0f) {
+                evap = 0.0125f;
+            }
+            if (convThresh <= 0.0f) {
+                convThresh = 0.8f;
+            }
+            if (entropyThresh <= 0.0f) {
+                const float entropyPctDefault = 92.5f;
+                entropyThresh = static_cast<float>(
+                    std::log2(static_cast<double>(nAnts)) * (entropyPctDefault / 100.0f)
+                );
+            }
+        } else if (algorithm == 0) {
+            if (nAnts <= 0) {
+                nAnts = 10;
+            }
+            if (evap <= 0.0f) {
+                evap = 0.005f;
+            }
+        }
         
         // Reset CP timing before solve (matches solvermain)
         ResetCPTiming();
@@ -72,6 +105,11 @@ char* solve_sudoku(
         Board solution = solver->GetSolution();
         float solTime = solver->GetSolutionTime();
         int iterations = solver->GetIterationCount();
+
+        // Keep solvermain parity: if solved but invalid, treat as failure.
+        if (success && !board.CheckSolution(solution)) {
+            success = false;
+        }
         
         // CP timing (matches solvermain: add initial CP to total time)
         float initialCPTime = GetInitialCPTime();

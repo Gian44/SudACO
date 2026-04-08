@@ -1,6 +1,59 @@
 // WebAssembly bridge for Sudoku solver
 let wasmModule = null;
 
+function normalizeSolutionString(solution) {
+  if (typeof solution !== 'string') return solution;
+  // Defensive cleanup in case solver output includes formatting/newlines.
+  return solution.replace(/[\s|+\-]/g, '');
+}
+
+function parseSolverOutput(resultString) {
+  const text = String(resultString ?? '').trim();
+  if (!text) {
+    return { success: false, error: 'Empty solver response' };
+  }
+
+  // Fast path: pure JSON response.
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed && typeof parsed === 'object') {
+      if ('solution' in parsed) {
+        parsed.solution = normalizeSolutionString(parsed.solution);
+      }
+      return parsed;
+    }
+  } catch {
+    // Fall back to mixed-output parsing below.
+  }
+
+  // Fallback: solver may emit verbose logs before/after JSON.
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
+  if (firstBrace >= 0 && lastBrace > firstBrace) {
+    const jsonCandidate = text.slice(firstBrace, lastBrace + 1);
+    try {
+      const parsed = JSON.parse(jsonCandidate);
+      if (parsed && typeof parsed === 'object') {
+        if ('solution' in parsed) {
+          parsed.solution = normalizeSolutionString(parsed.solution);
+        }
+        return {
+          ...parsed,
+          rawOutput: text
+        };
+      }
+    } catch {
+      // Continue to best-effort error return.
+    }
+  }
+
+  return {
+    success: false,
+    error: 'Invalid solver response format',
+    rawOutput: text
+  };
+}
+
 // Default timeouts per puzzle size (seconds)
 const TIMEOUT_DEFAULTS = {
   6: 3,
@@ -9,6 +62,12 @@ const TIMEOUT_DEFAULTS = {
   16: 20,
   25: 120
 };
+
+function detectPuzzleSizeFromString(puzzleString) {
+  const length = String(puzzleString || '').length;
+  const size = Math.sqrt(length);
+  return Number.isInteger(size) ? size : 9;
+}
 
 /**
  * Get the default timeout for a given puzzle size.
@@ -49,9 +108,20 @@ export async function solveSudoku(puzzleString, algorithm, params) {
   const module = await initWasm();
   
   try {
-    const numACS = params.numACS ?? 2;
-    const numColonies = params.numColonies ?? (numACS + 1);
-    const xi = params.xi ?? 0.1;
+    const requested = params ?? {};
+    const size = detectPuzzleSizeFromString(puzzleString);
+    const timeoutDefault = getDefaultTimeout(size);
+    const nAnts = requested.nAnts ?? (algorithm === 2 ? 3 : 10);
+    const numACS = requested.numACS ?? 6;
+    const numColonies = requested.numColonies ?? (numACS + 1);
+    const q0 = requested.q0 ?? 0.9;
+    const rho = requested.rho ?? 0.9;
+    const evap = requested.evap ?? (algorithm === 2 ? 0.0125 : 0.005);
+    const convThresh = requested.convThresh ?? 0.8;
+    const xi = requested.xi ?? 0.1;
+    const entropyPct = requested.entropyPct ?? 92.5;
+    const entropyThresh = requested.entropyThresh ?? (Math.log2(nAnts) * (entropyPct / 100));
+    const timeout = requested.timeout ?? timeoutDefault;
 
     // Call the WASM function (signature matches wasm_interface.cpp solve_sudoku)
     const resultPtr = module.ccall(
@@ -61,15 +131,15 @@ export async function solveSudoku(puzzleString, algorithm, params) {
       [
         puzzleString,
         algorithm,
-        params.nAnts ?? 4,
+        nAnts,
         numColonies,
         numACS,
-        params.q0 ?? 0.9,
-        params.rho ?? 0.9,
-        params.evap ?? 0.005,
-        params.convThresh ?? 0.8,
-        params.entropyThresh ?? 1.47,
-        params.timeout ?? 10.0,
+        q0,
+        rho,
+        evap,
+        convThresh,
+        entropyThresh,
+        timeout,
         xi
       ]
     );
@@ -80,8 +150,8 @@ export async function solveSudoku(puzzleString, algorithm, params) {
     // Free the memory allocated by WASM
     module._free(resultPtr);
     
-    // Parse JSON result
-    const result = JSON.parse(resultString);
+    // Parse solver output defensively to support verbose/mixed outputs.
+    const result = parseSolverOutput(resultString);
     
     return result;
     
@@ -112,7 +182,7 @@ export function getAlgorithmNames() {
  */
 export function getDefaultParameters(size = 9) {
   const timeout = getDefaultTimeout(size);
-  const defaultNumACS = 2; // match solvermain
+  const defaultNumACS = 6; // match solvermain
   const defaultNumColonies = defaultNumACS + 1; // n ACS + 1 MMAS
 
   return {
@@ -128,14 +198,14 @@ export function getDefaultParameters(size = 9) {
       timeout
     },
     2: { // DCM-ACO (match solvermain: numACS 2, entropyThresh 1.47)
-      nAnts: 4,
+      nAnts: 3,
       numColonies: defaultNumColonies,
       numACS: defaultNumACS,
       q0: 0.9,
       rho: 0.9,
-      evap: 0.005,
+      evap: 0.0125,
       convThresh: 0.8,
-      entropyThresh: 1.47,
+      entropyPct: 92.5,
       xi: 0.1,
       timeout
     }

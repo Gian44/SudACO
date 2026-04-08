@@ -5,11 +5,13 @@ const NumberPad = ({
   size, 
   onNumberClick, 
   onDelete,
-  onGiveUp,
+  onAction,
   notesMode, 
   onToggleNotes,
   grid,
-  disabled = false 
+  disabled = false,
+  actionLabel = 'Give Up',
+  actionClassName = 'btn btn-danger'
 }) => {
   // Get completed numbers (all 9 instances placed)
   const completedNumbers = grid ? getCompletedNumbers(grid, size) : [];
@@ -81,17 +83,17 @@ const NumberPad = ({
           <span className="sm:hidden">{notesMode ? 'ON' : 'OFF'}</span>
         </button>
         
-        {/* Give Up button */}
+        {/* Primary action button */}
         <button
-          onClick={onGiveUp}
+          onClick={onAction}
           disabled={disabled}
-          className="btn btn-danger text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2"
+          className={`${actionClassName} text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2`}
         >
           <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
           </svg>
-          <span className="hidden sm:inline">Give Up</span>
-          <span className="sm:hidden">Give Up</span>
+          <span className="hidden sm:inline">{actionLabel}</span>
+          <span className="sm:hidden">{actionLabel}</span>
         </button>
       </div>
     </div>
