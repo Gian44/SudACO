@@ -10,6 +10,10 @@ for powershell (as a one-liner):
 
 cmd /c '"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\VsDevCmd.bat" -arch=x64 && msbuild .\vs2017\sudoku_ants.vcxproj /t:Build /p:Configuration=Release /p:Platform=x64'
 
+build wasm for deployed version
+
+.\build_wasm.bat
+
 sample how to run:
 
 .\vs2017\x64\Release\sudoku_ants.exe --file instances/logic-solvable/platinumblond.txt --showinitial --verbose
@@ -41,4 +45,20 @@ python scripts\run_25x25.py --alg 2 --nAnts 4 --q0 0.9 --rho 0.9 --evap 0.005 --
 
 Whenever you modify any C++ source files, you must rebuild:
 
-.\build_wasm.bat
+CP-ACS vs CP-DCM-ACO (4 additional runs: run2..run5, ordered sizes, parallel algs):
+
+manual run:
+python scripts\run_cp_comparison_repeats.py --pool-workers 4 --verbose
+
+quick orchestration check (no benchmark execution):
+python scripts\run_cp_comparison_repeats.py --dry-run --pool-workers 4
+
+setup task scheduler (run on logon):
+setup_cp_comparison_task.bat
+
+manual trigger after setup:
+schtasks /Run /TN "SudACO_CP_Comparison_OnLogon"
+
+logs:
+logs\cp_comparison_login_pipeline.log
+logs\cp_comparison\cp_comparison_orchestrator.log

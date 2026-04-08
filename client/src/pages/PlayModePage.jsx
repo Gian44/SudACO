@@ -19,8 +19,7 @@ import {
 import { loadRandomLibraryPuzzle } from '../utils/randomPuzzleLoader';
 import {
   getDefaultTimeout,
-  getDefaultParameters,
-  solveSudoku
+  getDefaultParameters
 } from '../utils/wasmBridge';
 import { createSolverWorkerRunner } from '../utils/solverWorkerClient';
 import { downloadSolvedPuzzlePdf } from '../utils/gamePdfExport';
@@ -239,8 +238,11 @@ function PlayModePage({ mode }) {
 
   const runExperimentSolve = useCallback(async () => {
     if (!originalGrid || isSolving) return;
+    const solveSessionId = Date.now();
+    activeSolveSessionRef.current = solveSessionId;
     setIsSolving(true);
     setError('');
+    setAnimatingCells(new Set());
     const puzzleString = gridToString(originalGrid, size);
     const nAnts = Number(solverParams.nAnts);
     const numACS = Number(solverParams.numACS);
@@ -259,16 +261,56 @@ function PlayModePage({ mode }) {
       timeout: Number(solverParams.timeout)
     };
     try {
-      const result = await solveSudoku(puzzleString, 2, paramsSnapshot);
-      await finalizeSolveResult(
-        result,
-        { ...paramsSnapshot, entropyPct, entropyThresh: Number(entropyThresh.toFixed(6)) },
-        puzzleString
+      if (!workerRunnerRef.current) {
+        workerRunnerRef.current = createSolverWorkerRunner();
+      }
+      const result = await workerRunnerRef.current.start(
+        puzzleString,
+        2,
+        paramsSnapshot,
+        {
+          withProgress: true,
+          onProgress: (progressPayload) => {
+            if (activeSolveSessionRef.current !== solveSessionId) {
+              return;
+            }
+            if (!progressPayload?.solution) {
+              return;
+            }
+            try {
+              const nextGrid = stringToGrid(progressPayload.solution, size);
+              const previousGrid = latestGridRef.current ?? originalGrid;
+              const changed = computeChangedCells(previousGrid, nextGrid);
+              latestGridRef.current = nextGrid;
+              setGrid(nextGrid);
+              setAnimatingCells(changed);
+              if (animationClearTimeoutRef.current) {
+                clearTimeout(animationClearTimeoutRef.current);
+              }
+              animationClearTimeoutRef.current = setTimeout(() => {
+                setAnimatingCells(new Set());
+              }, 180);
+            } catch {
+              // Ignore malformed progress payloads and continue solving.
+            }
+          }
+        }
       );
+      if (activeSolveSessionRef.current === solveSessionId) {
+        await finalizeSolveResult(
+          result,
+          { ...paramsSnapshot, entropyPct, entropyThresh: Number(entropyThresh.toFixed(6)) },
+          puzzleString
+        );
+      }
     } catch (err) {
-      setError(`Solving failed: ${err.message}`);
+      if (activeSolveSessionRef.current === solveSessionId) {
+        setError(`Solving failed: ${err.message}`);
+      }
     } finally {
-      setIsSolving(false);
+      if (activeSolveSessionRef.current === solveSessionId) {
+        setIsSolving(false);
+      }
     }
   }, [finalizeSolveResult, isSolving, originalGrid, size, solverParams]);
 
@@ -392,82 +434,109 @@ function PlayModePage({ mode }) {
   const effectivePaused = !isGameMode && isPaused;
 
   const experimentPanel = (
-    <aside className="card w-full lg:w-[350px] self-start">
+    <aside className="card w-full lg:w-[560px] self-start">
       <h3 className="text-lg font-semibold mb-3">Experiment Controls</h3>
-      <button type="button" className="btn btn-secondary w-full mb-3" onClick={() => setShowPuzzleModal(true)} disabled={isSolving}>
-        Open Puzzle Library
-      </button>
-      <label className="block text-sm mb-1">Algorithm</label>
-      <input className="input mb-3" value="Multi-Colony DCM-ACO" disabled />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="md:col-span-2">
+          <button type="button" className="btn btn-secondary w-full" onClick={() => setShowPuzzleModal(true)} disabled={isSolving}>
+            Open Puzzle Library
+          </button>
+        </div>
 
-      <label className="block text-sm mb-1">Timeout (sec)</label>
-      <input
-        className="input mb-3"
-        type="number"
-        min="1"
-        max="300"
-        value={solverParams.timeout ?? 10}
-        onChange={(e) => setSolverParams((prev) => ({ ...prev, timeout: Number(e.target.value) }))}
-        disabled={isSolving}
-      />
+        <div>
+          <label className="block text-sm mb-1">Algorithm</label>
+          <input className="input w-full" value="Multi-Colony DCM-ACO" disabled />
+        </div>
 
-      <label className="block text-sm mb-1">Number of Ants</label>
-      <input
-        className="input mb-3"
-        type="number"
-        min="1"
-        max="50"
-        value={solverParams.nAnts ?? 3}
-        onChange={(e) => setSolverParams((prev) => ({ ...prev, nAnts: Number(e.target.value) }))}
-        disabled={isSolving}
-      />
+        <div>
+          <label className="block text-sm mb-1">Timeout (sec)</label>
+          <input
+            className="input w-full"
+            type="number"
+            min="1"
+            max="300"
+            value={solverParams.timeout ?? 10}
+            onChange={(e) => setSolverParams((prev) => ({ ...prev, timeout: Number(e.target.value) }))}
+            disabled={isSolving}
+          />
+        </div>
 
-      <label className="block text-sm mb-1">ACS Colonies (numACS)</label>
-      <input
-        className="input mb-3"
-        type="number"
-        min="1"
-        max="12"
-        value={solverParams.numACS ?? 6}
-        onChange={(e) => setSolverParams((prev) => ({ ...prev, numACS: Number(e.target.value) }))}
-        disabled={isSolving}
-      />
+        <div>
+          <label className="block text-sm mb-1">Number of Ants</label>
+          <input
+            className="input w-full"
+            type="number"
+            min="1"
+            max="50"
+            value={solverParams.nAnts ?? 3}
+            onChange={(e) => setSolverParams((prev) => ({ ...prev, nAnts: Number(e.target.value) }))}
+            disabled={isSolving}
+          />
+        </div>
 
-      <label className="block text-sm mb-1">q0</label>
-      <input className="input mb-3" type="number" step="0.01" min="0" max="1" value={solverParams.q0 ?? 0.9} onChange={(e) => setSolverParams((prev) => ({ ...prev, q0: Number(e.target.value) }))} disabled={isSolving} />
+        <div>
+          <label className="block text-sm mb-1">ACS Colonies (numACS)</label>
+          <input
+            className="input w-full"
+            type="number"
+            min="1"
+            max="12"
+            value={solverParams.numACS ?? 6}
+            onChange={(e) => setSolverParams((prev) => ({ ...prev, numACS: Number(e.target.value) }))}
+            disabled={isSolving}
+          />
+        </div>
 
-      <label className="block text-sm mb-1">xi</label>
-      <input className="input mb-3" type="number" step="0.01" min="0" max="1" value={solverParams.xi ?? 0.1} onChange={(e) => setSolverParams((prev) => ({ ...prev, xi: Number(e.target.value) }))} disabled={isSolving} />
+        <div>
+          <label className="block text-sm mb-1">q0</label>
+          <input className="input w-full" type="number" step="0.01" min="0" max="1" value={solverParams.q0 ?? 0.9} onChange={(e) => setSolverParams((prev) => ({ ...prev, q0: Number(e.target.value) }))} disabled={isSolving} />
+        </div>
 
-      <label className="block text-sm mb-1">rho</label>
-      <input className="input mb-3" type="number" step="0.01" min="0" max="1" value={solverParams.rho ?? 0.9} onChange={(e) => setSolverParams((prev) => ({ ...prev, rho: Number(e.target.value) }))} disabled={isSolving} />
+        <div>
+          <label className="block text-sm mb-1">xi</label>
+          <input className="input w-full" type="number" step="0.01" min="0" max="1" value={solverParams.xi ?? 0.1} onChange={(e) => setSolverParams((prev) => ({ ...prev, xi: Number(e.target.value) }))} disabled={isSolving} />
+        </div>
 
-      <label className="block text-sm mb-1">evap</label>
-      <input className="input mb-3" type="number" step="0.0001" min="0" max="1" value={solverParams.evap ?? 0.0125} onChange={(e) => setSolverParams((prev) => ({ ...prev, evap: Number(e.target.value) }))} disabled={isSolving} />
+        <div>
+          <label className="block text-sm mb-1">rho</label>
+          <input className="input w-full" type="number" step="0.01" min="0" max="1" value={solverParams.rho ?? 0.9} onChange={(e) => setSolverParams((prev) => ({ ...prev, rho: Number(e.target.value) }))} disabled={isSolving} />
+        </div>
 
-      <label className="block text-sm mb-1">convThresh</label>
-      <input className="input mb-3" type="number" step="0.01" min="0" max="1" value={solverParams.convThresh ?? 0.8} onChange={(e) => setSolverParams((prev) => ({ ...prev, convThresh: Number(e.target.value) }))} disabled={isSolving} />
+        <div>
+          <label className="block text-sm mb-1">evap</label>
+          <input className="input w-full" type="number" step="0.0001" min="0" max="1" value={solverParams.evap ?? 0.0125} onChange={(e) => setSolverParams((prev) => ({ ...prev, evap: Number(e.target.value) }))} disabled={isSolving} />
+        </div>
 
-      <label className="block text-sm mb-1">Entropy %</label>
-      <input
-        className="input mb-3"
-        type="number"
-        step="0.001"
-        min="0"
-        max="100"
-        value={solverParams.entropyPct ?? 92.5}
-        onChange={(e) => setSolverParams((prev) => ({ ...prev, entropyPct: Number(e.target.value) }))}
-        disabled={isSolving}
-      />
-      <p className="text-xs text-[var(--color-text-muted)] mb-4">
-        Computed entropyThresh: {Number.isFinite(solverParams.nAnts) && Number.isFinite(solverParams.entropyPct)
-          ? computeEntropyThreshold(Number(solverParams.nAnts), Number(solverParams.entropyPct)).toFixed(6)
-          : 'N/A'}
-      </p>
+        <div>
+          <label className="block text-sm mb-1">convThresh</label>
+          <input className="input w-full" type="number" step="0.01" min="0" max="1" value={solverParams.convThresh ?? 0.8} onChange={(e) => setSolverParams((prev) => ({ ...prev, convThresh: Number(e.target.value) }))} disabled={isSolving} />
+        </div>
 
-      <button type="button" className="btn btn-primary w-full" onClick={startSolve} disabled={isSolving || !originalGrid}>
-        {isSolving ? 'Solving...' : 'Solve'}
-      </button>
+        <div>
+          <label className="block text-sm mb-1">Entropy %</label>
+          <input
+            className="input w-full"
+            type="number"
+            step="0.001"
+            min="0"
+            max="100"
+            value={solverParams.entropyPct ?? 92.5}
+            onChange={(e) => setSolverParams((prev) => ({ ...prev, entropyPct: Number(e.target.value) }))}
+            disabled={isSolving}
+          />
+        </div>
+
+        <div className="md:col-span-2">
+          <p className="text-xs text-[var(--color-text-muted)] mb-2">
+            Computed entropyThresh: {Number.isFinite(solverParams.nAnts) && Number.isFinite(solverParams.entropyPct)
+              ? computeEntropyThreshold(Number(solverParams.nAnts), Number(solverParams.entropyPct)).toFixed(6)
+              : 'N/A'}
+          </p>
+          <button type="button" className="btn btn-primary w-full" onClick={startSolve} disabled={isSolving || !originalGrid}>
+            {isSolving ? 'Solving...' : 'Solve'}
+          </button>
+        </div>
+      </div>
     </aside>
   );
 
@@ -552,6 +621,7 @@ function PlayModePage({ mode }) {
               onNumberClick={handleNumberClick}
               onDelete={handleDelete}
               onAction={startSolve}
+              showAction={isGameMode}
               actionLabel="Solve"
               actionClassName="btn btn-primary"
               notesMode={notesMode}
