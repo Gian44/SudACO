@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Run four additional CP comparison benchmark runs for:
+Run CP comparison benchmark runs for:
 - CP-ACS (alg 0)
 - CP-DCM-ACO (alg 2)
 
-Execution model:
-- Runs 2..5 by default (assuming run 1 already exists)
-- For each size: finish runs 2..5, then move to next size
+Execution model (defaults):
+- Runs 2..5 (assuming run 1 already exists)
+- Repetitions per instance: 1
+- For each size: finish requested runs, then move to next size
 - Size order: 9x9 -> 16x16 -> 25x25
 - For each size: start alg 0 and alg 2 in parallel
 - Each algorithm uses pool workers (default: 4)
@@ -31,6 +32,14 @@ SIZES = [
     ("16x16", "scripts/run_16x16.py"),
     ("25x25", "scripts/run_25x25.py"),
 ]
+SIZE_ALIASES = {
+    "9": "9x9",
+    "16": "16x16",
+    "25": "25x25",
+    "9x9": "9x9",
+    "16x16": "16x16",
+    "25x25": "25x25",
+}
 
 ALGS = [
     (0, "CP-ACS"),
@@ -47,6 +56,7 @@ def _build_cmd(
     script_rel: str,
     alg: int,
     run_idx: int,
+    reps: int,
     pool_workers: int,
     binary: str | None,
     verbose: bool,
@@ -58,6 +68,8 @@ def _build_cmd(
         str(int(alg)),
         "--run",
         str(int(run_idx)),
+        "--reps",
+        str(int(reps)),
         "--pool-workers",
         str(int(pool_workers)),
     ]
@@ -86,18 +98,21 @@ def _run_size_phase(
     size_name: str,
     script_rel: str,
     run_idx: int,
+    reps: int,
     pool_workers: int,
     binary: str | None,
+    algs: list[tuple[int, str]],
     verbose: bool,
     dry_run: bool,
 ) -> int:
     cmds = []
-    for alg, alg_name in ALGS:
+    for alg, alg_name in algs:
         cmd = _build_cmd(
             python_exe=python_exe,
             script_rel=script_rel,
             alg=alg,
             run_idx=run_idx,
+            reps=reps,
             pool_workers=pool_workers,
             binary=binary,
             verbose=verbose,
@@ -179,12 +194,18 @@ def main() -> int:
 
     ap = argparse.ArgumentParser(
         description=(
-            "Run CP-ACS (alg 0) and CP-DCM-ACO (alg 2) for runs 2..5 "
-            "across 9x9 -> 16x16 -> 25x25, with parallel workers."
+            "Run CP-ACS (alg 0) and CP-DCM-ACO (alg 2) with resume support, "
+            "size-first ordering, and configurable repetitions."
         )
     )
     ap.add_argument("--run-start", type=int, default=2, help="First run index (default: 2)")
     ap.add_argument("--run-end", type=int, default=5, help="Last run index inclusive (default: 5)")
+    ap.add_argument(
+        "--reps",
+        type=int,
+        default=1,
+        help="Repetitions per instance passed to child scripts (default: 1)",
+    )
     ap.add_argument(
         "--pool-workers",
         type=int,
@@ -206,6 +227,19 @@ def main() -> int:
         action="store_true",
         help="Print planned commands only; do not execute child processes",
     )
+    ap.add_argument(
+        "--size",
+        action="append",
+        choices=sorted(SIZE_ALIASES.keys()),
+        help="Limit execution to one or more sizes: 9|16|25|9x9|16x16|25x25",
+    )
+    ap.add_argument(
+        "--alg",
+        action="append",
+        type=int,
+        choices=[0, 2],
+        help="Limit execution to one or more algorithms (0 or 2). Default: both",
+    )
     ap.add_argument("--verbose", action="store_true", help="Pass --verbose to child scripts")
     args = ap.parse_args()
 
@@ -213,16 +247,30 @@ def main() -> int:
         ap.error("--run-start must be >= 1")
     if args.run_end < args.run_start:
         ap.error("--run-end must be >= --run-start")
+    if args.reps < 1:
+        ap.error("--reps must be >= 1")
     if args.pool_workers < 1:
         ap.error("--pool-workers must be >= 1")
 
+    if args.size:
+        wanted = {SIZE_ALIASES[s] for s in args.size}
+        selected_sizes = [(n, p) for (n, p) in SIZES if n in wanted]
+    else:
+        selected_sizes = list(SIZES)
+
+    wanted_algs = set(args.alg) if args.alg else {0, 2}
+    selected_algs = [(aid, aname) for (aid, aname) in ALGS if aid in wanted_algs]
+    if not selected_algs:
+        ap.error("No algorithms selected")
+
     print(
         f"[{_now()}] Starting CP comparison reruns: "
-        f"runs={args.run_start}..{args.run_end}, pool_workers={args.pool_workers}",
+        f"runs={args.run_start}..{args.run_end}, reps={args.reps}, "
+        f"pool_workers={args.pool_workers}",
         flush=True,
     )
 
-    for size_name, script_rel in SIZES:
+    for size_name, script_rel in selected_sizes:
         print(f"\n[{_now()}] ===== SIZE {size_name} START =====", flush=True)
         for run_idx in range(args.run_start, args.run_end + 1):
             print(f"[{_now()}] ----- SIZE {size_name} | RUN {run_idx} START -----", flush=True)
@@ -232,8 +280,10 @@ def main() -> int:
                 size_name=size_name,
                 script_rel=script_rel,
                 run_idx=run_idx,
+                reps=args.reps,
                 pool_workers=args.pool_workers,
                 binary=args.binary,
+                algs=selected_algs,
                 verbose=args.verbose,
                 dry_run=args.dry_run,
             )

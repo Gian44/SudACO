@@ -3972,3 +3972,25 @@ Completed: 100/100
   Pool progress: 2000/8984 jobs finished
   Pool progress: 2050/8984 jobs finished
   Pool progress: 2100/8984 jobs finished
+  Pool progress: 2150/8984 jobs finished
+  Pool progress: 2200/8984 jobs finished
+  Pool progress: 2250/8984 jobs finished
+  Pool progress: 2300/8984 jobs finished
+  Pool progress: 2350/8984 jobs finished
+  Pool progress: 2400/8984 jobs finished
+  Pool progress: 2450/8984 jobs finished
+  Pool progress: 2500/8984 jobs finished
+[2026-04-09 07:40:17] Starting CP comparison reruns: runs=2..2, reps=100, pool_workers=4
+
+[2026-04-09 07:40:17] ===== SIZE 25x25 START =====
+[2026-04-09 07:40:17] ----- SIZE 25x25 | RUN 2 START -----
+[2026-04-09 07:40:17] [RUN 2] [SIZE 25x25] starting 1 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 0 --run 2 --reps 100 --pool-workers 4 --verbose
+Output file: results\25x25\results_25x25_CP-ACS_run2.csv
+Progress file: results\25x25\progress_25x25_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 35 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 36 instance(s)
+Found 100 instances in instances\25x25
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Pool mode: 4 worker process(es), 6455 (instance, rep) job(s) queued
