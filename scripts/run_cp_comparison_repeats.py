@@ -6,7 +6,8 @@ Run four additional CP comparison benchmark runs for:
 
 Execution model:
 - Runs 2..5 by default (assuming run 1 already exists)
-- For each run: 9x9 -> 16x16 -> 25x25
+- For each size: finish runs 2..5, then move to next size
+- Size order: 9x9 -> 16x16 -> 25x25
 - For each size: start alg 0 and alg 2 in parallel
 - Each algorithm uses pool workers (default: 4)
 
@@ -221,9 +222,10 @@ def main() -> int:
         flush=True,
     )
 
-    for run_idx in range(args.run_start, args.run_end + 1):
-        print(f"\n[{_now()}] ===== RUN {run_idx} START =====", flush=True)
-        for size_name, script_rel in SIZES:
+    for size_name, script_rel in SIZES:
+        print(f"\n[{_now()}] ===== SIZE {size_name} START =====", flush=True)
+        for run_idx in range(args.run_start, args.run_end + 1):
+            print(f"[{_now()}] ----- SIZE {size_name} | RUN {run_idx} START -----", flush=True)
             rc = _run_size_phase(
                 repo_root=repo_root,
                 python_exe=args.python,
@@ -237,7 +239,8 @@ def main() -> int:
             )
             if rc != 0:
                 return rc
-        print(f"[{_now()}] ===== RUN {run_idx} DONE =====", flush=True)
+            print(f"[{_now()}] ----- SIZE {size_name} | RUN {run_idx} DONE -----", flush=True)
+        print(f"[{_now()}] ===== SIZE {size_name} DONE =====", flush=True)
 
     print(f"\n[{_now()}] All requested runs completed successfully.", flush=True)
     return 0

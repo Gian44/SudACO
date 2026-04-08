@@ -833,3 +833,3142 @@ Completed: 100/100
   Pool progress: 8600/10000 jobs finished
   Pool progress: 8650/10000 jobs finished
   Pool progress: 8700/10000 jobs finished
+  Pool progress: 8750/10000 jobs finished
+  Pool progress: 8800/10000 jobs finished
+  Pool progress: 8850/10000 jobs finished
+  Pool progress: 8900/10000 jobs finished
+  Pool progress: 8950/10000 jobs finished
+  Pool progress: 9000/10000 jobs finished
+  Pool progress: 9050/10000 jobs finished
+  Pool progress: 9100/10000 jobs finished
+  Pool progress: 9150/10000 jobs finished
+  Pool progress: 9200/10000 jobs finished
+  Pool progress: 9250/10000 jobs finished
+  Pool progress: 9300/10000 jobs finished
+  Pool progress: 9350/10000 jobs finished
+  Pool progress: 9400/10000 jobs finished
+  Pool progress: 9450/10000 jobs finished
+  Pool progress: 9500/10000 jobs finished
+  Pool progress: 9550/10000 jobs finished
+  Pool progress: 9600/10000 jobs finished
+  Pool progress: 9650/10000 jobs finished
+  Pool progress: 9700/10000 jobs finished
+  Pool progress: 9750/10000 jobs finished
+  Pool progress: 9800/10000 jobs finished
+  Pool progress: 9850/10000 jobs finished
+  Pool progress: 9900/10000 jobs finished
+  Pool progress: 9950/10000 jobs finished
+  Pool progress: 10000/10000 jobs finished
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-ACS_run2.csv
+Progress file removed: results\16x16\progress_16x16_CP-ACS_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-ACS_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-08 18:51:08] [RUN 2] [SIZE 16x16] CP-ACS finished with exit_code=0
+[2026-04-08 18:51:08] [RUN 2] [SIZE 16x16] completed
+[2026-04-08 18:51:08] [RUN 2] [SIZE 25x25] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 0 --run 2 --pool-workers 4 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 2 --run 2 --pool-workers 4 --verbose
+Output file: results\25x25\results_25x25_CP-ACS_run2.csv
+Progress file: results\25x25\progress_25x25_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Output file: results\25x25\results_25x25_CP-DCM-ACO_run2.csv
+Progress file: results\25x25\progress_25x25_CP-DCM-ACO_run2.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\25x25
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Found 100 instances in instances\25x25
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 100
+Pool mode: 4 worker process(es), 10000 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 10000 (instance, rep) job(s) queued
+  Pool progress: 50/10000 jobs finished
+  Pool progress: 50/10000 jobs finished
+  Pool progress: 100/10000 jobs finished
+  Pool progress: 150/10000 jobs finished
+  Pool progress: 100/10000 jobs finished
+  Pool progress: 200/10000 jobs finished
+  Pool progress: 150/10000 jobs finished
+  Pool progress: 250/10000 jobs finished
+  Pool progress: 300/10000 jobs finished
+  Pool progress: 200/10000 jobs finished
+  Pool progress: 350/10000 jobs finished
+  Pool progress: 400/10000 jobs finished
+  Pool progress: 250/10000 jobs finished
+  Pool progress: 450/10000 jobs finished
+  Pool progress: 300/10000 jobs finished
+  Pool progress: 500/10000 jobs finished
+  Pool progress: 550/10000 jobs finished
+  Pool progress: 350/10000 jobs finished
+  Pool progress: 600/10000 jobs finished
+  Pool progress: 650/10000 jobs finished
+  Pool progress: 400/10000 jobs finished
+  Pool progress: 700/10000 jobs finished
+  Pool progress: 750/10000 jobs finished
+  Pool progress: 800/10000 jobs finished
+  Pool progress: 850/10000 jobs finished
+  Pool progress: 450/10000 jobs finished
+  Pool progress: 900/10000 jobs finished
+  Pool progress: 950/10000 jobs finished
+  Pool progress: 1000/10000 jobs finished
+  Pool progress: 500/10000 jobs finished
+  Pool progress: 550/10000 jobs finished
+  Pool progress: 1050/10000 jobs finished
+  Pool progress: 600/10000 jobs finished
+  Pool progress: 650/10000 jobs finished
+  Pool progress: 1100/10000 jobs finished
+  Pool progress: 1150/10000 jobs finished
+  Pool progress: 700/10000 jobs finished
+  Pool progress: 1200/10000 jobs finished
+  Pool progress: 1250/10000 jobs finished
+  Pool progress: 1300/10000 jobs finished
+  Pool progress: 750/10000 jobs finished
+  Pool progress: 1350/10000 jobs finished
+  Pool progress: 1400/10000 jobs finished
+  Pool progress: 800/10000 jobs finished
+  Pool progress: 1450/10000 jobs finished
+  Pool progress: 1500/10000 jobs finished
+  Pool progress: 850/10000 jobs finished
+  Pool progress: 1550/10000 jobs finished
+  Pool progress: 900/10000 jobs finished
+  Pool progress: 1600/10000 jobs finished
+  Pool progress: 1650/10000 jobs finished
+  Pool progress: 1700/10000 jobs finished
+  Pool progress: 950/10000 jobs finished
+  Pool progress: 1750/10000 jobs finished
+  Pool progress: 1000/10000 jobs finished
+  Pool progress: 1800/10000 jobs finished
+  Pool progress: 1850/10000 jobs finished
+  Pool progress: 1900/10000 jobs finished
+[2026-04-08 19:51:49] Starting CP comparison reruns: runs=2..5, pool_workers=4
+
+[2026-04-08 19:51:49] ===== SIZE 9x9 START =====
+[2026-04-08 19:51:49] ----- SIZE 9x9 | RUN 2 START -----
+[2026-04-08 19:51:49] [RUN 2] [SIZE 9x9] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 0 --run 2 --pool-workers 4 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 2 --pool-workers 4 --verbose
+Output file: results\9x9\results_9x9_CP-ACS_run2.csv
+Progress file: results\9x9\progress_9x9_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run2.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run2.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 100
+Pool mode: nothing pending.
+Pool mode: nothing pending.
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-ACS_run2.csv
+Progress file removed: results\9x9\progress_9x9_CP-ACS_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-ACS_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-DCM-ACO_run2.csv
+Progress file removed: results\9x9\progress_9x9_CP-DCM-ACO_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-DCM-ACO_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-08 19:51:49] [RUN 2] [SIZE 9x9] CP-ACS finished with exit_code=0
+[2026-04-08 19:51:49] [RUN 2] [SIZE 9x9] CP-DCM-ACO finished with exit_code=0
+[2026-04-08 19:51:49] [RUN 2] [SIZE 9x9] completed
+[2026-04-08 19:51:49] ----- SIZE 9x9 | RUN 2 DONE -----
+[2026-04-08 19:51:49] ----- SIZE 9x9 | RUN 3 START -----
+[2026-04-08 19:51:49] [RUN 3] [SIZE 9x9] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 0 --run 3 --pool-workers 4 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 3 --pool-workers 4 --verbose
+Output file: results\9x9\results_9x9_CP-ACS_run3.csv
+Progress file: results\9x9\progress_9x9_CP-ACS_run3.csv (temporary; deleted when all instances complete)
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run3.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run3.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 100
+Pool mode: 4 worker process(es), 10000 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 10000 (instance, rep) job(s) queued
+  Pool progress: 50/10000 jobs finished
+  Pool progress: 50/10000 jobs finished
+  Pool progress: 100/10000 jobs finished
+  Pool progress: 100/10000 jobs finished
+  Pool progress: 150/10000 jobs finished
+  Pool progress: 150/10000 jobs finished
+  Pool progress: 200/10000 jobs finished
+  Pool progress: 200/10000 jobs finished
+  Pool progress: 250/10000 jobs finished
+  Pool progress: 250/10000 jobs finished
+  Pool progress: 300/10000 jobs finished
+  Pool progress: 300/10000 jobs finished
+  Pool progress: 350/10000 jobs finished
+  Pool progress: 350/10000 jobs finished
+  Pool progress: 400/10000 jobs finished
+  Pool progress: 400/10000 jobs finished
+  Pool progress: 450/10000 jobs finished
+  Pool progress: 450/10000 jobs finished
+  Pool progress: 500/10000 jobs finished
+  Pool progress: 500/10000 jobs finished
+  Pool progress: 550/10000 jobs finished
+  Pool progress: 550/10000 jobs finished
+  Pool progress: 600/10000 jobs finished
+  Pool progress: 600/10000 jobs finished
+  Pool progress: 650/10000 jobs finished
+  Pool progress: 650/10000 jobs finished
+  Pool progress: 700/10000 jobs finished
+  Pool progress: 750/10000 jobs finished
+  Pool progress: 700/10000 jobs finished
+  Pool progress: 800/10000 jobs finished
+  Pool progress: 750/10000 jobs finished
+  Pool progress: 800/10000 jobs finished
+  Pool progress: 850/10000 jobs finished
+  Pool progress: 850/10000 jobs finished
+  Pool progress: 900/10000 jobs finished
+  Pool progress: 900/10000 jobs finished
+  Pool progress: 950/10000 jobs finished
+  Pool progress: 950/10000 jobs finished
+  Pool progress: 1000/10000 jobs finished
+  Pool progress: 1000/10000 jobs finished
+  Pool progress: 1050/10000 jobs finished
+  Pool progress: 1050/10000 jobs finished
+  Pool progress: 1100/10000 jobs finished
+  Pool progress: 1150/10000 jobs finished
+  Pool progress: 1100/10000 jobs finished
+  Pool progress: 1200/10000 jobs finished
+  Pool progress: 1150/10000 jobs finished
+  Pool progress: 1250/10000 jobs finished
+  Pool progress: 1200/10000 jobs finished
+  Pool progress: 1250/10000 jobs finished
+  Pool progress: 1300/10000 jobs finished
+  Pool progress: 1300/10000 jobs finished
+  Pool progress: 1350/10000 jobs finished
+  Pool progress: 1350/10000 jobs finished
+  Pool progress: 1400/10000 jobs finished
+  Pool progress: 1400/10000 jobs finished
+  Pool progress: 1450/10000 jobs finished
+  Pool progress: 1450/10000 jobs finished
+  Pool progress: 1500/10000 jobs finished
+  Pool progress: 1500/10000 jobs finished
+  Pool progress: 1550/10000 jobs finished
+  Pool progress: 1550/10000 jobs finished
+  Pool progress: 1600/10000 jobs finished
+  Pool progress: 1650/10000 jobs finished
+  Pool progress: 1600/10000 jobs finished
+  Pool progress: 1650/10000 jobs finished
+  Pool progress: 1700/10000 jobs finished
+  Pool progress: 1700/10000 jobs finished
+  Pool progress: 1750/10000 jobs finished
+  Pool progress: 1750/10000 jobs finished
+  Pool progress: 1800/10000 jobs finished
+  Pool progress: 1800/10000 jobs finished
+  Pool progress: 1850/10000 jobs finished
+  Pool progress: 1850/10000 jobs finished
+  Pool progress: 1900/10000 jobs finished
+  Pool progress: 1900/10000 jobs finished
+  Pool progress: 1950/10000 jobs finished
+  Pool progress: 1950/10000 jobs finished
+  Pool progress: 2000/10000 jobs finished
+  Pool progress: 2000/10000 jobs finished
+  Pool progress: 2050/10000 jobs finished
+  Pool progress: 2050/10000 jobs finished
+  Pool progress: 2100/10000 jobs finished
+  Pool progress: 2100/10000 jobs finished
+  Pool progress: 2150/10000 jobs finished
+  Pool progress: 2200/10000 jobs finished
+  Pool progress: 2150/10000 jobs finished
+  Pool progress: 2250/10000 jobs finished
+  Pool progress: 2200/10000 jobs finished
+  Pool progress: 2300/10000 jobs finished
+  Pool progress: 2350/10000 jobs finished
+  Pool progress: 2250/10000 jobs finished
+  Pool progress: 2400/10000 jobs finished
+  Pool progress: 2300/10000 jobs finished
+  Pool progress: 2450/10000 jobs finished
+  Pool progress: 2350/10000 jobs finished
+  Pool progress: 2500/10000 jobs finished
+  Pool progress: 2400/10000 jobs finished
+  Pool progress: 2550/10000 jobs finished
+  Pool progress: 2600/10000 jobs finished
+  Pool progress: 2450/10000 jobs finished
+  Pool progress: 2650/10000 jobs finished
+  Pool progress: 2500/10000 jobs finished
+  Pool progress: 2700/10000 jobs finished
+  Pool progress: 2550/10000 jobs finished
+  Pool progress: 2750/10000 jobs finished
+  Pool progress: 2600/10000 jobs finished
+  Pool progress: 2800/10000 jobs finished
+  Pool progress: 2650/10000 jobs finished
+  Pool progress: 2850/10000 jobs finished
+  Pool progress: 2700/10000 jobs finished
+  Pool progress: 2900/10000 jobs finished
+  Pool progress: 2750/10000 jobs finished
+  Pool progress: 2950/10000 jobs finished
+  Pool progress: 2800/10000 jobs finished
+  Pool progress: 3000/10000 jobs finished
+  Pool progress: 2850/10000 jobs finished
+  Pool progress: 3050/10000 jobs finished
+  Pool progress: 2900/10000 jobs finished
+  Pool progress: 2950/10000 jobs finished
+  Pool progress: 3100/10000 jobs finished
+  Pool progress: 3000/10000 jobs finished
+  Pool progress: 3150/10000 jobs finished
+  Pool progress: 3050/10000 jobs finished
+  Pool progress: 3200/10000 jobs finished
+  Pool progress: 3100/10000 jobs finished
+  Pool progress: 3250/10000 jobs finished
+  Pool progress: 3150/10000 jobs finished
+  Pool progress: 3300/10000 jobs finished
+  Pool progress: 3200/10000 jobs finished
+  Pool progress: 3350/10000 jobs finished
+  Pool progress: 3250/10000 jobs finished
+  Pool progress: 3400/10000 jobs finished
+  Pool progress: 3300/10000 jobs finished
+  Pool progress: 3450/10000 jobs finished
+  Pool progress: 3350/10000 jobs finished
+  Pool progress: 3500/10000 jobs finished
+  Pool progress: 3400/10000 jobs finished
+  Pool progress: 3550/10000 jobs finished
+  Pool progress: 3450/10000 jobs finished
+  Pool progress: 3600/10000 jobs finished
+  Pool progress: 3500/10000 jobs finished
+  Pool progress: 3650/10000 jobs finished
+  Pool progress: 3550/10000 jobs finished
+  Pool progress: 3600/10000 jobs finished
+  Pool progress: 3700/10000 jobs finished
+  Pool progress: 3650/10000 jobs finished
+  Pool progress: 3750/10000 jobs finished
+  Pool progress: 3700/10000 jobs finished
+  Pool progress: 3800/10000 jobs finished
+  Pool progress: 3750/10000 jobs finished
+  Pool progress: 3850/10000 jobs finished
+  Pool progress: 3800/10000 jobs finished
+  Pool progress: 3900/10000 jobs finished
+  Pool progress: 3850/10000 jobs finished
+  Pool progress: 3950/10000 jobs finished
+  Pool progress: 3900/10000 jobs finished
+  Pool progress: 4000/10000 jobs finished
+  Pool progress: 3950/10000 jobs finished
+  Pool progress: 4000/10000 jobs finished
+  Pool progress: 4050/10000 jobs finished
+  Pool progress: 4050/10000 jobs finished
+  Pool progress: 4100/10000 jobs finished
+  Pool progress: 4100/10000 jobs finished
+  Pool progress: 4150/10000 jobs finished
+  Pool progress: 4150/10000 jobs finished
+  Pool progress: 4200/10000 jobs finished
+  Pool progress: 4200/10000 jobs finished
+  Pool progress: 4250/10000 jobs finished
+  Pool progress: 4300/10000 jobs finished
+  Pool progress: 4250/10000 jobs finished
+  Pool progress: 4350/10000 jobs finished
+  Pool progress: 4300/10000 jobs finished
+  Pool progress: 4400/10000 jobs finished
+  Pool progress: 4350/10000 jobs finished
+  Pool progress: 4450/10000 jobs finished
+  Pool progress: 4400/10000 jobs finished
+  Pool progress: 4500/10000 jobs finished
+  Pool progress: 4450/10000 jobs finished
+  Pool progress: 4550/10000 jobs finished
+  Pool progress: 4500/10000 jobs finished
+  Pool progress: 4600/10000 jobs finished
+  Pool progress: 4550/10000 jobs finished
+  Pool progress: 4650/10000 jobs finished
+  Pool progress: 4600/10000 jobs finished
+  Pool progress: 4700/10000 jobs finished
+  Pool progress: 4650/10000 jobs finished
+  Pool progress: 4750/10000 jobs finished
+  Pool progress: 4700/10000 jobs finished
+  Pool progress: 4800/10000 jobs finished
+  Pool progress: 4750/10000 jobs finished
+  Pool progress: 4850/10000 jobs finished
+  Pool progress: 4800/10000 jobs finished
+  Pool progress: 4900/10000 jobs finished
+  Pool progress: 4850/10000 jobs finished
+  Pool progress: 4950/10000 jobs finished
+  Pool progress: 4900/10000 jobs finished
+  Pool progress: 5000/10000 jobs finished
+  Pool progress: 4950/10000 jobs finished
+  Pool progress: 5000/10000 jobs finished
+  Pool progress: 5050/10000 jobs finished
+  Pool progress: 5050/10000 jobs finished
+  Pool progress: 5100/10000 jobs finished
+  Pool progress: 5100/10000 jobs finished
+  Pool progress: 5150/10000 jobs finished
+  Pool progress: 5150/10000 jobs finished
+  Pool progress: 5200/10000 jobs finished
+  Pool progress: 5200/10000 jobs finished
+  Pool progress: 5250/10000 jobs finished
+  Pool progress: 5250/10000 jobs finished
+  Pool progress: 5300/10000 jobs finished
+  Pool progress: 5300/10000 jobs finished
+  Pool progress: 5350/10000 jobs finished
+  Pool progress: 5350/10000 jobs finished
+  Pool progress: 5400/10000 jobs finished
+  Pool progress: 5400/10000 jobs finished
+  Pool progress: 5450/10000 jobs finished
+  Pool progress: 5450/10000 jobs finished
+  Pool progress: 5500/10000 jobs finished
+  Pool progress: 5500/10000 jobs finished
+  Pool progress: 5550/10000 jobs finished
+  Pool progress: 5550/10000 jobs finished
+  Pool progress: 5600/10000 jobs finished
+  Pool progress: 5600/10000 jobs finished
+  Pool progress: 5650/10000 jobs finished
+  Pool progress: 5650/10000 jobs finished
+  Pool progress: 5700/10000 jobs finished
+  Pool progress: 5700/10000 jobs finished
+  Pool progress: 5750/10000 jobs finished
+  Pool progress: 5750/10000 jobs finished
+  Pool progress: 5800/10000 jobs finished
+  Pool progress: 5800/10000 jobs finished
+  Pool progress: 5850/10000 jobs finished
+  Pool progress: 5850/10000 jobs finished
+  Pool progress: 5900/10000 jobs finished
+  Pool progress: 5900/10000 jobs finished
+  Pool progress: 5950/10000 jobs finished
+  Pool progress: 5950/10000 jobs finished
+  Pool progress: 6000/10000 jobs finished
+  Pool progress: 6000/10000 jobs finished
+  Pool progress: 6050/10000 jobs finished
+  Pool progress: 6050/10000 jobs finished
+  Pool progress: 6100/10000 jobs finished
+  Pool progress: 6100/10000 jobs finished
+  Pool progress: 6150/10000 jobs finished
+  Pool progress: 6150/10000 jobs finished
+  Pool progress: 6200/10000 jobs finished
+  Pool progress: 6200/10000 jobs finished
+  Pool progress: 6250/10000 jobs finished
+  Pool progress: 6250/10000 jobs finished
+  Pool progress: 6300/10000 jobs finished
+  Pool progress: 6300/10000 jobs finished
+  Pool progress: 6350/10000 jobs finished
+  Pool progress: 6350/10000 jobs finished
+  Pool progress: 6400/10000 jobs finished
+  Pool progress: 6400/10000 jobs finished
+  Pool progress: 6450/10000 jobs finished
+  Pool progress: 6450/10000 jobs finished
+  Pool progress: 6500/10000 jobs finished
+  Pool progress: 6500/10000 jobs finished
+  Pool progress: 6550/10000 jobs finished
+  Pool progress: 6550/10000 jobs finished
+  Pool progress: 6600/10000 jobs finished
+  Pool progress: 6600/10000 jobs finished
+  Pool progress: 6650/10000 jobs finished
+  Pool progress: 6650/10000 jobs finished
+  Pool progress: 6700/10000 jobs finished
+  Pool progress: 6700/10000 jobs finished
+  Pool progress: 6750/10000 jobs finished
+  Pool progress: 6750/10000 jobs finished
+  Pool progress: 6800/10000 jobs finished
+  Pool progress: 6800/10000 jobs finished
+  Pool progress: 6850/10000 jobs finished
+  Pool progress: 6850/10000 jobs finished
+  Pool progress: 6900/10000 jobs finished
+  Pool progress: 6900/10000 jobs finished
+  Pool progress: 6950/10000 jobs finished
+  Pool progress: 6950/10000 jobs finished
+  Pool progress: 7000/10000 jobs finished
+  Pool progress: 7000/10000 jobs finished
+  Pool progress: 7050/10000 jobs finished
+  Pool progress: 7050/10000 jobs finished
+  Pool progress: 7100/10000 jobs finished
+  Pool progress: 7150/10000 jobs finished
+  Pool progress: 7100/10000 jobs finished
+  Pool progress: 7200/10000 jobs finished
+  Pool progress: 7150/10000 jobs finished
+  Pool progress: 7250/10000 jobs finished
+  Pool progress: 7200/10000 jobs finished
+  Pool progress: 7300/10000 jobs finished
+  Pool progress: 7250/10000 jobs finished
+  Pool progress: 7350/10000 jobs finished
+  Pool progress: 7300/10000 jobs finished
+  Pool progress: 7400/10000 jobs finished
+  Pool progress: 7350/10000 jobs finished
+  Pool progress: 7450/10000 jobs finished
+  Pool progress: 7400/10000 jobs finished
+  Pool progress: 7500/10000 jobs finished
+  Pool progress: 7450/10000 jobs finished
+  Pool progress: 7550/10000 jobs finished
+  Pool progress: 7500/10000 jobs finished
+  Pool progress: 7600/10000 jobs finished
+  Pool progress: 7550/10000 jobs finished
+  Pool progress: 7650/10000 jobs finished
+  Pool progress: 7600/10000 jobs finished
+  Pool progress: 7700/10000 jobs finished
+  Pool progress: 7650/10000 jobs finished
+  Pool progress: 7750/10000 jobs finished
+  Pool progress: 7700/10000 jobs finished
+  Pool progress: 7800/10000 jobs finished
+  Pool progress: 7750/10000 jobs finished
+  Pool progress: 7850/10000 jobs finished
+  Pool progress: 7900/10000 jobs finished
+  Pool progress: 7800/10000 jobs finished
+  Pool progress: 7950/10000 jobs finished
+  Pool progress: 7850/10000 jobs finished
+  Pool progress: 8000/10000 jobs finished
+  Pool progress: 7900/10000 jobs finished
+  Pool progress: 8050/10000 jobs finished
+  Pool progress: 8100/10000 jobs finished
+  Pool progress: 7950/10000 jobs finished
+  Pool progress: 8150/10000 jobs finished
+  Pool progress: 8000/10000 jobs finished
+  Pool progress: 8200/10000 jobs finished
+  Pool progress: 8050/10000 jobs finished
+  Pool progress: 8250/10000 jobs finished
+  Pool progress: 8300/10000 jobs finished
+  Pool progress: 8100/10000 jobs finished
+  Pool progress: 8350/10000 jobs finished
+  Pool progress: 8150/10000 jobs finished
+  Pool progress: 8400/10000 jobs finished
+  Pool progress: 8200/10000 jobs finished
+  Pool progress: 8450/10000 jobs finished
+  Pool progress: 8500/10000 jobs finished
+  Pool progress: 8250/10000 jobs finished
+  Pool progress: 8550/10000 jobs finished
+  Pool progress: 8300/10000 jobs finished
+  Pool progress: 8600/10000 jobs finished
+  Pool progress: 8350/10000 jobs finished
+  Pool progress: 8650/10000 jobs finished
+  Pool progress: 8700/10000 jobs finished
+  Pool progress: 8400/10000 jobs finished
+  Pool progress: 8750/10000 jobs finished
+  Pool progress: 8450/10000 jobs finished
+  Pool progress: 8800/10000 jobs finished
+  Pool progress: 8500/10000 jobs finished
+  Pool progress: 8850/10000 jobs finished
+  Pool progress: 8900/10000 jobs finished
+  Pool progress: 8550/10000 jobs finished
+  Pool progress: 8950/10000 jobs finished
+  Pool progress: 8600/10000 jobs finished
+  Pool progress: 9000/10000 jobs finished
+  Pool progress: 8650/10000 jobs finished
+  Pool progress: 9050/10000 jobs finished
+  Pool progress: 8700/10000 jobs finished
+  Pool progress: 9100/10000 jobs finished
+  Pool progress: 9150/10000 jobs finished
+  Pool progress: 8750/10000 jobs finished
+  Pool progress: 9200/10000 jobs finished
+  Pool progress: 8800/10000 jobs finished
+  Pool progress: 9250/10000 jobs finished
+  Pool progress: 8850/10000 jobs finished
+  Pool progress: 9300/10000 jobs finished
+  Pool progress: 9350/10000 jobs finished
+  Pool progress: 8900/10000 jobs finished
+  Pool progress: 9400/10000 jobs finished
+  Pool progress: 8950/10000 jobs finished
+  Pool progress: 9450/10000 jobs finished
+  Pool progress: 9000/10000 jobs finished
+  Pool progress: 9500/10000 jobs finished
+  Pool progress: 9550/10000 jobs finished
+  Pool progress: 9050/10000 jobs finished
+  Pool progress: 9600/10000 jobs finished
+  Pool progress: 9100/10000 jobs finished
+  Pool progress: 9650/10000 jobs finished
+  Pool progress: 9150/10000 jobs finished
+  Pool progress: 9700/10000 jobs finished
+  Pool progress: 9200/10000 jobs finished
+  Pool progress: 9750/10000 jobs finished
+  Pool progress: 9800/10000 jobs finished
+  Pool progress: 9250/10000 jobs finished
+  Pool progress: 9850/10000 jobs finished
+  Pool progress: 9300/10000 jobs finished
+  Pool progress: 9900/10000 jobs finished
+  Pool progress: 9350/10000 jobs finished
+  Pool progress: 9950/10000 jobs finished
+  Pool progress: 9400/10000 jobs finished
+  Pool progress: 10000/10000 jobs finished
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-DCM-ACO_run3.csv
+Progress file removed: results\9x9\progress_9x9_CP-DCM-ACO_run3.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-DCM-ACO_run3.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-08 19:57:22] [RUN 3] [SIZE 9x9] CP-DCM-ACO finished with exit_code=0
+  Pool progress: 9450/10000 jobs finished
+  Pool progress: 9500/10000 jobs finished
+  Pool progress: 9550/10000 jobs finished
+  Pool progress: 9600/10000 jobs finished
+  Pool progress: 9650/10000 jobs finished
+  Pool progress: 9700/10000 jobs finished
+  Pool progress: 9750/10000 jobs finished
+  Pool progress: 9800/10000 jobs finished
+  Pool progress: 9850/10000 jobs finished
+  Pool progress: 9900/10000 jobs finished
+  Pool progress: 9950/10000 jobs finished
+  Pool progress: 10000/10000 jobs finished
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-ACS_run3.csv
+Progress file removed: results\9x9\progress_9x9_CP-ACS_run3.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-ACS_run3.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-08 19:57:51] [RUN 3] [SIZE 9x9] CP-ACS finished with exit_code=0
+[2026-04-08 19:57:51] [RUN 3] [SIZE 9x9] completed
+[2026-04-08 19:57:51] ----- SIZE 9x9 | RUN 3 DONE -----
+[2026-04-08 19:57:51] ----- SIZE 9x9 | RUN 4 START -----
+[2026-04-08 19:57:51] [RUN 4] [SIZE 9x9] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 0 --run 4 --pool-workers 4 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 4 --pool-workers 4 --verbose
+Output file: results\9x9\results_9x9_CP-ACS_run4.csv
+Progress file: results\9x9\progress_9x9_CP-ACS_run4.csv (temporary; deleted when all instances complete)
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run4.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run4.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 100
+Pool mode: 4 worker process(es), 10000 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 10000 (instance, rep) job(s) queued
+  Pool progress: 50/10000 jobs finished
+  Pool progress: 50/10000 jobs finished
+  Pool progress: 100/10000 jobs finished
+  Pool progress: 100/10000 jobs finished
+  Pool progress: 150/10000 jobs finished
+  Pool progress: 150/10000 jobs finished
+  Pool progress: 200/10000 jobs finished
+  Pool progress: 200/10000 jobs finished
+  Pool progress: 250/10000 jobs finished
+  Pool progress: 250/10000 jobs finished
+  Pool progress: 300/10000 jobs finished
+  Pool progress: 300/10000 jobs finished
+  Pool progress: 350/10000 jobs finished
+  Pool progress: 350/10000 jobs finished
+  Pool progress: 400/10000 jobs finished
+  Pool progress: 400/10000 jobs finished
+  Pool progress: 450/10000 jobs finished
+  Pool progress: 450/10000 jobs finished
+  Pool progress: 500/10000 jobs finished
+  Pool progress: 500/10000 jobs finished
+  Pool progress: 550/10000 jobs finished
+  Pool progress: 550/10000 jobs finished
+  Pool progress: 600/10000 jobs finished
+  Pool progress: 600/10000 jobs finished
+  Pool progress: 650/10000 jobs finished
+  Pool progress: 650/10000 jobs finished
+  Pool progress: 700/10000 jobs finished
+  Pool progress: 750/10000 jobs finished
+  Pool progress: 700/10000 jobs finished
+  Pool progress: 800/10000 jobs finished
+  Pool progress: 750/10000 jobs finished
+  Pool progress: 800/10000 jobs finished
+  Pool progress: 850/10000 jobs finished
+  Pool progress: 850/10000 jobs finished
+  Pool progress: 900/10000 jobs finished
+  Pool progress: 900/10000 jobs finished
+  Pool progress: 950/10000 jobs finished
+  Pool progress: 950/10000 jobs finished
+  Pool progress: 1000/10000 jobs finished
+  Pool progress: 1000/10000 jobs finished
+  Pool progress: 1050/10000 jobs finished
+  Pool progress: 1100/10000 jobs finished
+  Pool progress: 1050/10000 jobs finished
+  Pool progress: 1150/10000 jobs finished
+  Pool progress: 1100/10000 jobs finished
+  Pool progress: 1200/10000 jobs finished
+  Pool progress: 1150/10000 jobs finished
+  Pool progress: 1250/10000 jobs finished
+  Pool progress: 1200/10000 jobs finished
+  Pool progress: 1300/10000 jobs finished
+  Pool progress: 1250/10000 jobs finished
+  Pool progress: 1350/10000 jobs finished
+  Pool progress: 1300/10000 jobs finished
+  Pool progress: 1350/10000 jobs finished
+  Pool progress: 1400/10000 jobs finished
+  Pool progress: 1400/10000 jobs finished
+  Pool progress: 1450/10000 jobs finished
+  Pool progress: 1450/10000 jobs finished
+  Pool progress: 1500/10000 jobs finished
+  Pool progress: 1500/10000 jobs finished
+  Pool progress: 1550/10000 jobs finished
+  Pool progress: 1550/10000 jobs finished
+  Pool progress: 1600/10000 jobs finished
+  Pool progress: 1650/10000 jobs finished
+  Pool progress: 1600/10000 jobs finished
+  Pool progress: 1700/10000 jobs finished
+  Pool progress: 1650/10000 jobs finished
+  Pool progress: 1750/10000 jobs finished
+  Pool progress: 1700/10000 jobs finished
+  Pool progress: 1800/10000 jobs finished
+  Pool progress: 1750/10000 jobs finished
+  Pool progress: 1800/10000 jobs finished
+  Pool progress: 1850/10000 jobs finished
+  Pool progress: 1850/10000 jobs finished
+  Pool progress: 1900/10000 jobs finished
+  Pool progress: 1900/10000 jobs finished
+  Pool progress: 1950/10000 jobs finished
+  Pool progress: 2000/10000 jobs finished
+  Pool progress: 1950/10000 jobs finished
+  Pool progress: 2050/10000 jobs finished
+  Pool progress: 2100/10000 jobs finished
+  Pool progress: 2000/10000 jobs finished
+  Pool progress: 2150/10000 jobs finished
+  Pool progress: 2200/10000 jobs finished
+  Pool progress: 2050/10000 jobs finished
+  Pool progress: 2100/10000 jobs finished
+  Pool progress: 2250/10000 jobs finished
+  Pool progress: 2150/10000 jobs finished
+  Pool progress: 2300/10000 jobs finished
+  Pool progress: 2200/10000 jobs finished
+  Pool progress: 2350/10000 jobs finished
+  Pool progress: 2400/10000 jobs finished
+  Pool progress: 2250/10000 jobs finished
+  Pool progress: 2450/10000 jobs finished
+  Pool progress: 2300/10000 jobs finished
+  Pool progress: 2350/10000 jobs finished
+  Pool progress: 2500/10000 jobs finished
+  Pool progress: 2550/10000 jobs finished
+  Pool progress: 2400/10000 jobs finished
+  Pool progress: 2600/10000 jobs finished
+  Pool progress: 2650/10000 jobs finished
+  Pool progress: 2450/10000 jobs finished
+  Pool progress: 2700/10000 jobs finished
+  Pool progress: 2750/10000 jobs finished
+  Pool progress: 2500/10000 jobs finished
+  Pool progress: 2800/10000 jobs finished
+  Pool progress: 2550/10000 jobs finished
+  Pool progress: 2850/10000 jobs finished
+  Pool progress: 2600/10000 jobs finished
+  Pool progress: 2900/10000 jobs finished
+  Pool progress: 2650/10000 jobs finished
+  Pool progress: 2950/10000 jobs finished
+  Pool progress: 2700/10000 jobs finished
+  Pool progress: 3000/10000 jobs finished
+  Pool progress: 2750/10000 jobs finished
+  Pool progress: 3050/10000 jobs finished
+  Pool progress: 2800/10000 jobs finished
+  Pool progress: 3100/10000 jobs finished
+  Pool progress: 2850/10000 jobs finished
+  Pool progress: 3150/10000 jobs finished
+  Pool progress: 2900/10000 jobs finished
+  Pool progress: 3200/10000 jobs finished
+  Pool progress: 2950/10000 jobs finished
+  Pool progress: 3250/10000 jobs finished
+  Pool progress: 3000/10000 jobs finished
+  Pool progress: 3300/10000 jobs finished
+  Pool progress: 3050/10000 jobs finished
+  Pool progress: 3350/10000 jobs finished
+  Pool progress: 3100/10000 jobs finished
+  Pool progress: 3400/10000 jobs finished
+  Pool progress: 3150/10000 jobs finished
+  Pool progress: 3450/10000 jobs finished
+  Pool progress: 3200/10000 jobs finished
+  Pool progress: 3250/10000 jobs finished
+  Pool progress: 3500/10000 jobs finished
+  Pool progress: 3300/10000 jobs finished
+  Pool progress: 3550/10000 jobs finished
+  Pool progress: 3350/10000 jobs finished
+  Pool progress: 3600/10000 jobs finished
+  Pool progress: 3400/10000 jobs finished
+  Pool progress: 3650/10000 jobs finished
+  Pool progress: 3450/10000 jobs finished
+  Pool progress: 3500/10000 jobs finished
+  Pool progress: 3700/10000 jobs finished
+  Pool progress: 3550/10000 jobs finished
+  Pool progress: 3750/10000 jobs finished
+  Pool progress: 3600/10000 jobs finished
+  Pool progress: 3800/10000 jobs finished
+  Pool progress: 3650/10000 jobs finished
+  Pool progress: 3850/10000 jobs finished
+  Pool progress: 3700/10000 jobs finished
+  Pool progress: 3900/10000 jobs finished
+  Pool progress: 3750/10000 jobs finished
+  Pool progress: 3950/10000 jobs finished
+  Pool progress: 3800/10000 jobs finished
+  Pool progress: 4000/10000 jobs finished
+  Pool progress: 3850/10000 jobs finished
+  Pool progress: 3900/10000 jobs finished
+  Pool progress: 4050/10000 jobs finished
+  Pool progress: 3950/10000 jobs finished
+  Pool progress: 4100/10000 jobs finished
+  Pool progress: 4000/10000 jobs finished
+  Pool progress: 4150/10000 jobs finished
+  Pool progress: 4050/10000 jobs finished
+  Pool progress: 4200/10000 jobs finished
+  Pool progress: 4100/10000 jobs finished
+  Pool progress: 4250/10000 jobs finished
+  Pool progress: 4150/10000 jobs finished
+  Pool progress: 4300/10000 jobs finished
+  Pool progress: 4200/10000 jobs finished
+  Pool progress: 4350/10000 jobs finished
+  Pool progress: 4250/10000 jobs finished
+  Pool progress: 4400/10000 jobs finished
+  Pool progress: 4300/10000 jobs finished
+  Pool progress: 4450/10000 jobs finished
+  Pool progress: 4350/10000 jobs finished
+  Pool progress: 4500/10000 jobs finished
+  Pool progress: 4400/10000 jobs finished
+  Pool progress: 4550/10000 jobs finished
+  Pool progress: 4450/10000 jobs finished
+  Pool progress: 4600/10000 jobs finished
+  Pool progress: 4500/10000 jobs finished
+  Pool progress: 4650/10000 jobs finished
+  Pool progress: 4550/10000 jobs finished
+  Pool progress: 4700/10000 jobs finished
+  Pool progress: 4600/10000 jobs finished
+  Pool progress: 4750/10000 jobs finished
+  Pool progress: 4650/10000 jobs finished
+  Pool progress: 4800/10000 jobs finished
+  Pool progress: 4700/10000 jobs finished
+  Pool progress: 4850/10000 jobs finished
+  Pool progress: 4750/10000 jobs finished
+  Pool progress: 4900/10000 jobs finished
+  Pool progress: 4800/10000 jobs finished
+  Pool progress: 4950/10000 jobs finished
+  Pool progress: 4850/10000 jobs finished
+  Pool progress: 5000/10000 jobs finished
+  Pool progress: 4900/10000 jobs finished
+  Pool progress: 5050/10000 jobs finished
+  Pool progress: 5100/10000 jobs finished
+  Pool progress: 4950/10000 jobs finished
+  Pool progress: 5150/10000 jobs finished
+  Pool progress: 5000/10000 jobs finished
+  Pool progress: 5200/10000 jobs finished
+  Pool progress: 5050/10000 jobs finished
+  Pool progress: 5250/10000 jobs finished
+  Pool progress: 5100/10000 jobs finished
+  Pool progress: 5300/10000 jobs finished
+  Pool progress: 5150/10000 jobs finished
+  Pool progress: 5350/10000 jobs finished
+  Pool progress: 5200/10000 jobs finished
+  Pool progress: 5400/10000 jobs finished
+  Pool progress: 5250/10000 jobs finished
+  Pool progress: 5450/10000 jobs finished
+  Pool progress: 5300/10000 jobs finished
+  Pool progress: 5500/10000 jobs finished
+  Pool progress: 5350/10000 jobs finished
+  Pool progress: 5550/10000 jobs finished
+  Pool progress: 5400/10000 jobs finished
+  Pool progress: 5600/10000 jobs finished
+  Pool progress: 5450/10000 jobs finished
+  Pool progress: 5650/10000 jobs finished
+  Pool progress: 5500/10000 jobs finished
+  Pool progress: 5700/10000 jobs finished
+  Pool progress: 5550/10000 jobs finished
+  Pool progress: 5750/10000 jobs finished
+  Pool progress: 5600/10000 jobs finished
+  Pool progress: 5800/10000 jobs finished
+  Pool progress: 5650/10000 jobs finished
+  Pool progress: 5850/10000 jobs finished
+  Pool progress: 5700/10000 jobs finished
+  Pool progress: 5900/10000 jobs finished
+  Pool progress: 5750/10000 jobs finished
+  Pool progress: 5950/10000 jobs finished
+  Pool progress: 5800/10000 jobs finished
+  Pool progress: 6000/10000 jobs finished
+  Pool progress: 5850/10000 jobs finished
+  Pool progress: 6050/10000 jobs finished
+  Pool progress: 5900/10000 jobs finished
+  Pool progress: 6100/10000 jobs finished
+  Pool progress: 5950/10000 jobs finished
+  Pool progress: 6150/10000 jobs finished
+  Pool progress: 6000/10000 jobs finished
+  Pool progress: 6200/10000 jobs finished
+  Pool progress: 6050/10000 jobs finished
+  Pool progress: 6250/10000 jobs finished
+  Pool progress: 6100/10000 jobs finished
+  Pool progress: 6300/10000 jobs finished
+  Pool progress: 6150/10000 jobs finished
+  Pool progress: 6350/10000 jobs finished
+  Pool progress: 6200/10000 jobs finished
+  Pool progress: 6400/10000 jobs finished
+  Pool progress: 6250/10000 jobs finished
+  Pool progress: 6450/10000 jobs finished
+  Pool progress: 6300/10000 jobs finished
+  Pool progress: 6500/10000 jobs finished
+  Pool progress: 6350/10000 jobs finished
+  Pool progress: 6550/10000 jobs finished
+  Pool progress: 6400/10000 jobs finished
+  Pool progress: 6600/10000 jobs finished
+  Pool progress: 6450/10000 jobs finished
+  Pool progress: 6650/10000 jobs finished
+  Pool progress: 6500/10000 jobs finished
+  Pool progress: 6700/10000 jobs finished
+  Pool progress: 6550/10000 jobs finished
+  Pool progress: 6750/10000 jobs finished
+  Pool progress: 6600/10000 jobs finished
+  Pool progress: 6800/10000 jobs finished
+  Pool progress: 6650/10000 jobs finished
+  Pool progress: 6850/10000 jobs finished
+  Pool progress: 6700/10000 jobs finished
+  Pool progress: 6900/10000 jobs finished
+  Pool progress: 6750/10000 jobs finished
+  Pool progress: 6950/10000 jobs finished
+  Pool progress: 6800/10000 jobs finished
+  Pool progress: 7000/10000 jobs finished
+  Pool progress: 6850/10000 jobs finished
+  Pool progress: 7050/10000 jobs finished
+  Pool progress: 6900/10000 jobs finished
+  Pool progress: 7100/10000 jobs finished
+  Pool progress: 6950/10000 jobs finished
+  Pool progress: 7150/10000 jobs finished
+  Pool progress: 7000/10000 jobs finished
+  Pool progress: 7200/10000 jobs finished
+  Pool progress: 7050/10000 jobs finished
+  Pool progress: 7250/10000 jobs finished
+  Pool progress: 7100/10000 jobs finished
+  Pool progress: 7300/10000 jobs finished
+  Pool progress: 7150/10000 jobs finished
+  Pool progress: 7350/10000 jobs finished
+  Pool progress: 7200/10000 jobs finished
+  Pool progress: 7400/10000 jobs finished
+  Pool progress: 7250/10000 jobs finished
+  Pool progress: 7450/10000 jobs finished
+  Pool progress: 7300/10000 jobs finished
+  Pool progress: 7500/10000 jobs finished
+  Pool progress: 7350/10000 jobs finished
+  Pool progress: 7550/10000 jobs finished
+  Pool progress: 7400/10000 jobs finished
+  Pool progress: 7600/10000 jobs finished
+  Pool progress: 7450/10000 jobs finished
+  Pool progress: 7650/10000 jobs finished
+  Pool progress: 7500/10000 jobs finished
+  Pool progress: 7700/10000 jobs finished
+  Pool progress: 7550/10000 jobs finished
+  Pool progress: 7750/10000 jobs finished
+  Pool progress: 7600/10000 jobs finished
+  Pool progress: 7800/10000 jobs finished
+  Pool progress: 7650/10000 jobs finished
+  Pool progress: 7850/10000 jobs finished
+  Pool progress: 7700/10000 jobs finished
+  Pool progress: 7900/10000 jobs finished
+  Pool progress: 7750/10000 jobs finished
+  Pool progress: 7950/10000 jobs finished
+  Pool progress: 7800/10000 jobs finished
+  Pool progress: 8000/10000 jobs finished
+  Pool progress: 7850/10000 jobs finished
+  Pool progress: 8050/10000 jobs finished
+  Pool progress: 7900/10000 jobs finished
+  Pool progress: 8100/10000 jobs finished
+  Pool progress: 7950/10000 jobs finished
+  Pool progress: 8150/10000 jobs finished
+  Pool progress: 8000/10000 jobs finished
+  Pool progress: 8200/10000 jobs finished
+  Pool progress: 8050/10000 jobs finished
+  Pool progress: 8250/10000 jobs finished
+  Pool progress: 8100/10000 jobs finished
+  Pool progress: 8300/10000 jobs finished
+  Pool progress: 8150/10000 jobs finished
+  Pool progress: 8350/10000 jobs finished
+  Pool progress: 8200/10000 jobs finished
+  Pool progress: 8400/10000 jobs finished
+  Pool progress: 8250/10000 jobs finished
+  Pool progress: 8450/10000 jobs finished
+  Pool progress: 8300/10000 jobs finished
+  Pool progress: 8500/10000 jobs finished
+  Pool progress: 8350/10000 jobs finished
+  Pool progress: 8550/10000 jobs finished
+  Pool progress: 8400/10000 jobs finished
+  Pool progress: 8600/10000 jobs finished
+  Pool progress: 8450/10000 jobs finished
+  Pool progress: 8650/10000 jobs finished
+  Pool progress: 8500/10000 jobs finished
+  Pool progress: 8700/10000 jobs finished
+  Pool progress: 8550/10000 jobs finished
+  Pool progress: 8750/10000 jobs finished
+  Pool progress: 8600/10000 jobs finished
+  Pool progress: 8800/10000 jobs finished
+  Pool progress: 8650/10000 jobs finished
+  Pool progress: 8850/10000 jobs finished
+  Pool progress: 8700/10000 jobs finished
+  Pool progress: 8900/10000 jobs finished
+  Pool progress: 8750/10000 jobs finished
+  Pool progress: 8950/10000 jobs finished
+  Pool progress: 8800/10000 jobs finished
+  Pool progress: 9000/10000 jobs finished
+  Pool progress: 8850/10000 jobs finished
+  Pool progress: 9050/10000 jobs finished
+  Pool progress: 8900/10000 jobs finished
+  Pool progress: 9100/10000 jobs finished
+  Pool progress: 8950/10000 jobs finished
+  Pool progress: 9150/10000 jobs finished
+  Pool progress: 9000/10000 jobs finished
+  Pool progress: 9200/10000 jobs finished
+  Pool progress: 9050/10000 jobs finished
+  Pool progress: 9250/10000 jobs finished
+  Pool progress: 9100/10000 jobs finished
+  Pool progress: 9300/10000 jobs finished
+  Pool progress: 9150/10000 jobs finished
+  Pool progress: 9350/10000 jobs finished
+  Pool progress: 9200/10000 jobs finished
+  Pool progress: 9400/10000 jobs finished
+  Pool progress: 9250/10000 jobs finished
+  Pool progress: 9450/10000 jobs finished
+  Pool progress: 9300/10000 jobs finished
+  Pool progress: 9500/10000 jobs finished
+  Pool progress: 9350/10000 jobs finished
+  Pool progress: 9550/10000 jobs finished
+  Pool progress: 9400/10000 jobs finished
+  Pool progress: 9600/10000 jobs finished
+  Pool progress: 9450/10000 jobs finished
+  Pool progress: 9650/10000 jobs finished
+  Pool progress: 9500/10000 jobs finished
+  Pool progress: 9700/10000 jobs finished
+  Pool progress: 9550/10000 jobs finished
+  Pool progress: 9750/10000 jobs finished
+[2026-04-09 00:00:40] Starting CP comparison reruns: runs=2..5, pool_workers=4
+
+[2026-04-09 00:00:40] ===== SIZE 9x9 START =====
+[2026-04-09 00:00:40] ----- SIZE 9x9 | RUN 2 START -----
+[2026-04-09 00:00:40] [RUN 2] [SIZE 9x9] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 0 --run 2 --pool-workers 4 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 2 --pool-workers 4 --verbose
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run2.csv
+Output file: results\9x9\results_9x9_CP-ACS_run2.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run2.csv (temporary; deleted when all instances complete)
+Progress file: results\9x9\progress_9x9_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 100
+Pool mode: nothing pending.
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-DCM-ACO_run2.csv
+Progress file removed: results\9x9\progress_9x9_CP-DCM-ACO_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-DCM-ACO_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+Pool mode: nothing pending.
+[2026-04-09 00:00:41] [RUN 2] [SIZE 9x9] CP-DCM-ACO finished with exit_code=0
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-ACS_run2.csv
+Progress file removed: results\9x9\progress_9x9_CP-ACS_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-ACS_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-09 00:00:41] [RUN 2] [SIZE 9x9] CP-ACS finished with exit_code=0
+[2026-04-09 00:00:41] [RUN 2] [SIZE 9x9] completed
+[2026-04-09 00:00:41] ----- SIZE 9x9 | RUN 2 DONE -----
+[2026-04-09 00:00:41] ----- SIZE 9x9 | RUN 3 START -----
+[2026-04-09 00:00:41] [RUN 3] [SIZE 9x9] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 0 --run 3 --pool-workers 4 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 3 --pool-workers 4 --verbose
+Output file: results\9x9\results_9x9_CP-ACS_run3.csv
+Progress file: results\9x9\progress_9x9_CP-ACS_run3.csv (temporary; deleted when all instances complete)
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run3.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run3.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 100
+Pool mode: nothing pending.
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-ACS_run3.csv
+Progress file removed: results\9x9\progress_9x9_CP-ACS_run3.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-ACS_run3.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+Pool mode: nothing pending.
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-DCM-ACO_run3.csv
+Progress file removed: results\9x9\progress_9x9_CP-DCM-ACO_run3.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-DCM-ACO_run3.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-09 00:00:41] [RUN 3] [SIZE 9x9] CP-ACS finished with exit_code=0
+[2026-04-09 00:00:41] [RUN 3] [SIZE 9x9] CP-DCM-ACO finished with exit_code=0
+[2026-04-09 00:00:41] [RUN 3] [SIZE 9x9] completed
+[2026-04-09 00:00:41] ----- SIZE 9x9 | RUN 3 DONE -----
+[2026-04-09 00:00:41] ----- SIZE 9x9 | RUN 4 START -----
+[2026-04-09 00:00:41] [RUN 4] [SIZE 9x9] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 0 --run 4 --pool-workers 4 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 4 --pool-workers 4 --verbose
+Output file: results\9x9\results_9x9_CP-ACS_run4.csv
+Progress file: results\9x9\progress_9x9_CP-ACS_run4.csv (temporary; deleted when all instances complete)
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run4.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run4.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 95 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 96 instance(s)
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Auto-resuming: Found 97 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 98 instance(s)
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 100
+Pool mode: 4 worker process(es), 238 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 426 (instance, rep) job(s) queued
+  Pool progress: 50/426 jobs finished
+  Pool progress: 50/238 jobs finished
+  Pool progress: 100/426 jobs finished
+  Pool progress: 100/238 jobs finished
+  Pool progress: 150/426 jobs finished
+  Pool progress: 150/238 jobs finished
+  Pool progress: 200/426 jobs finished
+  Pool progress: 200/238 jobs finished
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-DCM-ACO_run4.csv
+Progress file removed: results\9x9\progress_9x9_CP-DCM-ACO_run4.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-DCM-ACO_run4.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-09 00:00:52] [RUN 4] [SIZE 9x9] CP-DCM-ACO finished with exit_code=0
+  Pool progress: 250/426 jobs finished
+  Pool progress: 300/426 jobs finished
+  Pool progress: 350/426 jobs finished
+  Pool progress: 400/426 jobs finished
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-ACS_run4.csv
+Progress file removed: results\9x9\progress_9x9_CP-ACS_run4.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-ACS_run4.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-09 00:00:58] [RUN 4] [SIZE 9x9] CP-ACS finished with exit_code=0
+[2026-04-09 00:00:58] [RUN 4] [SIZE 9x9] completed
+[2026-04-09 00:00:58] ----- SIZE 9x9 | RUN 4 DONE -----
+[2026-04-09 00:00:58] ----- SIZE 9x9 | RUN 5 START -----
+[2026-04-09 00:00:58] [RUN 5] [SIZE 9x9] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 0 --run 5 --pool-workers 4 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 5 --pool-workers 4 --verbose
+Output file: results\9x9\results_9x9_CP-ACS_run5.csv
+Progress file: results\9x9\progress_9x9_CP-ACS_run5.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run5.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run5.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 100
+Pool mode: 4 worker process(es), 10000 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 10000 (instance, rep) job(s) queued
+  Pool progress: 50/10000 jobs finished
+  Pool progress: 50/10000 jobs finished
+  Pool progress: 100/10000 jobs finished
+  Pool progress: 100/10000 jobs finished
+  Pool progress: 150/10000 jobs finished
+  Pool progress: 150/10000 jobs finished
+  Pool progress: 200/10000 jobs finished
+  Pool progress: 200/10000 jobs finished
+  Pool progress: 250/10000 jobs finished
+  Pool progress: 250/10000 jobs finished
+  Pool progress: 300/10000 jobs finished
+  Pool progress: 300/10000 jobs finished
+  Pool progress: 350/10000 jobs finished
+  Pool progress: 350/10000 jobs finished
+  Pool progress: 400/10000 jobs finished
+  Pool progress: 400/10000 jobs finished
+  Pool progress: 450/10000 jobs finished
+  Pool progress: 450/10000 jobs finished
+  Pool progress: 500/10000 jobs finished
+  Pool progress: 500/10000 jobs finished
+  Pool progress: 550/10000 jobs finished
+  Pool progress: 550/10000 jobs finished
+  Pool progress: 600/10000 jobs finished
+  Pool progress: 600/10000 jobs finished
+  Pool progress: 650/10000 jobs finished
+  Pool progress: 650/10000 jobs finished
+  Pool progress: 700/10000 jobs finished
+  Pool progress: 750/10000 jobs finished
+  Pool progress: 800/10000 jobs finished
+  Pool progress: 700/10000 jobs finished
+  Pool progress: 750/10000 jobs finished
+  Pool progress: 850/10000 jobs finished
+  Pool progress: 800/10000 jobs finished
+  Pool progress: 900/10000 jobs finished
+  Pool progress: 850/10000 jobs finished
+  Pool progress: 950/10000 jobs finished
+  Pool progress: 900/10000 jobs finished
+  Pool progress: 1000/10000 jobs finished
+  Pool progress: 950/10000 jobs finished
+  Pool progress: 1050/10000 jobs finished
+  Pool progress: 1000/10000 jobs finished
+  Pool progress: 1100/10000 jobs finished
+  Pool progress: 1150/10000 jobs finished
+  Pool progress: 1050/10000 jobs finished
+  Pool progress: 1200/10000 jobs finished
+  Pool progress: 1100/10000 jobs finished
+  Pool progress: 1250/10000 jobs finished
+  Pool progress: 1150/10000 jobs finished
+  Pool progress: 1300/10000 jobs finished
+  Pool progress: 1200/10000 jobs finished
+  Pool progress: 1350/10000 jobs finished
+  Pool progress: 1250/10000 jobs finished
+  Pool progress: 1400/10000 jobs finished
+  Pool progress: 1300/10000 jobs finished
+  Pool progress: 1450/10000 jobs finished
+  Pool progress: 1350/10000 jobs finished
+  Pool progress: 1500/10000 jobs finished
+  Pool progress: 1400/10000 jobs finished
+  Pool progress: 1550/10000 jobs finished
+  Pool progress: 1600/10000 jobs finished
+  Pool progress: 1450/10000 jobs finished
+  Pool progress: 1650/10000 jobs finished
+  Pool progress: 1700/10000 jobs finished
+  Pool progress: 1500/10000 jobs finished
+  Pool progress: 1750/10000 jobs finished
+  Pool progress: 1550/10000 jobs finished
+  Pool progress: 1800/10000 jobs finished
+  Pool progress: 1600/10000 jobs finished
+  Pool progress: 1650/10000 jobs finished
+  Pool progress: 1850/10000 jobs finished
+  Pool progress: 1700/10000 jobs finished
+  Pool progress: 1750/10000 jobs finished
+  Pool progress: 1800/10000 jobs finished
+  Pool progress: 1900/10000 jobs finished
+  Pool progress: 1850/10000 jobs finished
+  Pool progress: 1950/10000 jobs finished
+  Pool progress: 1900/10000 jobs finished
+  Pool progress: 2000/10000 jobs finished
+  Pool progress: 1950/10000 jobs finished
+  Pool progress: 2050/10000 jobs finished
+  Pool progress: 2100/10000 jobs finished
+  Pool progress: 2150/10000 jobs finished
+  Pool progress: 2000/10000 jobs finished
+  Pool progress: 2200/10000 jobs finished
+  Pool progress: 2050/10000 jobs finished
+  Pool progress: 2250/10000 jobs finished
+  Pool progress: 2100/10000 jobs finished
+  Pool progress: 2300/10000 jobs finished
+  Pool progress: 2350/10000 jobs finished
+  Pool progress: 2150/10000 jobs finished
+  Pool progress: 2400/10000 jobs finished
+  Pool progress: 2200/10000 jobs finished
+  Pool progress: 2450/10000 jobs finished
+  Pool progress: 2250/10000 jobs finished
+  Pool progress: 2500/10000 jobs finished
+  Pool progress: 2550/10000 jobs finished
+  Pool progress: 2300/10000 jobs finished
+  Pool progress: 2600/10000 jobs finished
+  Pool progress: 2350/10000 jobs finished
+  Pool progress: 2650/10000 jobs finished
+  Pool progress: 2700/10000 jobs finished
+  Pool progress: 2400/10000 jobs finished
+  Pool progress: 2750/10000 jobs finished
+  Pool progress: 2450/10000 jobs finished
+  Pool progress: 2800/10000 jobs finished
+  Pool progress: 2850/10000 jobs finished
+  Pool progress: 2500/10000 jobs finished
+  Pool progress: 2900/10000 jobs finished
+  Pool progress: 2550/10000 jobs finished
+  Pool progress: 2950/10000 jobs finished
+  Pool progress: 2600/10000 jobs finished
+  Pool progress: 3000/10000 jobs finished
+  Pool progress: 2650/10000 jobs finished
+  Pool progress: 3050/10000 jobs finished
+  Pool progress: 2700/10000 jobs finished
+  Pool progress: 3100/10000 jobs finished
+  Pool progress: 2750/10000 jobs finished
+  Pool progress: 2800/10000 jobs finished
+  Pool progress: 3150/10000 jobs finished
+  Pool progress: 2850/10000 jobs finished
+  Pool progress: 3200/10000 jobs finished
+  Pool progress: 2900/10000 jobs finished
+  Pool progress: 3250/10000 jobs finished
+  Pool progress: 2950/10000 jobs finished
+  Pool progress: 3300/10000 jobs finished
+  Pool progress: 3000/10000 jobs finished
+  Pool progress: 3350/10000 jobs finished
+  Pool progress: 3050/10000 jobs finished
+  Pool progress: 3400/10000 jobs finished
+  Pool progress: 3100/10000 jobs finished
+  Pool progress: 3450/10000 jobs finished
+  Pool progress: 3150/10000 jobs finished
+  Pool progress: 3500/10000 jobs finished
+  Pool progress: 3200/10000 jobs finished
+  Pool progress: 3550/10000 jobs finished
+  Pool progress: 3250/10000 jobs finished
+  Pool progress: 3600/10000 jobs finished
+  Pool progress: 3300/10000 jobs finished
+  Pool progress: 3650/10000 jobs finished
+  Pool progress: 3350/10000 jobs finished
+  Pool progress: 3700/10000 jobs finished
+  Pool progress: 3400/10000 jobs finished
+  Pool progress: 3750/10000 jobs finished
+  Pool progress: 3450/10000 jobs finished
+  Pool progress: 3800/10000 jobs finished
+  Pool progress: 3500/10000 jobs finished
+  Pool progress: 3850/10000 jobs finished
+  Pool progress: 3550/10000 jobs finished
+  Pool progress: 3900/10000 jobs finished
+  Pool progress: 3600/10000 jobs finished
+  Pool progress: 3950/10000 jobs finished
+  Pool progress: 3650/10000 jobs finished
+  Pool progress: 4000/10000 jobs finished
+  Pool progress: 3700/10000 jobs finished
+  Pool progress: 3750/10000 jobs finished
+  Pool progress: 4050/10000 jobs finished
+  Pool progress: 3800/10000 jobs finished
+  Pool progress: 4100/10000 jobs finished
+  Pool progress: 3850/10000 jobs finished
+  Pool progress: 4150/10000 jobs finished
+  Pool progress: 3900/10000 jobs finished
+  Pool progress: 4200/10000 jobs finished
+  Pool progress: 3950/10000 jobs finished
+  Pool progress: 4250/10000 jobs finished
+  Pool progress: 4000/10000 jobs finished
+  Pool progress: 4300/10000 jobs finished
+  Pool progress: 4050/10000 jobs finished
+  Pool progress: 4350/10000 jobs finished
+  Pool progress: 4100/10000 jobs finished
+  Pool progress: 4400/10000 jobs finished
+  Pool progress: 4150/10000 jobs finished
+  Pool progress: 4450/10000 jobs finished
+  Pool progress: 4200/10000 jobs finished
+  Pool progress: 4500/10000 jobs finished
+  Pool progress: 4250/10000 jobs finished
+  Pool progress: 4550/10000 jobs finished
+  Pool progress: 4600/10000 jobs finished
+  Pool progress: 4300/10000 jobs finished
+  Pool progress: 4650/10000 jobs finished
+  Pool progress: 4350/10000 jobs finished
+  Pool progress: 4700/10000 jobs finished
+  Pool progress: 4400/10000 jobs finished
+  Pool progress: 4750/10000 jobs finished
+  Pool progress: 4450/10000 jobs finished
+  Pool progress: 4800/10000 jobs finished
+  Pool progress: 4500/10000 jobs finished
+  Pool progress: 4850/10000 jobs finished
+  Pool progress: 4550/10000 jobs finished
+  Pool progress: 4900/10000 jobs finished
+  Pool progress: 4600/10000 jobs finished
+  Pool progress: 4950/10000 jobs finished
+  Pool progress: 4650/10000 jobs finished
+  Pool progress: 5000/10000 jobs finished
+  Pool progress: 4700/10000 jobs finished
+  Pool progress: 5050/10000 jobs finished
+  Pool progress: 4750/10000 jobs finished
+  Pool progress: 5100/10000 jobs finished
+  Pool progress: 4800/10000 jobs finished
+  Pool progress: 4850/10000 jobs finished
+  Pool progress: 5150/10000 jobs finished
+  Pool progress: 4900/10000 jobs finished
+  Pool progress: 5200/10000 jobs finished
+  Pool progress: 4950/10000 jobs finished
+  Pool progress: 5250/10000 jobs finished
+  Pool progress: 5000/10000 jobs finished
+  Pool progress: 5300/10000 jobs finished
+  Pool progress: 5050/10000 jobs finished
+  Pool progress: 5350/10000 jobs finished
+  Pool progress: 5100/10000 jobs finished
+  Pool progress: 5400/10000 jobs finished
+  Pool progress: 5150/10000 jobs finished
+  Pool progress: 5450/10000 jobs finished
+  Pool progress: 5500/10000 jobs finished
+  Pool progress: 5200/10000 jobs finished
+  Pool progress: 5550/10000 jobs finished
+  Pool progress: 5250/10000 jobs finished
+  Pool progress: 5600/10000 jobs finished
+  Pool progress: 5300/10000 jobs finished
+  Pool progress: 5650/10000 jobs finished
+  Pool progress: 5350/10000 jobs finished
+  Pool progress: 5700/10000 jobs finished
+  Pool progress: 5400/10000 jobs finished
+  Pool progress: 5750/10000 jobs finished
+  Pool progress: 5450/10000 jobs finished
+  Pool progress: 5800/10000 jobs finished
+  Pool progress: 5500/10000 jobs finished
+  Pool progress: 5850/10000 jobs finished
+  Pool progress: 5550/10000 jobs finished
+  Pool progress: 5600/10000 jobs finished
+  Pool progress: 5900/10000 jobs finished
+  Pool progress: 5650/10000 jobs finished
+  Pool progress: 5950/10000 jobs finished
+  Pool progress: 5700/10000 jobs finished
+  Pool progress: 6000/10000 jobs finished
+  Pool progress: 5750/10000 jobs finished
+  Pool progress: 6050/10000 jobs finished
+  Pool progress: 5800/10000 jobs finished
+  Pool progress: 6100/10000 jobs finished
+  Pool progress: 5850/10000 jobs finished
+  Pool progress: 5900/10000 jobs finished
+  Pool progress: 6150/10000 jobs finished
+  Pool progress: 5950/10000 jobs finished
+  Pool progress: 6200/10000 jobs finished
+  Pool progress: 6000/10000 jobs finished
+  Pool progress: 6250/10000 jobs finished
+  Pool progress: 6050/10000 jobs finished
+  Pool progress: 6300/10000 jobs finished
+  Pool progress: 6100/10000 jobs finished
+  Pool progress: 6350/10000 jobs finished
+  Pool progress: 6150/10000 jobs finished
+  Pool progress: 6400/10000 jobs finished
+  Pool progress: 6200/10000 jobs finished
+  Pool progress: 6450/10000 jobs finished
+  Pool progress: 6250/10000 jobs finished
+  Pool progress: 6300/10000 jobs finished
+  Pool progress: 6500/10000 jobs finished
+  Pool progress: 6350/10000 jobs finished
+  Pool progress: 6550/10000 jobs finished
+  Pool progress: 6400/10000 jobs finished
+  Pool progress: 6600/10000 jobs finished
+  Pool progress: 6450/10000 jobs finished
+  Pool progress: 6650/10000 jobs finished
+  Pool progress: 6500/10000 jobs finished
+  Pool progress: 6700/10000 jobs finished
+  Pool progress: 6550/10000 jobs finished
+  Pool progress: 6600/10000 jobs finished
+  Pool progress: 6750/10000 jobs finished
+  Pool progress: 6650/10000 jobs finished
+  Pool progress: 6800/10000 jobs finished
+  Pool progress: 6700/10000 jobs finished
+  Pool progress: 6850/10000 jobs finished
+  Pool progress: 6750/10000 jobs finished
+  Pool progress: 6900/10000 jobs finished
+  Pool progress: 6800/10000 jobs finished
+  Pool progress: 6950/10000 jobs finished
+  Pool progress: 6850/10000 jobs finished
+  Pool progress: 7000/10000 jobs finished
+  Pool progress: 6900/10000 jobs finished
+  Pool progress: 7050/10000 jobs finished
+  Pool progress: 6950/10000 jobs finished
+  Pool progress: 7000/10000 jobs finished
+  Pool progress: 7100/10000 jobs finished
+  Pool progress: 7050/10000 jobs finished
+  Pool progress: 7150/10000 jobs finished
+  Pool progress: 7100/10000 jobs finished
+  Pool progress: 7200/10000 jobs finished
+  Pool progress: 7150/10000 jobs finished
+  Pool progress: 7250/10000 jobs finished
+  Pool progress: 7200/10000 jobs finished
+  Pool progress: 7300/10000 jobs finished
+  Pool progress: 7250/10000 jobs finished
+  Pool progress: 7350/10000 jobs finished
+  Pool progress: 7300/10000 jobs finished
+  Pool progress: 7400/10000 jobs finished
+  Pool progress: 7350/10000 jobs finished
+  Pool progress: 7450/10000 jobs finished
+  Pool progress: 7400/10000 jobs finished
+  Pool progress: 7500/10000 jobs finished
+  Pool progress: 7450/10000 jobs finished
+  Pool progress: 7550/10000 jobs finished
+  Pool progress: 7500/10000 jobs finished
+  Pool progress: 7600/10000 jobs finished
+  Pool progress: 7550/10000 jobs finished
+  Pool progress: 7650/10000 jobs finished
+  Pool progress: 7600/10000 jobs finished
+  Pool progress: 7650/10000 jobs finished
+  Pool progress: 7700/10000 jobs finished
+  Pool progress: 7700/10000 jobs finished
+  Pool progress: 7750/10000 jobs finished
+  Pool progress: 7750/10000 jobs finished
+  Pool progress: 7800/10000 jobs finished
+  Pool progress: 7800/10000 jobs finished
+  Pool progress: 7850/10000 jobs finished
+  Pool progress: 7850/10000 jobs finished
+  Pool progress: 7900/10000 jobs finished
+  Pool progress: 7900/10000 jobs finished
+  Pool progress: 7950/10000 jobs finished
+  Pool progress: 7950/10000 jobs finished
+  Pool progress: 8000/10000 jobs finished
+  Pool progress: 8000/10000 jobs finished
+  Pool progress: 8050/10000 jobs finished
+  Pool progress: 8050/10000 jobs finished
+  Pool progress: 8100/10000 jobs finished
+  Pool progress: 8100/10000 jobs finished
+  Pool progress: 8150/10000 jobs finished
+  Pool progress: 8150/10000 jobs finished
+  Pool progress: 8200/10000 jobs finished
+  Pool progress: 8200/10000 jobs finished
+  Pool progress: 8250/10000 jobs finished
+  Pool progress: 8250/10000 jobs finished
+  Pool progress: 8300/10000 jobs finished
+  Pool progress: 8300/10000 jobs finished
+  Pool progress: 8350/10000 jobs finished
+  Pool progress: 8350/10000 jobs finished
+  Pool progress: 8400/10000 jobs finished
+  Pool progress: 8400/10000 jobs finished
+  Pool progress: 8450/10000 jobs finished
+  Pool progress: 8450/10000 jobs finished
+  Pool progress: 8500/10000 jobs finished
+  Pool progress: 8500/10000 jobs finished
+  Pool progress: 8550/10000 jobs finished
+  Pool progress: 8550/10000 jobs finished
+  Pool progress: 8600/10000 jobs finished
+  Pool progress: 8600/10000 jobs finished
+  Pool progress: 8650/10000 jobs finished
+  Pool progress: 8650/10000 jobs finished
+  Pool progress: 8700/10000 jobs finished
+  Pool progress: 8700/10000 jobs finished
+  Pool progress: 8750/10000 jobs finished
+  Pool progress: 8750/10000 jobs finished
+  Pool progress: 8800/10000 jobs finished
+  Pool progress: 8800/10000 jobs finished
+  Pool progress: 8850/10000 jobs finished
+  Pool progress: 8850/10000 jobs finished
+  Pool progress: 8900/10000 jobs finished
+  Pool progress: 8900/10000 jobs finished
+  Pool progress: 8950/10000 jobs finished
+  Pool progress: 9000/10000 jobs finished
+  Pool progress: 8950/10000 jobs finished
+  Pool progress: 9050/10000 jobs finished
+  Pool progress: 9000/10000 jobs finished
+  Pool progress: 9100/10000 jobs finished
+  Pool progress: 9050/10000 jobs finished
+  Pool progress: 9150/10000 jobs finished
+  Pool progress: 9100/10000 jobs finished
+  Pool progress: 9200/10000 jobs finished
+  Pool progress: 9150/10000 jobs finished
+  Pool progress: 9250/10000 jobs finished
+  Pool progress: 9200/10000 jobs finished
+  Pool progress: 9300/10000 jobs finished
+  Pool progress: 9250/10000 jobs finished
+  Pool progress: 9350/10000 jobs finished
+  Pool progress: 9300/10000 jobs finished
+  Pool progress: 9400/10000 jobs finished
+  Pool progress: 9350/10000 jobs finished
+  Pool progress: 9450/10000 jobs finished
+  Pool progress: 9400/10000 jobs finished
+  Pool progress: 9500/10000 jobs finished
+  Pool progress: 9450/10000 jobs finished
+  Pool progress: 9550/10000 jobs finished
+  Pool progress: 9500/10000 jobs finished
+  Pool progress: 9600/10000 jobs finished
+  Pool progress: 9550/10000 jobs finished
+  Pool progress: 9650/10000 jobs finished
+  Pool progress: 9600/10000 jobs finished
+  Pool progress: 9700/10000 jobs finished
+  Pool progress: 9750/10000 jobs finished
+  Pool progress: 9650/10000 jobs finished
+  Pool progress: 9800/10000 jobs finished
+  Pool progress: 9700/10000 jobs finished
+  Pool progress: 9850/10000 jobs finished
+  Pool progress: 9750/10000 jobs finished
+  Pool progress: 9900/10000 jobs finished
+  Pool progress: 9800/10000 jobs finished
+  Pool progress: 9950/10000 jobs finished
+  Pool progress: 9850/10000 jobs finished
+  Pool progress: 10000/10000 jobs finished
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-ACS_run5.csv
+Progress file removed: results\9x9\progress_9x9_CP-ACS_run5.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-ACS_run5.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-09 00:06:32] [RUN 5] [SIZE 9x9] CP-ACS finished with exit_code=0
+  Pool progress: 9900/10000 jobs finished
+  Pool progress: 9950/10000 jobs finished
+  Pool progress: 10000/10000 jobs finished
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-DCM-ACO_run5.csv
+Progress file removed: results\9x9\progress_9x9_CP-DCM-ACO_run5.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-DCM-ACO_run5.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-09 00:06:35] [RUN 5] [SIZE 9x9] CP-DCM-ACO finished with exit_code=0
+[2026-04-09 00:06:35] [RUN 5] [SIZE 9x9] completed
+[2026-04-09 00:06:35] ----- SIZE 9x9 | RUN 5 DONE -----
+[2026-04-09 00:06:35] ===== SIZE 9x9 DONE =====
+
+[2026-04-09 00:06:35] ===== SIZE 16x16 START =====
+[2026-04-09 00:06:35] ----- SIZE 16x16 | RUN 2 START -----
+[2026-04-09 00:06:35] [RUN 2] [SIZE 16x16] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 0 --run 2 --pool-workers 4 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 2 --run 2 --pool-workers 4 --verbose
+Output file: results\16x16\results_16x16_CP-ACS_run2.csv
+Progress file: results\16x16\progress_16x16_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Output file: results\16x16\results_16x16_CP-DCM-ACO_run2.csv
+Progress file: results\16x16\progress_16x16_CP-DCM-ACO_run2.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Found 100 instances in instances\16x16
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Found 100 instances in instances\16x16
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 100
+Pool mode: nothing pending.
+Pool mode: nothing pending.
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-ACS_run2.csv
+Progress file removed: results\16x16\progress_16x16_CP-ACS_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-ACS_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-DCM-ACO_run2.csv
+Progress file removed: results\16x16\progress_16x16_CP-DCM-ACO_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-DCM-ACO_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-09 00:06:36] [RUN 2] [SIZE 16x16] CP-ACS finished with exit_code=0
+[2026-04-09 00:06:36] [RUN 2] [SIZE 16x16] CP-DCM-ACO finished with exit_code=0
+[2026-04-09 00:06:36] [RUN 2] [SIZE 16x16] completed
+[2026-04-09 00:06:36] ----- SIZE 16x16 | RUN 2 DONE -----
+[2026-04-09 00:06:36] ----- SIZE 16x16 | RUN 3 START -----
+[2026-04-09 00:06:36] [RUN 3] [SIZE 16x16] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 0 --run 3 --pool-workers 4 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 2 --run 3 --pool-workers 4 --verbose
+Output file: results\16x16\results_16x16_CP-ACS_run3.csv
+Progress file: results\16x16\progress_16x16_CP-ACS_run3.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\16x16
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Output file: results\16x16\results_16x16_CP-DCM-ACO_run3.csv
+Progress file: results\16x16\progress_16x16_CP-DCM-ACO_run3.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\16x16
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 100
+Pool mode: 4 worker process(es), 10000 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 10000 (instance, rep) job(s) queued
+  Pool progress: 50/10000 jobs finished
+  Pool progress: 100/10000 jobs finished
+  Pool progress: 50/10000 jobs finished
+  Pool progress: 150/10000 jobs finished
+  Pool progress: 200/10000 jobs finished
+  Pool progress: 250/10000 jobs finished
+  Pool progress: 300/10000 jobs finished
+  Pool progress: 350/10000 jobs finished
+  Pool progress: 400/10000 jobs finished
+  Pool progress: 450/10000 jobs finished
+  Pool progress: 500/10000 jobs finished
+  Pool progress: 550/10000 jobs finished
+  Pool progress: 600/10000 jobs finished
+  Pool progress: 650/10000 jobs finished
+  Pool progress: 100/10000 jobs finished
+  Pool progress: 700/10000 jobs finished
+  Pool progress: 750/10000 jobs finished
+  Pool progress: 800/10000 jobs finished
+  Pool progress: 850/10000 jobs finished
+  Pool progress: 900/10000 jobs finished
+  Pool progress: 950/10000 jobs finished
+  Pool progress: 1000/10000 jobs finished
+  Pool progress: 150/10000 jobs finished
+  Pool progress: 1050/10000 jobs finished
+  Pool progress: 1100/10000 jobs finished
+  Pool progress: 1150/10000 jobs finished
+  Pool progress: 1200/10000 jobs finished
+  Pool progress: 200/10000 jobs finished
+  Pool progress: 1250/10000 jobs finished
+  Pool progress: 1300/10000 jobs finished
+  Pool progress: 250/10000 jobs finished
+  Pool progress: 1350/10000 jobs finished
+  Pool progress: 300/10000 jobs finished
+  Pool progress: 1400/10000 jobs finished
+  Pool progress: 1450/10000 jobs finished
+  Pool progress: 1500/10000 jobs finished
+  Pool progress: 1550/10000 jobs finished
+  Pool progress: 350/10000 jobs finished
+  Pool progress: 1600/10000 jobs finished
+  Pool progress: 1650/10000 jobs finished
+  Pool progress: 1700/10000 jobs finished
+  Pool progress: 1750/10000 jobs finished
+  Pool progress: 1800/10000 jobs finished
+  Pool progress: 400/10000 jobs finished
+  Pool progress: 1850/10000 jobs finished
+  Pool progress: 1900/10000 jobs finished
+  Pool progress: 450/10000 jobs finished
+  Pool progress: 1950/10000 jobs finished
+  Pool progress: 2000/10000 jobs finished
+  Pool progress: 500/10000 jobs finished
+  Pool progress: 2050/10000 jobs finished
+  Pool progress: 2100/10000 jobs finished
+  Pool progress: 2150/10000 jobs finished
+  Pool progress: 2200/10000 jobs finished
+  Pool progress: 2250/10000 jobs finished
+  Pool progress: 2300/10000 jobs finished
+  Pool progress: 2350/10000 jobs finished
+  Pool progress: 2400/10000 jobs finished
+  Pool progress: 550/10000 jobs finished
+  Pool progress: 2450/10000 jobs finished
+  Pool progress: 600/10000 jobs finished
+  Pool progress: 2500/10000 jobs finished
+  Pool progress: 2550/10000 jobs finished
+  Pool progress: 2600/10000 jobs finished
+  Pool progress: 650/10000 jobs finished
+  Pool progress: 2650/10000 jobs finished
+  Pool progress: 700/10000 jobs finished
+  Pool progress: 2700/10000 jobs finished
+  Pool progress: 2750/10000 jobs finished
+  Pool progress: 2800/10000 jobs finished
+  Pool progress: 2850/10000 jobs finished
+  Pool progress: 2900/10000 jobs finished
+  Pool progress: 2950/10000 jobs finished
+  Pool progress: 3000/10000 jobs finished
+  Pool progress: 3050/10000 jobs finished
+  Pool progress: 3100/10000 jobs finished
+  Pool progress: 3150/10000 jobs finished
+  Pool progress: 3200/10000 jobs finished
+  Pool progress: 3250/10000 jobs finished
+  Pool progress: 3300/10000 jobs finished
+  Pool progress: 3350/10000 jobs finished
+  Pool progress: 3400/10000 jobs finished
+  Pool progress: 3450/10000 jobs finished
+  Pool progress: 3500/10000 jobs finished
+  Pool progress: 3550/10000 jobs finished
+  Pool progress: 3600/10000 jobs finished
+  Pool progress: 3650/10000 jobs finished
+  Pool progress: 3700/10000 jobs finished
+  Pool progress: 3750/10000 jobs finished
+  Pool progress: 3800/10000 jobs finished
+  Pool progress: 750/10000 jobs finished
+  Pool progress: 3850/10000 jobs finished
+  Pool progress: 3900/10000 jobs finished
+  Pool progress: 3950/10000 jobs finished
+  Pool progress: 4000/10000 jobs finished
+  Pool progress: 4050/10000 jobs finished
+  Pool progress: 4100/10000 jobs finished
+  Pool progress: 4150/10000 jobs finished
+  Pool progress: 4200/10000 jobs finished
+  Pool progress: 4250/10000 jobs finished
+  Pool progress: 4300/10000 jobs finished
+  Pool progress: 4350/10000 jobs finished
+  Pool progress: 4400/10000 jobs finished
+  Pool progress: 4450/10000 jobs finished
+  Pool progress: 4500/10000 jobs finished
+  Pool progress: 4550/10000 jobs finished
+  Pool progress: 4600/10000 jobs finished
+  Pool progress: 4650/10000 jobs finished
+  Pool progress: 4700/10000 jobs finished
+  Pool progress: 4750/10000 jobs finished
+  Pool progress: 4800/10000 jobs finished
+  Pool progress: 800/10000 jobs finished
+  Pool progress: 4850/10000 jobs finished
+  Pool progress: 4900/10000 jobs finished
+  Pool progress: 4950/10000 jobs finished
+  Pool progress: 5000/10000 jobs finished
+  Pool progress: 5050/10000 jobs finished
+  Pool progress: 850/10000 jobs finished
+  Pool progress: 5100/10000 jobs finished
+  Pool progress: 5150/10000 jobs finished
+  Pool progress: 900/10000 jobs finished
+  Pool progress: 5200/10000 jobs finished
+  Pool progress: 5250/10000 jobs finished
+  Pool progress: 5300/10000 jobs finished
+  Pool progress: 5350/10000 jobs finished
+  Pool progress: 5400/10000 jobs finished
+  Pool progress: 5450/10000 jobs finished
+  Pool progress: 950/10000 jobs finished
+  Pool progress: 5500/10000 jobs finished
+  Pool progress: 5550/10000 jobs finished
+  Pool progress: 5600/10000 jobs finished
+  Pool progress: 5650/10000 jobs finished
+  Pool progress: 1000/10000 jobs finished
+  Pool progress: 1050/10000 jobs finished
+  Pool progress: 5700/10000 jobs finished
+  Pool progress: 1100/10000 jobs finished
+  Pool progress: 5750/10000 jobs finished
+  Pool progress: 5800/10000 jobs finished
+  Pool progress: 5850/10000 jobs finished
+  Pool progress: 1150/10000 jobs finished
+  Pool progress: 5900/10000 jobs finished
+  Pool progress: 5950/10000 jobs finished
+  Pool progress: 6000/10000 jobs finished
+  Pool progress: 1200/10000 jobs finished
+  Pool progress: 6050/10000 jobs finished
+  Pool progress: 1250/10000 jobs finished
+  Pool progress: 1300/10000 jobs finished
+  Pool progress: 6100/10000 jobs finished
+  Pool progress: 1350/10000 jobs finished
+  Pool progress: 6150/10000 jobs finished
+  Pool progress: 6200/10000 jobs finished
+  Pool progress: 1400/10000 jobs finished
+  Pool progress: 6250/10000 jobs finished
+  Pool progress: 6300/10000 jobs finished
+  Pool progress: 6350/10000 jobs finished
+  Pool progress: 1450/10000 jobs finished
+  Pool progress: 6400/10000 jobs finished
+  Pool progress: 6450/10000 jobs finished
+  Pool progress: 6500/10000 jobs finished
+  Pool progress: 6550/10000 jobs finished
+  Pool progress: 6600/10000 jobs finished
+  Pool progress: 6650/10000 jobs finished
+  Pool progress: 1500/10000 jobs finished
+  Pool progress: 6700/10000 jobs finished
+  Pool progress: 6750/10000 jobs finished
+  Pool progress: 6800/10000 jobs finished
+  Pool progress: 6850/10000 jobs finished
+  Pool progress: 6900/10000 jobs finished
+  Pool progress: 1550/10000 jobs finished
+  Pool progress: 6950/10000 jobs finished
+  Pool progress: 7000/10000 jobs finished
+  Pool progress: 1600/10000 jobs finished
+  Pool progress: 7050/10000 jobs finished
+  Pool progress: 1650/10000 jobs finished
+  Pool progress: 1700/10000 jobs finished
+  Pool progress: 7100/10000 jobs finished
+  Pool progress: 7150/10000 jobs finished
+  Pool progress: 7200/10000 jobs finished
+  Pool progress: 7250/10000 jobs finished
+  Pool progress: 7300/10000 jobs finished
+  Pool progress: 7350/10000 jobs finished
+  Pool progress: 1750/10000 jobs finished
+  Pool progress: 7400/10000 jobs finished
+  Pool progress: 7450/10000 jobs finished
+  Pool progress: 7500/10000 jobs finished
+  Pool progress: 7550/10000 jobs finished
+  Pool progress: 7600/10000 jobs finished
+  Pool progress: 7650/10000 jobs finished
+  Pool progress: 7700/10000 jobs finished
+  Pool progress: 1800/10000 jobs finished
+  Pool progress: 7750/10000 jobs finished
+  Pool progress: 7800/10000 jobs finished
+  Pool progress: 1850/10000 jobs finished
+  Pool progress: 7850/10000 jobs finished
+  Pool progress: 7900/10000 jobs finished
+  Pool progress: 7950/10000 jobs finished
+  Pool progress: 1900/10000 jobs finished
+  Pool progress: 1950/10000 jobs finished
+  Pool progress: 8000/10000 jobs finished
+  Pool progress: 8050/10000 jobs finished
+  Pool progress: 2000/10000 jobs finished
+  Pool progress: 8100/10000 jobs finished
+  Pool progress: 2050/10000 jobs finished
+  Pool progress: 8150/10000 jobs finished
+  Pool progress: 8200/10000 jobs finished
+  Pool progress: 2100/10000 jobs finished
+  Pool progress: 8250/10000 jobs finished
+  Pool progress: 8300/10000 jobs finished
+  Pool progress: 8350/10000 jobs finished
+  Pool progress: 8400/10000 jobs finished
+  Pool progress: 8450/10000 jobs finished
+  Pool progress: 8500/10000 jobs finished
+  Pool progress: 8550/10000 jobs finished
+  Pool progress: 8600/10000 jobs finished
+  Pool progress: 2150/10000 jobs finished
+  Pool progress: 8650/10000 jobs finished
+  Pool progress: 8700/10000 jobs finished
+  Pool progress: 8750/10000 jobs finished
+  Pool progress: 8800/10000 jobs finished
+  Pool progress: 2200/10000 jobs finished
+  Pool progress: 2250/10000 jobs finished
+  Pool progress: 8850/10000 jobs finished
+  Pool progress: 2300/10000 jobs finished
+  Pool progress: 2350/10000 jobs finished
+  Pool progress: 8900/10000 jobs finished
+  Pool progress: 8950/10000 jobs finished
+  Pool progress: 9000/10000 jobs finished
+  Pool progress: 2400/10000 jobs finished
+  Pool progress: 9050/10000 jobs finished
+  Pool progress: 9100/10000 jobs finished
+  Pool progress: 9150/10000 jobs finished
+  Pool progress: 9200/10000 jobs finished
+  Pool progress: 9250/10000 jobs finished
+  Pool progress: 9300/10000 jobs finished
+  Pool progress: 9350/10000 jobs finished
+  Pool progress: 2450/10000 jobs finished
+  Pool progress: 9400/10000 jobs finished
+  Pool progress: 9450/10000 jobs finished
+  Pool progress: 9500/10000 jobs finished
+  Pool progress: 9550/10000 jobs finished
+  Pool progress: 9600/10000 jobs finished
+  Pool progress: 9650/10000 jobs finished
+  Pool progress: 9700/10000 jobs finished
+  Pool progress: 9750/10000 jobs finished
+  Pool progress: 9800/10000 jobs finished
+  Pool progress: 2500/10000 jobs finished
+  Pool progress: 9850/10000 jobs finished
+  Pool progress: 9900/10000 jobs finished
+  Pool progress: 9950/10000 jobs finished
+  Pool progress: 10000/10000 jobs finished
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-DCM-ACO_run3.csv
+Progress file removed: results\16x16\progress_16x16_CP-DCM-ACO_run3.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-DCM-ACO_run3.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-09 00:11:58] [RUN 3] [SIZE 16x16] CP-DCM-ACO finished with exit_code=0
+  Pool progress: 2550/10000 jobs finished
+  Pool progress: 2600/10000 jobs finished
+  Pool progress: 2650/10000 jobs finished
+  Pool progress: 2700/10000 jobs finished
+  Pool progress: 2750/10000 jobs finished
+  Pool progress: 2800/10000 jobs finished
+  Pool progress: 2850/10000 jobs finished
+  Pool progress: 2900/10000 jobs finished
+  Pool progress: 2950/10000 jobs finished
+  Pool progress: 3000/10000 jobs finished
+  Pool progress: 3050/10000 jobs finished
+  Pool progress: 3100/10000 jobs finished
+  Pool progress: 3150/10000 jobs finished
+  Pool progress: 3200/10000 jobs finished
+  Pool progress: 3250/10000 jobs finished
+  Pool progress: 3300/10000 jobs finished
+  Pool progress: 3350/10000 jobs finished
+  Pool progress: 3400/10000 jobs finished
+  Pool progress: 3450/10000 jobs finished
+  Pool progress: 3500/10000 jobs finished
+  Pool progress: 3550/10000 jobs finished
+  Pool progress: 3600/10000 jobs finished
+  Pool progress: 3650/10000 jobs finished
+  Pool progress: 3700/10000 jobs finished
+  Pool progress: 3750/10000 jobs finished
+  Pool progress: 3800/10000 jobs finished
+  Pool progress: 3850/10000 jobs finished
+  Pool progress: 3900/10000 jobs finished
+  Pool progress: 3950/10000 jobs finished
+  Pool progress: 4000/10000 jobs finished
+  Pool progress: 4050/10000 jobs finished
+  Pool progress: 4100/10000 jobs finished
+  Pool progress: 4150/10000 jobs finished
+  Pool progress: 4200/10000 jobs finished
+  Pool progress: 4250/10000 jobs finished
+  Pool progress: 4300/10000 jobs finished
+  Pool progress: 4350/10000 jobs finished
+  Pool progress: 4400/10000 jobs finished
+  Pool progress: 4450/10000 jobs finished
+  Pool progress: 4500/10000 jobs finished
+  Pool progress: 4550/10000 jobs finished
+  Pool progress: 4600/10000 jobs finished
+  Pool progress: 4650/10000 jobs finished
+  Pool progress: 4700/10000 jobs finished
+  Pool progress: 4750/10000 jobs finished
+  Pool progress: 4800/10000 jobs finished
+  Pool progress: 4850/10000 jobs finished
+  Pool progress: 4900/10000 jobs finished
+  Pool progress: 4950/10000 jobs finished
+  Pool progress: 5000/10000 jobs finished
+  Pool progress: 5050/10000 jobs finished
+  Pool progress: 5100/10000 jobs finished
+  Pool progress: 5150/10000 jobs finished
+  Pool progress: 5200/10000 jobs finished
+  Pool progress: 5250/10000 jobs finished
+  Pool progress: 5300/10000 jobs finished
+  Pool progress: 5350/10000 jobs finished
+  Pool progress: 5400/10000 jobs finished
+  Pool progress: 5450/10000 jobs finished
+  Pool progress: 5500/10000 jobs finished
+  Pool progress: 5550/10000 jobs finished
+  Pool progress: 5600/10000 jobs finished
+  Pool progress: 5650/10000 jobs finished
+  Pool progress: 5700/10000 jobs finished
+  Pool progress: 5750/10000 jobs finished
+  Pool progress: 5800/10000 jobs finished
+  Pool progress: 5850/10000 jobs finished
+  Pool progress: 5900/10000 jobs finished
+  Pool progress: 5950/10000 jobs finished
+  Pool progress: 6000/10000 jobs finished
+  Pool progress: 6050/10000 jobs finished
+  Pool progress: 6100/10000 jobs finished
+  Pool progress: 6150/10000 jobs finished
+  Pool progress: 6200/10000 jobs finished
+  Pool progress: 6250/10000 jobs finished
+  Pool progress: 6300/10000 jobs finished
+  Pool progress: 6350/10000 jobs finished
+  Pool progress: 6400/10000 jobs finished
+  Pool progress: 6450/10000 jobs finished
+  Pool progress: 6500/10000 jobs finished
+  Pool progress: 6550/10000 jobs finished
+  Pool progress: 6600/10000 jobs finished
+  Pool progress: 6650/10000 jobs finished
+  Pool progress: 6700/10000 jobs finished
+  Pool progress: 6750/10000 jobs finished
+  Pool progress: 6800/10000 jobs finished
+  Pool progress: 6850/10000 jobs finished
+  Pool progress: 6900/10000 jobs finished
+  Pool progress: 6950/10000 jobs finished
+  Pool progress: 7000/10000 jobs finished
+  Pool progress: 7050/10000 jobs finished
+  Pool progress: 7100/10000 jobs finished
+  Pool progress: 7150/10000 jobs finished
+  Pool progress: 7200/10000 jobs finished
+  Pool progress: 7250/10000 jobs finished
+  Pool progress: 7300/10000 jobs finished
+  Pool progress: 7350/10000 jobs finished
+  Pool progress: 7400/10000 jobs finished
+  Pool progress: 7450/10000 jobs finished
+  Pool progress: 7500/10000 jobs finished
+  Pool progress: 7550/10000 jobs finished
+  Pool progress: 7600/10000 jobs finished
+  Pool progress: 7650/10000 jobs finished
+  Pool progress: 7700/10000 jobs finished
+  Pool progress: 7750/10000 jobs finished
+  Pool progress: 7800/10000 jobs finished
+  Pool progress: 7850/10000 jobs finished
+  Pool progress: 7900/10000 jobs finished
+  Pool progress: 7950/10000 jobs finished
+  Pool progress: 8000/10000 jobs finished
+  Pool progress: 8050/10000 jobs finished
+  Pool progress: 8100/10000 jobs finished
+  Pool progress: 8150/10000 jobs finished
+  Pool progress: 8200/10000 jobs finished
+  Pool progress: 8250/10000 jobs finished
+  Pool progress: 8300/10000 jobs finished
+  Pool progress: 8350/10000 jobs finished
+  Pool progress: 8400/10000 jobs finished
+  Pool progress: 8450/10000 jobs finished
+  Pool progress: 8500/10000 jobs finished
+  Pool progress: 8550/10000 jobs finished
+  Pool progress: 8600/10000 jobs finished
+  Pool progress: 8650/10000 jobs finished
+  Pool progress: 8700/10000 jobs finished
+  Pool progress: 8750/10000 jobs finished
+  Pool progress: 8800/10000 jobs finished
+  Pool progress: 8850/10000 jobs finished
+  Pool progress: 8900/10000 jobs finished
+  Pool progress: 8950/10000 jobs finished
+  Pool progress: 9000/10000 jobs finished
+  Pool progress: 9050/10000 jobs finished
+  Pool progress: 9100/10000 jobs finished
+  Pool progress: 9150/10000 jobs finished
+  Pool progress: 9200/10000 jobs finished
+  Pool progress: 9250/10000 jobs finished
+  Pool progress: 9300/10000 jobs finished
+  Pool progress: 9350/10000 jobs finished
+  Pool progress: 9400/10000 jobs finished
+  Pool progress: 9450/10000 jobs finished
+  Pool progress: 9500/10000 jobs finished
+  Pool progress: 9550/10000 jobs finished
+  Pool progress: 9600/10000 jobs finished
+  Pool progress: 9650/10000 jobs finished
+  Pool progress: 9700/10000 jobs finished
+  Pool progress: 9750/10000 jobs finished
+  Pool progress: 9800/10000 jobs finished
+  Pool progress: 9850/10000 jobs finished
+  Pool progress: 9900/10000 jobs finished
+  Pool progress: 9950/10000 jobs finished
+  Pool progress: 10000/10000 jobs finished
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-ACS_run3.csv
+Progress file removed: results\16x16\progress_16x16_CP-ACS_run3.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-ACS_run3.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-09 00:35:52] [RUN 3] [SIZE 16x16] CP-ACS finished with exit_code=0
+[2026-04-09 00:35:52] [RUN 3] [SIZE 16x16] completed
+[2026-04-09 00:35:52] ----- SIZE 16x16 | RUN 3 DONE -----
+[2026-04-09 00:35:52] ----- SIZE 16x16 | RUN 4 START -----
+[2026-04-09 00:35:52] [RUN 4] [SIZE 16x16] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 0 --run 4 --pool-workers 4 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 2 --run 4 --pool-workers 4 --verbose
+Output file: results\16x16\results_16x16_CP-ACS_run4.csv
+Progress file: results\16x16\progress_16x16_CP-ACS_run4.csv (temporary; deleted when all instances complete)
+Output file: results\16x16\results_16x16_CP-DCM-ACO_run4.csv
+Progress file: results\16x16\progress_16x16_CP-DCM-ACO_run4.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\16x16
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Found 100 instances in instances\16x16
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 100
+Pool mode: 4 worker process(es), 10000 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 10000 (instance, rep) job(s) queued
+  Pool progress: 50/10000 jobs finished
+  Pool progress: 50/10000 jobs finished
+  Pool progress: 100/10000 jobs finished
+  Pool progress: 150/10000 jobs finished
+  Pool progress: 200/10000 jobs finished
+  Pool progress: 250/10000 jobs finished
+  Pool progress: 300/10000 jobs finished
+  Pool progress: 350/10000 jobs finished
+  Pool progress: 400/10000 jobs finished
+  Pool progress: 450/10000 jobs finished
+  Pool progress: 500/10000 jobs finished
+  Pool progress: 550/10000 jobs finished
+  Pool progress: 600/10000 jobs finished
+  Pool progress: 650/10000 jobs finished
+  Pool progress: 700/10000 jobs finished
+  Pool progress: 750/10000 jobs finished
+  Pool progress: 800/10000 jobs finished
+  Pool progress: 850/10000 jobs finished
+  Pool progress: 900/10000 jobs finished
+  Pool progress: 950/10000 jobs finished
+  Pool progress: 1000/10000 jobs finished
+  Pool progress: 1050/10000 jobs finished
+  Pool progress: 1100/10000 jobs finished
+  Pool progress: 100/10000 jobs finished
+  Pool progress: 1150/10000 jobs finished
+  Pool progress: 1200/10000 jobs finished
+  Pool progress: 1250/10000 jobs finished
+  Pool progress: 1300/10000 jobs finished
+  Pool progress: 1350/10000 jobs finished
+  Pool progress: 1400/10000 jobs finished
+  Pool progress: 150/10000 jobs finished
+  Pool progress: 1450/10000 jobs finished
+  Pool progress: 1500/10000 jobs finished
+  Pool progress: 1550/10000 jobs finished
+  Pool progress: 1600/10000 jobs finished
+  Pool progress: 1650/10000 jobs finished
+  Pool progress: 200/10000 jobs finished
+  Pool progress: 1700/10000 jobs finished
+  Pool progress: 1750/10000 jobs finished
+  Pool progress: 1800/10000 jobs finished
+  Pool progress: 1850/10000 jobs finished
+  Pool progress: 1900/10000 jobs finished
+  Pool progress: 250/10000 jobs finished
+  Pool progress: 1950/10000 jobs finished
+  Pool progress: 2000/10000 jobs finished
+  Pool progress: 2050/10000 jobs finished
+  Pool progress: 2100/10000 jobs finished
+  Pool progress: 2150/10000 jobs finished
+  Pool progress: 2200/10000 jobs finished
+  Pool progress: 2250/10000 jobs finished
+  Pool progress: 2300/10000 jobs finished
+  Pool progress: 2350/10000 jobs finished
+  Pool progress: 2400/10000 jobs finished
+  Pool progress: 2450/10000 jobs finished
+  Pool progress: 300/10000 jobs finished
+  Pool progress: 2500/10000 jobs finished
+  Pool progress: 2550/10000 jobs finished
+  Pool progress: 350/10000 jobs finished
+  Pool progress: 2600/10000 jobs finished
+  Pool progress: 400/10000 jobs finished
+  Pool progress: 450/10000 jobs finished
+  Pool progress: 2650/10000 jobs finished
+  Pool progress: 500/10000 jobs finished
+  Pool progress: 550/10000 jobs finished
+  Pool progress: 2700/10000 jobs finished
+  Pool progress: 2750/10000 jobs finished
+  Pool progress: 600/10000 jobs finished
+  Pool progress: 2800/10000 jobs finished
+  Pool progress: 650/10000 jobs finished
+  Pool progress: 2850/10000 jobs finished
+  Pool progress: 700/10000 jobs finished
+  Pool progress: 2900/10000 jobs finished
+  Pool progress: 2950/10000 jobs finished
+  Pool progress: 3000/10000 jobs finished
+  Pool progress: 3050/10000 jobs finished
+  Pool progress: 3100/10000 jobs finished
+  Pool progress: 3150/10000 jobs finished
+  Pool progress: 3200/10000 jobs finished
+  Pool progress: 3250/10000 jobs finished
+  Pool progress: 3300/10000 jobs finished
+  Pool progress: 3350/10000 jobs finished
+  Pool progress: 3400/10000 jobs finished
+  Pool progress: 3450/10000 jobs finished
+  Pool progress: 3500/10000 jobs finished
+  Pool progress: 3550/10000 jobs finished
+  Pool progress: 3600/10000 jobs finished
+  Pool progress: 3650/10000 jobs finished
+  Pool progress: 3700/10000 jobs finished
+  Pool progress: 3750/10000 jobs finished
+  Pool progress: 3800/10000 jobs finished
+  Pool progress: 3850/10000 jobs finished
+  Pool progress: 750/10000 jobs finished
+  Pool progress: 3900/10000 jobs finished
+  Pool progress: 3950/10000 jobs finished
+  Pool progress: 4000/10000 jobs finished
+  Pool progress: 4050/10000 jobs finished
+  Pool progress: 4100/10000 jobs finished
+  Pool progress: 4150/10000 jobs finished
+  Pool progress: 4200/10000 jobs finished
+  Pool progress: 4250/10000 jobs finished
+  Pool progress: 4300/10000 jobs finished
+  Pool progress: 4350/10000 jobs finished
+  Pool progress: 4400/10000 jobs finished
+  Pool progress: 4450/10000 jobs finished
+  Pool progress: 4500/10000 jobs finished
+  Pool progress: 4550/10000 jobs finished
+  Pool progress: 4600/10000 jobs finished
+  Pool progress: 4650/10000 jobs finished
+  Pool progress: 4700/10000 jobs finished
+  Pool progress: 4750/10000 jobs finished
+  Pool progress: 4800/10000 jobs finished
+  Pool progress: 4850/10000 jobs finished
+  Pool progress: 4900/10000 jobs finished
+  Pool progress: 4950/10000 jobs finished
+  Pool progress: 5000/10000 jobs finished
+  Pool progress: 5050/10000 jobs finished
+  Pool progress: 5100/10000 jobs finished
+  Pool progress: 5150/10000 jobs finished
+  Pool progress: 5200/10000 jobs finished
+  Pool progress: 5250/10000 jobs finished
+  Pool progress: 5300/10000 jobs finished
+  Pool progress: 5350/10000 jobs finished
+  Pool progress: 5400/10000 jobs finished
+  Pool progress: 5450/10000 jobs finished
+  Pool progress: 800/10000 jobs finished
+  Pool progress: 5500/10000 jobs finished
+  Pool progress: 5550/10000 jobs finished
+  Pool progress: 5600/10000 jobs finished
+  Pool progress: 5650/10000 jobs finished
+  Pool progress: 5700/10000 jobs finished
+  Pool progress: 850/10000 jobs finished
+  Pool progress: 5750/10000 jobs finished
+  Pool progress: 5800/10000 jobs finished
+  Pool progress: 5850/10000 jobs finished
+  Pool progress: 5900/10000 jobs finished
+  Pool progress: 5950/10000 jobs finished
+  Pool progress: 900/10000 jobs finished
+  Pool progress: 6000/10000 jobs finished
+  Pool progress: 6050/10000 jobs finished
+  Pool progress: 6100/10000 jobs finished
+  Pool progress: 6150/10000 jobs finished
+  Pool progress: 6200/10000 jobs finished
+  Pool progress: 950/10000 jobs finished
+  Pool progress: 6250/10000 jobs finished
+  Pool progress: 6300/10000 jobs finished
+  Pool progress: 6350/10000 jobs finished
+  Pool progress: 6400/10000 jobs finished
+  Pool progress: 6450/10000 jobs finished
+  Pool progress: 1000/10000 jobs finished
+  Pool progress: 6500/10000 jobs finished
+  Pool progress: 1050/10000 jobs finished
+  Pool progress: 1100/10000 jobs finished
+  Pool progress: 6550/10000 jobs finished
+  Pool progress: 6600/10000 jobs finished
+  Pool progress: 6650/10000 jobs finished
+  Pool progress: 6700/10000 jobs finished
+  Pool progress: 6750/10000 jobs finished
+  Pool progress: 1150/10000 jobs finished
+  Pool progress: 6800/10000 jobs finished
+  Pool progress: 6850/10000 jobs finished
+  Pool progress: 6900/10000 jobs finished
+  Pool progress: 6950/10000 jobs finished
+  Pool progress: 7000/10000 jobs finished
+  Pool progress: 7050/10000 jobs finished
+  Pool progress: 1200/10000 jobs finished
+  Pool progress: 7100/10000 jobs finished
+  Pool progress: 7150/10000 jobs finished
+  Pool progress: 1250/10000 jobs finished
+  Pool progress: 7200/10000 jobs finished
+  Pool progress: 1300/10000 jobs finished
+  Pool progress: 7250/10000 jobs finished
+  Pool progress: 7300/10000 jobs finished
+  Pool progress: 7350/10000 jobs finished
+  Pool progress: 7400/10000 jobs finished
+  Pool progress: 7450/10000 jobs finished
+  Pool progress: 1350/10000 jobs finished
+  Pool progress: 7500/10000 jobs finished
+  Pool progress: 7550/10000 jobs finished
+  Pool progress: 7600/10000 jobs finished
+  Pool progress: 1400/10000 jobs finished
+  Pool progress: 7650/10000 jobs finished
+  Pool progress: 7700/10000 jobs finished
+  Pool progress: 7750/10000 jobs finished
+  Pool progress: 7800/10000 jobs finished
+  Pool progress: 7850/10000 jobs finished
+  Pool progress: 7900/10000 jobs finished
+  Pool progress: 7950/10000 jobs finished
+  Pool progress: 8000/10000 jobs finished
+  Pool progress: 8050/10000 jobs finished
+  Pool progress: 8100/10000 jobs finished
+  Pool progress: 8150/10000 jobs finished
+  Pool progress: 1450/10000 jobs finished
+  Pool progress: 8200/10000 jobs finished
+  Pool progress: 8250/10000 jobs finished
+  Pool progress: 1500/10000 jobs finished
+  Pool progress: 8300/10000 jobs finished
+  Pool progress: 8350/10000 jobs finished
+  Pool progress: 1550/10000 jobs finished
+  Pool progress: 8400/10000 jobs finished
+  Pool progress: 8450/10000 jobs finished
+  Pool progress: 1600/10000 jobs finished
+  Pool progress: 8500/10000 jobs finished
+  Pool progress: 1650/10000 jobs finished
+  Pool progress: 1700/10000 jobs finished
+  Pool progress: 8550/10000 jobs finished
+  Pool progress: 8600/10000 jobs finished
+  Pool progress: 8650/10000 jobs finished
+  Pool progress: 8700/10000 jobs finished
+  Pool progress: 8750/10000 jobs finished
+  Pool progress: 8800/10000 jobs finished
+  Pool progress: 8850/10000 jobs finished
+  Pool progress: 8900/10000 jobs finished
+  Pool progress: 8950/10000 jobs finished
+  Pool progress: 1750/10000 jobs finished
+  Pool progress: 9000/10000 jobs finished
+  Pool progress: 9050/10000 jobs finished
+  Pool progress: 9100/10000 jobs finished
+  Pool progress: 9150/10000 jobs finished
+  Pool progress: 9200/10000 jobs finished
+  Pool progress: 9250/10000 jobs finished
+  Pool progress: 9300/10000 jobs finished
+  Pool progress: 9350/10000 jobs finished
+  Pool progress: 9400/10000 jobs finished
+  Pool progress: 1800/10000 jobs finished
+  Pool progress: 9450/10000 jobs finished
+  Pool progress: 9500/10000 jobs finished
+  Pool progress: 9550/10000 jobs finished
+  Pool progress: 9600/10000 jobs finished
+  Pool progress: 9650/10000 jobs finished
+  Pool progress: 1850/10000 jobs finished
+  Pool progress: 9700/10000 jobs finished
+  Pool progress: 1900/10000 jobs finished
+  Pool progress: 9750/10000 jobs finished
+  Pool progress: 1950/10000 jobs finished
+  Pool progress: 9800/10000 jobs finished
+  Pool progress: 9850/10000 jobs finished
+  Pool progress: 9900/10000 jobs finished
+  Pool progress: 9950/10000 jobs finished
+  Pool progress: 10000/10000 jobs finished
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-DCM-ACO_run4.csv
+Progress file removed: results\16x16\progress_16x16_CP-DCM-ACO_run4.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-DCM-ACO_run4.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-09 00:41:14] [RUN 4] [SIZE 16x16] CP-DCM-ACO finished with exit_code=0
+  Pool progress: 2000/10000 jobs finished
+  Pool progress: 2050/10000 jobs finished
+  Pool progress: 2100/10000 jobs finished
+  Pool progress: 2150/10000 jobs finished
+  Pool progress: 2200/10000 jobs finished
+  Pool progress: 2250/10000 jobs finished
+  Pool progress: 2300/10000 jobs finished
+  Pool progress: 2350/10000 jobs finished
+  Pool progress: 2400/10000 jobs finished
+  Pool progress: 2450/10000 jobs finished
+  Pool progress: 2500/10000 jobs finished
+  Pool progress: 2550/10000 jobs finished
+  Pool progress: 2600/10000 jobs finished
+  Pool progress: 2650/10000 jobs finished
+  Pool progress: 2700/10000 jobs finished
+  Pool progress: 2750/10000 jobs finished
+  Pool progress: 2800/10000 jobs finished
+  Pool progress: 2850/10000 jobs finished
+  Pool progress: 2900/10000 jobs finished
+  Pool progress: 2950/10000 jobs finished
+  Pool progress: 3000/10000 jobs finished
+  Pool progress: 3050/10000 jobs finished
+  Pool progress: 3100/10000 jobs finished
+  Pool progress: 3150/10000 jobs finished
+  Pool progress: 3200/10000 jobs finished
+  Pool progress: 3250/10000 jobs finished
+  Pool progress: 3300/10000 jobs finished
+  Pool progress: 3350/10000 jobs finished
+  Pool progress: 3400/10000 jobs finished
+  Pool progress: 3450/10000 jobs finished
+  Pool progress: 3500/10000 jobs finished
+  Pool progress: 3550/10000 jobs finished
+  Pool progress: 3600/10000 jobs finished
+  Pool progress: 3650/10000 jobs finished
+  Pool progress: 3700/10000 jobs finished
+  Pool progress: 3750/10000 jobs finished
+  Pool progress: 3800/10000 jobs finished
+  Pool progress: 3850/10000 jobs finished
+  Pool progress: 3900/10000 jobs finished
+  Pool progress: 3950/10000 jobs finished
+  Pool progress: 4000/10000 jobs finished
+  Pool progress: 4050/10000 jobs finished
+  Pool progress: 4100/10000 jobs finished
+  Pool progress: 4150/10000 jobs finished
+  Pool progress: 4200/10000 jobs finished
+  Pool progress: 4250/10000 jobs finished
+  Pool progress: 4300/10000 jobs finished
+  Pool progress: 4350/10000 jobs finished
+  Pool progress: 4400/10000 jobs finished
+  Pool progress: 4450/10000 jobs finished
+  Pool progress: 4500/10000 jobs finished
+  Pool progress: 4550/10000 jobs finished
+  Pool progress: 4600/10000 jobs finished
+  Pool progress: 4650/10000 jobs finished
+  Pool progress: 4700/10000 jobs finished
+  Pool progress: 4750/10000 jobs finished
+  Pool progress: 4800/10000 jobs finished
+  Pool progress: 4850/10000 jobs finished
+  Pool progress: 4900/10000 jobs finished
+  Pool progress: 4950/10000 jobs finished
+  Pool progress: 5000/10000 jobs finished
+  Pool progress: 5050/10000 jobs finished
+  Pool progress: 5100/10000 jobs finished
+  Pool progress: 5150/10000 jobs finished
+  Pool progress: 5200/10000 jobs finished
+  Pool progress: 5250/10000 jobs finished
+  Pool progress: 5300/10000 jobs finished
+  Pool progress: 5350/10000 jobs finished
+  Pool progress: 5400/10000 jobs finished
+  Pool progress: 5450/10000 jobs finished
+  Pool progress: 5500/10000 jobs finished
+  Pool progress: 5550/10000 jobs finished
+  Pool progress: 5600/10000 jobs finished
+  Pool progress: 5650/10000 jobs finished
+  Pool progress: 5700/10000 jobs finished
+  Pool progress: 5750/10000 jobs finished
+  Pool progress: 5800/10000 jobs finished
+  Pool progress: 5850/10000 jobs finished
+  Pool progress: 5900/10000 jobs finished
+  Pool progress: 5950/10000 jobs finished
+  Pool progress: 6000/10000 jobs finished
+  Pool progress: 6050/10000 jobs finished
+  Pool progress: 6100/10000 jobs finished
+  Pool progress: 6150/10000 jobs finished
+  Pool progress: 6200/10000 jobs finished
+  Pool progress: 6250/10000 jobs finished
+  Pool progress: 6300/10000 jobs finished
+  Pool progress: 6350/10000 jobs finished
+  Pool progress: 6400/10000 jobs finished
+  Pool progress: 6450/10000 jobs finished
+  Pool progress: 6500/10000 jobs finished
+  Pool progress: 6550/10000 jobs finished
+  Pool progress: 6600/10000 jobs finished
+  Pool progress: 6650/10000 jobs finished
+  Pool progress: 6700/10000 jobs finished
+  Pool progress: 6750/10000 jobs finished
+  Pool progress: 6800/10000 jobs finished
+  Pool progress: 6850/10000 jobs finished
+  Pool progress: 6900/10000 jobs finished
+  Pool progress: 6950/10000 jobs finished
+  Pool progress: 7000/10000 jobs finished
+  Pool progress: 7050/10000 jobs finished
+  Pool progress: 7100/10000 jobs finished
+  Pool progress: 7150/10000 jobs finished
+  Pool progress: 7200/10000 jobs finished
+  Pool progress: 7250/10000 jobs finished
+  Pool progress: 7300/10000 jobs finished
+  Pool progress: 7350/10000 jobs finished
+  Pool progress: 7400/10000 jobs finished
+  Pool progress: 7450/10000 jobs finished
+  Pool progress: 7500/10000 jobs finished
+  Pool progress: 7550/10000 jobs finished
+  Pool progress: 7600/10000 jobs finished
+  Pool progress: 7650/10000 jobs finished
+  Pool progress: 7700/10000 jobs finished
+  Pool progress: 7750/10000 jobs finished
+  Pool progress: 7800/10000 jobs finished
+  Pool progress: 7850/10000 jobs finished
+  Pool progress: 7900/10000 jobs finished
+  Pool progress: 7950/10000 jobs finished
+  Pool progress: 8000/10000 jobs finished
+  Pool progress: 8050/10000 jobs finished
+  Pool progress: 8100/10000 jobs finished
+  Pool progress: 8150/10000 jobs finished
+  Pool progress: 8200/10000 jobs finished
+  Pool progress: 8250/10000 jobs finished
+  Pool progress: 8300/10000 jobs finished
+  Pool progress: 8350/10000 jobs finished
+  Pool progress: 8400/10000 jobs finished
+  Pool progress: 8450/10000 jobs finished
+  Pool progress: 8500/10000 jobs finished
+  Pool progress: 8550/10000 jobs finished
+  Pool progress: 8600/10000 jobs finished
+  Pool progress: 8650/10000 jobs finished
+  Pool progress: 8700/10000 jobs finished
+  Pool progress: 8750/10000 jobs finished
+  Pool progress: 8800/10000 jobs finished
+  Pool progress: 8850/10000 jobs finished
+  Pool progress: 8900/10000 jobs finished
+  Pool progress: 8950/10000 jobs finished
+  Pool progress: 9000/10000 jobs finished
+  Pool progress: 9050/10000 jobs finished
+  Pool progress: 9100/10000 jobs finished
+  Pool progress: 9150/10000 jobs finished
+  Pool progress: 9200/10000 jobs finished
+  Pool progress: 9250/10000 jobs finished
+  Pool progress: 9300/10000 jobs finished
+  Pool progress: 9350/10000 jobs finished
+  Pool progress: 9400/10000 jobs finished
+  Pool progress: 9450/10000 jobs finished
+  Pool progress: 9500/10000 jobs finished
+  Pool progress: 9550/10000 jobs finished
+  Pool progress: 9600/10000 jobs finished
+  Pool progress: 9650/10000 jobs finished
+  Pool progress: 9700/10000 jobs finished
+  Pool progress: 9750/10000 jobs finished
+  Pool progress: 9800/10000 jobs finished
+  Pool progress: 9850/10000 jobs finished
+  Pool progress: 9900/10000 jobs finished
+  Pool progress: 9950/10000 jobs finished
+  Pool progress: 10000/10000 jobs finished
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-ACS_run4.csv
+Progress file removed: results\16x16\progress_16x16_CP-ACS_run4.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-ACS_run4.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-09 01:08:12] [RUN 4] [SIZE 16x16] CP-ACS finished with exit_code=0
+[2026-04-09 01:08:12] [RUN 4] [SIZE 16x16] completed
+[2026-04-09 01:08:12] ----- SIZE 16x16 | RUN 4 DONE -----
+[2026-04-09 01:08:12] ----- SIZE 16x16 | RUN 5 START -----
+[2026-04-09 01:08:12] [RUN 5] [SIZE 16x16] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 0 --run 5 --pool-workers 4 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 2 --run 5 --pool-workers 4 --verbose
+Output file: results\16x16\results_16x16_CP-ACS_run5.csv
+Progress file: results\16x16\progress_16x16_CP-ACS_run5.csv (temporary; deleted when all instances complete)
+Output file: results\16x16\results_16x16_CP-DCM-ACO_run5.csv
+Progress file: results\16x16\progress_16x16_CP-DCM-ACO_run5.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\16x16
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Found 100 instances in instances\16x16
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 100
+Pool mode: 4 worker process(es), 10000 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 10000 (instance, rep) job(s) queued
+  Pool progress: 50/10000 jobs finished
+  Pool progress: 100/10000 jobs finished
+  Pool progress: 50/10000 jobs finished
+  Pool progress: 150/10000 jobs finished
+  Pool progress: 200/10000 jobs finished
+  Pool progress: 250/10000 jobs finished
+  Pool progress: 100/10000 jobs finished
+  Pool progress: 300/10000 jobs finished
+  Pool progress: 350/10000 jobs finished
+  Pool progress: 400/10000 jobs finished
+  Pool progress: 450/10000 jobs finished
+  Pool progress: 500/10000 jobs finished
+  Pool progress: 150/10000 jobs finished
+  Pool progress: 550/10000 jobs finished
+  Pool progress: 600/10000 jobs finished
+  Pool progress: 650/10000 jobs finished
+  Pool progress: 700/10000 jobs finished
+  Pool progress: 750/10000 jobs finished
+  Pool progress: 800/10000 jobs finished
+  Pool progress: 850/10000 jobs finished
+  Pool progress: 900/10000 jobs finished
+  Pool progress: 200/10000 jobs finished
+  Pool progress: 950/10000 jobs finished
+  Pool progress: 1000/10000 jobs finished
+  Pool progress: 1050/10000 jobs finished
+  Pool progress: 1100/10000 jobs finished
+  Pool progress: 1150/10000 jobs finished
+  Pool progress: 1200/10000 jobs finished
+  Pool progress: 1250/10000 jobs finished
+  Pool progress: 1300/10000 jobs finished
+  Pool progress: 1350/10000 jobs finished
+  Pool progress: 1400/10000 jobs finished
+  Pool progress: 1450/10000 jobs finished
+  Pool progress: 1500/10000 jobs finished
+  Pool progress: 1550/10000 jobs finished
+  Pool progress: 1600/10000 jobs finished
+  Pool progress: 1650/10000 jobs finished
+  Pool progress: 1700/10000 jobs finished
+  Pool progress: 1750/10000 jobs finished
+  Pool progress: 1800/10000 jobs finished
+  Pool progress: 1850/10000 jobs finished
+  Pool progress: 1900/10000 jobs finished
+  Pool progress: 1950/10000 jobs finished
+  Pool progress: 2000/10000 jobs finished
+  Pool progress: 2050/10000 jobs finished
+  Pool progress: 2100/10000 jobs finished
+  Pool progress: 2150/10000 jobs finished
+  Pool progress: 2200/10000 jobs finished
+  Pool progress: 2250/10000 jobs finished
+  Pool progress: 2300/10000 jobs finished
+  Pool progress: 2350/10000 jobs finished
+  Pool progress: 250/10000 jobs finished
+  Pool progress: 2400/10000 jobs finished
+  Pool progress: 300/10000 jobs finished
+  Pool progress: 2450/10000 jobs finished
+  Pool progress: 350/10000 jobs finished
+  Pool progress: 2500/10000 jobs finished
+  Pool progress: 2550/10000 jobs finished
+  Pool progress: 400/10000 jobs finished
+  Pool progress: 2600/10000 jobs finished
+  Pool progress: 450/10000 jobs finished
+  Pool progress: 500/10000 jobs finished
+  Pool progress: 550/10000 jobs finished
+  Pool progress: 600/10000 jobs finished
+  Pool progress: 2650/10000 jobs finished
+  Pool progress: 650/10000 jobs finished
+  Pool progress: 700/10000 jobs finished
+  Pool progress: 2700/10000 jobs finished
+  Pool progress: 2750/10000 jobs finished
+  Pool progress: 2800/10000 jobs finished
+  Pool progress: 2850/10000 jobs finished
+  Pool progress: 2900/10000 jobs finished
+  Pool progress: 2950/10000 jobs finished
+  Pool progress: 3000/10000 jobs finished
+  Pool progress: 3050/10000 jobs finished
+  Pool progress: 3100/10000 jobs finished
+  Pool progress: 3150/10000 jobs finished
+  Pool progress: 3200/10000 jobs finished
+  Pool progress: 3250/10000 jobs finished
+  Pool progress: 3300/10000 jobs finished
+  Pool progress: 3350/10000 jobs finished
+  Pool progress: 3400/10000 jobs finished
+  Pool progress: 3450/10000 jobs finished
+  Pool progress: 3500/10000 jobs finished
+  Pool progress: 3550/10000 jobs finished
+  Pool progress: 3600/10000 jobs finished
+  Pool progress: 3650/10000 jobs finished
+  Pool progress: 3700/10000 jobs finished
+  Pool progress: 3750/10000 jobs finished
+  Pool progress: 3800/10000 jobs finished
+  Pool progress: 750/10000 jobs finished
+  Pool progress: 3850/10000 jobs finished
+  Pool progress: 3900/10000 jobs finished
+  Pool progress: 3950/10000 jobs finished
+  Pool progress: 4000/10000 jobs finished
+  Pool progress: 4050/10000 jobs finished
+  Pool progress: 4100/10000 jobs finished
+  Pool progress: 4150/10000 jobs finished
+  Pool progress: 4200/10000 jobs finished
+  Pool progress: 4250/10000 jobs finished
+  Pool progress: 4300/10000 jobs finished
+  Pool progress: 4350/10000 jobs finished
+  Pool progress: 4400/10000 jobs finished
+  Pool progress: 4450/10000 jobs finished
+  Pool progress: 4500/10000 jobs finished
+  Pool progress: 4550/10000 jobs finished
+  Pool progress: 4600/10000 jobs finished
+  Pool progress: 800/10000 jobs finished
+  Pool progress: 4650/10000 jobs finished
+  Pool progress: 4700/10000 jobs finished
+  Pool progress: 4750/10000 jobs finished
+  Pool progress: 850/10000 jobs finished
+  Pool progress: 4800/10000 jobs finished
+  Pool progress: 4850/10000 jobs finished
+  Pool progress: 900/10000 jobs finished
+  Pool progress: 4900/10000 jobs finished
+  Pool progress: 4950/10000 jobs finished
+  Pool progress: 5000/10000 jobs finished
+  Pool progress: 5050/10000 jobs finished
+  Pool progress: 5100/10000 jobs finished
+  Pool progress: 5150/10000 jobs finished
+  Pool progress: 950/10000 jobs finished
+  Pool progress: 5200/10000 jobs finished
+  Pool progress: 5250/10000 jobs finished
+  Pool progress: 5300/10000 jobs finished
+  Pool progress: 5350/10000 jobs finished
+  Pool progress: 5400/10000 jobs finished
+  Pool progress: 5450/10000 jobs finished
+  Pool progress: 5500/10000 jobs finished
+  Pool progress: 1000/10000 jobs finished
+  Pool progress: 5550/10000 jobs finished
+  Pool progress: 5600/10000 jobs finished
+  Pool progress: 1050/10000 jobs finished
+  Pool progress: 5650/10000 jobs finished
+  Pool progress: 5700/10000 jobs finished
+  Pool progress: 5750/10000 jobs finished
+  Pool progress: 5800/10000 jobs finished
+  Pool progress: 5850/10000 jobs finished
+  Pool progress: 5900/10000 jobs finished
+  Pool progress: 5950/10000 jobs finished
+  Pool progress: 1100/10000 jobs finished
+  Pool progress: 6000/10000 jobs finished
+  Pool progress: 6050/10000 jobs finished
+  Pool progress: 6100/10000 jobs finished
+  Pool progress: 6150/10000 jobs finished
+  Pool progress: 6200/10000 jobs finished
+  Pool progress: 6250/10000 jobs finished
+  Pool progress: 6300/10000 jobs finished
+  Pool progress: 1150/10000 jobs finished
+  Pool progress: 6350/10000 jobs finished
+  Pool progress: 6400/10000 jobs finished
+  Pool progress: 6450/10000 jobs finished
+  Pool progress: 1200/10000 jobs finished
+  Pool progress: 1250/10000 jobs finished
+  Pool progress: 6500/10000 jobs finished
+  Pool progress: 1300/10000 jobs finished
+  Pool progress: 6550/10000 jobs finished
+  Pool progress: 1350/10000 jobs finished
+  Pool progress: 6600/10000 jobs finished
+  Pool progress: 1400/10000 jobs finished
+  Pool progress: 6650/10000 jobs finished
+  Pool progress: 6700/10000 jobs finished
+  Pool progress: 6750/10000 jobs finished
+  Pool progress: 6800/10000 jobs finished
+  Pool progress: 6850/10000 jobs finished
+  Pool progress: 6900/10000 jobs finished
+  Pool progress: 6950/10000 jobs finished
+  Pool progress: 1450/10000 jobs finished
+  Pool progress: 7000/10000 jobs finished
+  Pool progress: 7050/10000 jobs finished
+  Pool progress: 7100/10000 jobs finished
+  Pool progress: 7150/10000 jobs finished
+  Pool progress: 7200/10000 jobs finished
+  Pool progress: 7250/10000 jobs finished
+  Pool progress: 7300/10000 jobs finished
+  Pool progress: 7350/10000 jobs finished
+  Pool progress: 1500/10000 jobs finished
+  Pool progress: 7400/10000 jobs finished
+  Pool progress: 7450/10000 jobs finished
+  Pool progress: 7500/10000 jobs finished
+  Pool progress: 7550/10000 jobs finished
+  Pool progress: 7600/10000 jobs finished
+  Pool progress: 7650/10000 jobs finished
+  Pool progress: 7700/10000 jobs finished
+  Pool progress: 1550/10000 jobs finished
+  Pool progress: 7750/10000 jobs finished
+  Pool progress: 7800/10000 jobs finished
+  Pool progress: 1600/10000 jobs finished
+  Pool progress: 7850/10000 jobs finished
+  Pool progress: 1650/10000 jobs finished
+  Pool progress: 7900/10000 jobs finished
+  Pool progress: 1700/10000 jobs finished
+  Pool progress: 7950/10000 jobs finished
+  Pool progress: 8000/10000 jobs finished
+  Pool progress: 8050/10000 jobs finished
+  Pool progress: 1750/10000 jobs finished
+  Pool progress: 8100/10000 jobs finished
+  Pool progress: 8150/10000 jobs finished
+  Pool progress: 8200/10000 jobs finished
+  Pool progress: 8250/10000 jobs finished
+  Pool progress: 8300/10000 jobs finished
+  Pool progress: 1800/10000 jobs finished
+  Pool progress: 8350/10000 jobs finished
+  Pool progress: 1850/10000 jobs finished
+  Pool progress: 8400/10000 jobs finished
+  Pool progress: 8450/10000 jobs finished
+  Pool progress: 8500/10000 jobs finished
+  Pool progress: 1900/10000 jobs finished
+  Pool progress: 8550/10000 jobs finished
+  Pool progress: 8600/10000 jobs finished
+  Pool progress: 8650/10000 jobs finished
+  Pool progress: 8700/10000 jobs finished
+  Pool progress: 8750/10000 jobs finished
+  Pool progress: 8800/10000 jobs finished
+  Pool progress: 8850/10000 jobs finished
+  Pool progress: 1950/10000 jobs finished
+  Pool progress: 8900/10000 jobs finished
+  Pool progress: 8950/10000 jobs finished
+  Pool progress: 2000/10000 jobs finished
+  Pool progress: 9000/10000 jobs finished
+  Pool progress: 2050/10000 jobs finished
+  Pool progress: 9050/10000 jobs finished
+  Pool progress: 2100/10000 jobs finished
+  Pool progress: 9100/10000 jobs finished
+  Pool progress: 2150/10000 jobs finished
+  Pool progress: 9150/10000 jobs finished
+  Pool progress: 9200/10000 jobs finished
+  Pool progress: 9250/10000 jobs finished
+  Pool progress: 9300/10000 jobs finished
+  Pool progress: 9350/10000 jobs finished
+  Pool progress: 9400/10000 jobs finished
+  Pool progress: 9450/10000 jobs finished
+  Pool progress: 9500/10000 jobs finished
+  Pool progress: 9550/10000 jobs finished
+  Pool progress: 9600/10000 jobs finished
+  Pool progress: 9650/10000 jobs finished
+  Pool progress: 9700/10000 jobs finished
+  Pool progress: 2200/10000 jobs finished
+  Pool progress: 9750/10000 jobs finished
+  Pool progress: 2250/10000 jobs finished
+  Pool progress: 9800/10000 jobs finished
+  Pool progress: 2300/10000 jobs finished
+  Pool progress: 2350/10000 jobs finished
+  Pool progress: 9850/10000 jobs finished
+  Pool progress: 9900/10000 jobs finished
+  Pool progress: 9950/10000 jobs finished
+  Pool progress: 2400/10000 jobs finished
+  Pool progress: 10000/10000 jobs finished
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-DCM-ACO_run5.csv
+Progress file removed: results\16x16\progress_16x16_CP-DCM-ACO_run5.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-DCM-ACO_run5.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-09 01:13:30] [RUN 5] [SIZE 16x16] CP-DCM-ACO finished with exit_code=0
+  Pool progress: 2450/10000 jobs finished
+  Pool progress: 2500/10000 jobs finished
+  Pool progress: 2550/10000 jobs finished
+  Pool progress: 2600/10000 jobs finished
+  Pool progress: 2650/10000 jobs finished
+  Pool progress: 2700/10000 jobs finished
+  Pool progress: 2750/10000 jobs finished
+  Pool progress: 2800/10000 jobs finished
+  Pool progress: 2850/10000 jobs finished
+  Pool progress: 2900/10000 jobs finished
+  Pool progress: 2950/10000 jobs finished
+  Pool progress: 3000/10000 jobs finished
+  Pool progress: 3050/10000 jobs finished
+  Pool progress: 3100/10000 jobs finished
+  Pool progress: 3150/10000 jobs finished
+  Pool progress: 3200/10000 jobs finished
+  Pool progress: 3250/10000 jobs finished
+  Pool progress: 3300/10000 jobs finished
+  Pool progress: 3350/10000 jobs finished
+  Pool progress: 3400/10000 jobs finished
+  Pool progress: 3450/10000 jobs finished
+  Pool progress: 3500/10000 jobs finished
+  Pool progress: 3550/10000 jobs finished
+  Pool progress: 3600/10000 jobs finished
+  Pool progress: 3650/10000 jobs finished
+  Pool progress: 3700/10000 jobs finished
+  Pool progress: 3750/10000 jobs finished
+  Pool progress: 3800/10000 jobs finished
+  Pool progress: 3850/10000 jobs finished
+  Pool progress: 3900/10000 jobs finished
+  Pool progress: 3950/10000 jobs finished
+  Pool progress: 4000/10000 jobs finished
+  Pool progress: 4050/10000 jobs finished
+  Pool progress: 4100/10000 jobs finished
+  Pool progress: 4150/10000 jobs finished
+  Pool progress: 4200/10000 jobs finished
+  Pool progress: 4250/10000 jobs finished
+  Pool progress: 4300/10000 jobs finished
+  Pool progress: 4350/10000 jobs finished
+  Pool progress: 4400/10000 jobs finished
+  Pool progress: 4450/10000 jobs finished
+  Pool progress: 4500/10000 jobs finished
+  Pool progress: 4550/10000 jobs finished
+  Pool progress: 4600/10000 jobs finished
+  Pool progress: 4650/10000 jobs finished
+  Pool progress: 4700/10000 jobs finished
+  Pool progress: 4750/10000 jobs finished
+  Pool progress: 4800/10000 jobs finished
+  Pool progress: 4850/10000 jobs finished
+  Pool progress: 4900/10000 jobs finished
+  Pool progress: 4950/10000 jobs finished
+  Pool progress: 5000/10000 jobs finished
+  Pool progress: 5050/10000 jobs finished
+  Pool progress: 5100/10000 jobs finished
+  Pool progress: 5150/10000 jobs finished
+  Pool progress: 5200/10000 jobs finished
+  Pool progress: 5250/10000 jobs finished
+  Pool progress: 5300/10000 jobs finished
+  Pool progress: 5350/10000 jobs finished
+  Pool progress: 5400/10000 jobs finished
+  Pool progress: 5450/10000 jobs finished
+  Pool progress: 5500/10000 jobs finished
+  Pool progress: 5550/10000 jobs finished
+  Pool progress: 5600/10000 jobs finished
+  Pool progress: 5650/10000 jobs finished
+  Pool progress: 5700/10000 jobs finished
+  Pool progress: 5750/10000 jobs finished
+  Pool progress: 5800/10000 jobs finished
+  Pool progress: 5850/10000 jobs finished
+  Pool progress: 5900/10000 jobs finished
+  Pool progress: 5950/10000 jobs finished
+  Pool progress: 6000/10000 jobs finished
+  Pool progress: 6050/10000 jobs finished
+  Pool progress: 6100/10000 jobs finished
+  Pool progress: 6150/10000 jobs finished
+  Pool progress: 6200/10000 jobs finished
+  Pool progress: 6250/10000 jobs finished
+  Pool progress: 6300/10000 jobs finished
+  Pool progress: 6350/10000 jobs finished
+  Pool progress: 6400/10000 jobs finished
+  Pool progress: 6450/10000 jobs finished
+  Pool progress: 6500/10000 jobs finished
+  Pool progress: 6550/10000 jobs finished
+  Pool progress: 6600/10000 jobs finished
+  Pool progress: 6650/10000 jobs finished
+  Pool progress: 6700/10000 jobs finished
+  Pool progress: 6750/10000 jobs finished
+  Pool progress: 6800/10000 jobs finished
+  Pool progress: 6850/10000 jobs finished
+  Pool progress: 6900/10000 jobs finished
+  Pool progress: 6950/10000 jobs finished
+  Pool progress: 7000/10000 jobs finished
+  Pool progress: 7050/10000 jobs finished
+  Pool progress: 7100/10000 jobs finished
+  Pool progress: 7150/10000 jobs finished
+  Pool progress: 7200/10000 jobs finished
+  Pool progress: 7250/10000 jobs finished
+  Pool progress: 7300/10000 jobs finished
+  Pool progress: 7350/10000 jobs finished
+  Pool progress: 7400/10000 jobs finished
+  Pool progress: 7450/10000 jobs finished
+  Pool progress: 7500/10000 jobs finished
+  Pool progress: 7550/10000 jobs finished
+  Pool progress: 7600/10000 jobs finished
+  Pool progress: 7650/10000 jobs finished
+  Pool progress: 7700/10000 jobs finished
+  Pool progress: 7750/10000 jobs finished
+  Pool progress: 7800/10000 jobs finished
+  Pool progress: 7850/10000 jobs finished
+  Pool progress: 7900/10000 jobs finished
+  Pool progress: 7950/10000 jobs finished
+  Pool progress: 8000/10000 jobs finished
+  Pool progress: 8050/10000 jobs finished
+  Pool progress: 8100/10000 jobs finished
+  Pool progress: 8150/10000 jobs finished
+  Pool progress: 8200/10000 jobs finished
+  Pool progress: 8250/10000 jobs finished
+  Pool progress: 8300/10000 jobs finished
+  Pool progress: 8350/10000 jobs finished
+  Pool progress: 8400/10000 jobs finished
+  Pool progress: 8450/10000 jobs finished
+  Pool progress: 8500/10000 jobs finished
+  Pool progress: 8550/10000 jobs finished
+  Pool progress: 8600/10000 jobs finished
+  Pool progress: 8650/10000 jobs finished
+  Pool progress: 8700/10000 jobs finished
+  Pool progress: 8750/10000 jobs finished
+  Pool progress: 8800/10000 jobs finished
+  Pool progress: 8850/10000 jobs finished
+  Pool progress: 8900/10000 jobs finished
+  Pool progress: 8950/10000 jobs finished
+  Pool progress: 9000/10000 jobs finished
+  Pool progress: 9050/10000 jobs finished
+  Pool progress: 9100/10000 jobs finished
+  Pool progress: 9150/10000 jobs finished
+  Pool progress: 9200/10000 jobs finished
+  Pool progress: 9250/10000 jobs finished
+  Pool progress: 9300/10000 jobs finished
+  Pool progress: 9350/10000 jobs finished
+  Pool progress: 9400/10000 jobs finished
+  Pool progress: 9450/10000 jobs finished
+  Pool progress: 9500/10000 jobs finished
+  Pool progress: 9550/10000 jobs finished
+  Pool progress: 9600/10000 jobs finished
+  Pool progress: 9650/10000 jobs finished
+  Pool progress: 9700/10000 jobs finished
+  Pool progress: 9750/10000 jobs finished
+  Pool progress: 9800/10000 jobs finished
+  Pool progress: 9850/10000 jobs finished
+  Pool progress: 9900/10000 jobs finished
+  Pool progress: 9950/10000 jobs finished
+  Pool progress: 10000/10000 jobs finished
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-ACS_run5.csv
+Progress file removed: results\16x16\progress_16x16_CP-ACS_run5.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-ACS_run5.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-09 01:38:34] [RUN 5] [SIZE 16x16] CP-ACS finished with exit_code=0
+[2026-04-09 01:38:34] [RUN 5] [SIZE 16x16] completed
+[2026-04-09 01:38:34] ----- SIZE 16x16 | RUN 5 DONE -----
+[2026-04-09 01:38:34] ===== SIZE 16x16 DONE =====
+
+[2026-04-09 01:38:34] ===== SIZE 25x25 START =====
+[2026-04-09 01:38:34] ----- SIZE 25x25 | RUN 2 START -----
+[2026-04-09 01:38:34] [RUN 2] [SIZE 25x25] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 0 --run 2 --pool-workers 4 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 2 --run 2 --pool-workers 4 --verbose
+Output file: results\25x25\results_25x25_CP-DCM-ACO_run2.csv
+Progress file: results\25x25\progress_25x25_CP-DCM-ACO_run2.csv (temporary; deleted when all instances complete)
+Output file: results\25x25\results_25x25_CP-ACS_run2.csv
+Progress file: results\25x25\progress_25x25_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 10 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 11 instance(s)
+Auto-resuming: Found 19 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 20 instance(s)
+Found 100 instances in instances\25x25
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Found 100 instances in instances\25x25
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 100
+Pool mode: 4 worker process(es), 8094 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 8984 (instance, rep) job(s) queued
+  Pool progress: 50/8094 jobs finished
+  Pool progress: 100/8094 jobs finished
+  Pool progress: 150/8094 jobs finished
+  Pool progress: 200/8094 jobs finished
+  Pool progress: 250/8094 jobs finished
+  Pool progress: 50/8984 jobs finished
+  Pool progress: 300/8094 jobs finished
+  Pool progress: 350/8094 jobs finished
+  Pool progress: 400/8094 jobs finished
+  Pool progress: 450/8094 jobs finished
+  Pool progress: 500/8094 jobs finished
+  Pool progress: 100/8984 jobs finished
+  Pool progress: 550/8094 jobs finished
+  Pool progress: 150/8984 jobs finished
+  Pool progress: 600/8094 jobs finished
+  Pool progress: 650/8094 jobs finished
+  Pool progress: 700/8094 jobs finished
+  Pool progress: 200/8984 jobs finished
+  Pool progress: 750/8094 jobs finished
+  Pool progress: 250/8984 jobs finished
+  Pool progress: 800/8094 jobs finished
+  Pool progress: 300/8984 jobs finished
+  Pool progress: 850/8094 jobs finished
+  Pool progress: 900/8094 jobs finished
+  Pool progress: 950/8094 jobs finished
+  Pool progress: 350/8984 jobs finished
+  Pool progress: 1000/8094 jobs finished
+  Pool progress: 1050/8094 jobs finished
+  Pool progress: 1100/8094 jobs finished
+  Pool progress: 1150/8094 jobs finished
+  Pool progress: 400/8984 jobs finished
+  Pool progress: 1200/8094 jobs finished
+  Pool progress: 1250/8094 jobs finished
+  Pool progress: 1300/8094 jobs finished
+  Pool progress: 1350/8094 jobs finished
+  Pool progress: 450/8984 jobs finished
+  Pool progress: 1400/8094 jobs finished
+  Pool progress: 1450/8094 jobs finished
+  Pool progress: 1500/8094 jobs finished
+  Pool progress: 500/8984 jobs finished
+  Pool progress: 1550/8094 jobs finished
+  Pool progress: 550/8984 jobs finished
+  Pool progress: 600/8984 jobs finished
+  Pool progress: 1600/8094 jobs finished
+  Pool progress: 1650/8094 jobs finished
+  Pool progress: 1700/8094 jobs finished
+  Pool progress: 650/8984 jobs finished
+  Pool progress: 1750/8094 jobs finished
+  Pool progress: 1800/8094 jobs finished
+  Pool progress: 1850/8094 jobs finished
+  Pool progress: 1900/8094 jobs finished
+  Pool progress: 1950/8094 jobs finished
+  Pool progress: 2000/8094 jobs finished
+  Pool progress: 2050/8094 jobs finished
+  Pool progress: 700/8984 jobs finished
+  Pool progress: 2100/8094 jobs finished
+  Pool progress: 2150/8094 jobs finished
+  Pool progress: 2200/8094 jobs finished
+  Pool progress: 750/8984 jobs finished
+  Pool progress: 2250/8094 jobs finished
+  Pool progress: 2300/8094 jobs finished
+  Pool progress: 2350/8094 jobs finished
+  Pool progress: 2400/8094 jobs finished
+  Pool progress: 2450/8094 jobs finished
+  Pool progress: 800/8984 jobs finished
+  Pool progress: 2500/8094 jobs finished
+  Pool progress: 2550/8094 jobs finished
+  Pool progress: 850/8984 jobs finished
+  Pool progress: 2600/8094 jobs finished
+  Pool progress: 900/8984 jobs finished
+  Pool progress: 2650/8094 jobs finished
+  Pool progress: 2700/8094 jobs finished
+  Pool progress: 950/8984 jobs finished
+  Pool progress: 2750/8094 jobs finished
+  Pool progress: 2800/8094 jobs finished
+  Pool progress: 2850/8094 jobs finished
+  Pool progress: 2900/8094 jobs finished
+  Pool progress: 2950/8094 jobs finished
+  Pool progress: 1000/8984 jobs finished
+  Pool progress: 3000/8094 jobs finished
+  Pool progress: 3050/8094 jobs finished
+  Pool progress: 1050/8984 jobs finished
+  Pool progress: 3100/8094 jobs finished
+  Pool progress: 3150/8094 jobs finished
+  Pool progress: 3200/8094 jobs finished
+  Pool progress: 3250/8094 jobs finished
+  Pool progress: 3300/8094 jobs finished
+  Pool progress: 3350/8094 jobs finished
+  Pool progress: 1100/8984 jobs finished
+  Pool progress: 3400/8094 jobs finished
+  Pool progress: 3450/8094 jobs finished
+  Pool progress: 3500/8094 jobs finished
+  Pool progress: 3550/8094 jobs finished
+  Pool progress: 3600/8094 jobs finished
+  Pool progress: 3650/8094 jobs finished
+  Pool progress: 3700/8094 jobs finished
+  Pool progress: 3750/8094 jobs finished
+  Pool progress: 3800/8094 jobs finished
+  Pool progress: 1150/8984 jobs finished
+  Pool progress: 3850/8094 jobs finished
+  Pool progress: 3900/8094 jobs finished
+  Pool progress: 3950/8094 jobs finished
+  Pool progress: 4000/8094 jobs finished
+  Pool progress: 4050/8094 jobs finished
+  Pool progress: 4100/8094 jobs finished
+  Pool progress: 4150/8094 jobs finished
+  Pool progress: 4200/8094 jobs finished
+  Pool progress: 1200/8984 jobs finished
+  Pool progress: 4250/8094 jobs finished
+  Pool progress: 4300/8094 jobs finished
+  Pool progress: 4350/8094 jobs finished
+  Pool progress: 1250/8984 jobs finished
+  Pool progress: 4400/8094 jobs finished
+  Pool progress: 4450/8094 jobs finished
+  Pool progress: 4500/8094 jobs finished
+  Pool progress: 4550/8094 jobs finished
+  Pool progress: 4600/8094 jobs finished
+  Pool progress: 1300/8984 jobs finished
+  Pool progress: 4650/8094 jobs finished
+  Pool progress: 4700/8094 jobs finished
+  Pool progress: 4750/8094 jobs finished
+  Pool progress: 4800/8094 jobs finished
+  Pool progress: 4850/8094 jobs finished
+  Pool progress: 4900/8094 jobs finished
+  Pool progress: 1350/8984 jobs finished
+  Pool progress: 4950/8094 jobs finished
+  Pool progress: 5000/8094 jobs finished
+  Pool progress: 1400/8984 jobs finished
+  Pool progress: 5050/8094 jobs finished
+  Pool progress: 1450/8984 jobs finished
+  Pool progress: 5100/8094 jobs finished
+  Pool progress: 5150/8094 jobs finished
+  Pool progress: 5200/8094 jobs finished
+  Pool progress: 1500/8984 jobs finished
+  Pool progress: 1550/8984 jobs finished
+  Pool progress: 1600/8984 jobs finished
+  Pool progress: 5250/8094 jobs finished
+  Pool progress: 1650/8984 jobs finished
+  Pool progress: 1700/8984 jobs finished
+  Pool progress: 5300/8094 jobs finished
+  Pool progress: 5350/8094 jobs finished
+  Pool progress: 5400/8094 jobs finished
+  Pool progress: 5450/8094 jobs finished
+  Pool progress: 5500/8094 jobs finished
+  Pool progress: 5550/8094 jobs finished
+  Pool progress: 5600/8094 jobs finished
+  Pool progress: 5650/8094 jobs finished
+  Pool progress: 5700/8094 jobs finished
+  Pool progress: 5750/8094 jobs finished
+  Pool progress: 5800/8094 jobs finished
+  Pool progress: 5850/8094 jobs finished
+  Pool progress: 5900/8094 jobs finished
+  Pool progress: 5950/8094 jobs finished
+  Pool progress: 6000/8094 jobs finished
+  Pool progress: 6050/8094 jobs finished
+  Pool progress: 6100/8094 jobs finished
+  Pool progress: 6150/8094 jobs finished
+  Pool progress: 6200/8094 jobs finished
+  Pool progress: 1750/8984 jobs finished
+  Pool progress: 6250/8094 jobs finished
+  Pool progress: 6300/8094 jobs finished
+  Pool progress: 6350/8094 jobs finished
+  Pool progress: 6400/8094 jobs finished
+  Pool progress: 6450/8094 jobs finished
+  Pool progress: 6500/8094 jobs finished
+  Pool progress: 6550/8094 jobs finished
+  Pool progress: 6600/8094 jobs finished
+  Pool progress: 6650/8094 jobs finished
+  Pool progress: 6700/8094 jobs finished
+  Pool progress: 6750/8094 jobs finished
+  Pool progress: 6800/8094 jobs finished
+  Pool progress: 6850/8094 jobs finished
+  Pool progress: 6900/8094 jobs finished
+  Pool progress: 6950/8094 jobs finished
+  Pool progress: 7000/8094 jobs finished
+  Pool progress: 7050/8094 jobs finished
+  Pool progress: 7100/8094 jobs finished
+  Pool progress: 7150/8094 jobs finished
+  Pool progress: 7200/8094 jobs finished
+  Pool progress: 7250/8094 jobs finished
+  Pool progress: 7300/8094 jobs finished
+  Pool progress: 7350/8094 jobs finished
+  Pool progress: 7400/8094 jobs finished
+  Pool progress: 7450/8094 jobs finished
+  Pool progress: 7500/8094 jobs finished
+  Pool progress: 7550/8094 jobs finished
+  Pool progress: 1800/8984 jobs finished
+  Pool progress: 7600/8094 jobs finished
+  Pool progress: 7650/8094 jobs finished
+  Pool progress: 7700/8094 jobs finished
+  Pool progress: 7750/8094 jobs finished
+  Pool progress: 7800/8094 jobs finished
+  Pool progress: 7850/8094 jobs finished
+  Pool progress: 7900/8094 jobs finished
+  Pool progress: 7950/8094 jobs finished
+  Pool progress: 8000/8094 jobs finished
+  Pool progress: 8050/8094 jobs finished
+Sorted summary rows to instance-folder order (100): results\25x25\results_25x25_CP-DCM-ACO_run2.csv
+Progress file removed: results\25x25\progress_25x25_CP-DCM-ACO_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\results_25x25_CP-DCM-ACO_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-09 05:42:28] [RUN 2] [SIZE 25x25] CP-DCM-ACO finished with exit_code=0
+  Pool progress: 1850/8984 jobs finished
+  Pool progress: 1900/8984 jobs finished
+  Pool progress: 1950/8984 jobs finished
+  Pool progress: 2000/8984 jobs finished
+  Pool progress: 2050/8984 jobs finished
+  Pool progress: 2100/8984 jobs finished

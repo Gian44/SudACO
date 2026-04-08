@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { getDailyPuzzle, getDailyPuzzleForDate, isDailyCompleted, getDifficultyInfo, calculateDifficulty, getDailyPuzzleInfo, getTodayISOString } from '../utils/dailyPuzzleService';
-import { parseInstanceFile } from '../utils/fileParser';
+import { parseInstanceFile, getInstanceFileFormatDescription } from '../utils/fileParser';
 import { stringToGrid, getBoxDimensions } from '../utils/sudokuUtils';
 import { loadPuzzlesFromServer, checkServerHealth } from '../utils/apiClient';
 import { generatePuzzle } from '../utils/puzzleGenerator';
@@ -10,7 +10,7 @@ import { getUserCreatedPuzzles, saveUserCreatedPuzzle, deleteUserCreatedPuzzle }
 import DifficultyBadge from './DifficultyBadge';
 import DailyCalendar from './DailyCalendar';
 
-const ALL_TABS = ['daily', 'library', 'create', 'mypuzzles'];
+const ALL_TABS = ['daily', 'library', 'upload', 'create', 'mypuzzles'];
 
 const PuzzleSelectionModal = ({
   isOpen,
@@ -46,6 +46,10 @@ const PuzzleSelectionModal = ({
   const libraryListRef = useRef(null);
 
   const LIBRARY_PAGE_SIZE = 50;
+
+  // Upload state
+  const [uploadError, setUploadError] = useState('');
+  const [dragOver, setDragOver] = useState(false);
   
   // Previous daily puzzles
   const [previousDailyPuzzles, setPreviousDailyPuzzles] = useState([]);
@@ -374,6 +378,57 @@ const PuzzleSelectionModal = ({
     }
   }, [selectedCategory, onPuzzleSelect, onClose]);
 
+  // Handle file upload (only 9x9, 16x16, 25x25; saved to My puzzles)
+  const handleFileUpload = useCallback(async (file) => {
+    setUploadError('');
+
+    try {
+      const content = await file.text();
+      const { size, puzzleString } = parseInstanceFile(content);
+      if (![9, 16, 25].includes(size)) {
+        setUploadError(`Only 9x9, 16x16, and 25x25 puzzles are supported. Your file is ${size}x${size}.`);
+        return;
+      }
+      const grid = stringToGrid(puzzleString, size);
+      const difficulty = calculateDifficulty(puzzleString, size);
+      const entry = saveUserCreatedPuzzle({ size, puzzleString, difficulty });
+      setMyPuzzles(getUserCreatedPuzzles());
+
+      onPuzzleSelect({
+        grid,
+        size,
+        puzzleString,
+        difficulty,
+        isDaily: false,
+        fileName: file.name,
+        puzzleKey: `my-${entry.id}`
+      });
+
+      onClose();
+    } catch (err) {
+      setUploadError(`Invalid file format: ${err.message}`);
+    }
+  }, [onPuzzleSelect, onClose]);
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault();
+    setDragOver(false);
+
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.txt')) {
+      handleFileUpload(file);
+    } else {
+      setUploadError('Please upload a .txt file');
+    }
+  }, [handleFileUpload]);
+
+  const handleFileInput = useCallback((e) => {
+    const file = e.target.files[0];
+    if (file) {
+      handleFileUpload(file);
+    }
+  }, [handleFileUpload]);
+
   // Generate puzzle (Create tab)
   const handleGeneratePuzzle = useCallback(async () => {
     setCreateError('');
@@ -514,6 +569,19 @@ const PuzzleSelectionModal = ({
                   <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
                 </svg>
                 <span className="text-xs sm:text-sm">Create</span>
+              </span>
+            </button>
+          )}
+          {visibleTabs.includes('upload') && (
+            <button
+              className={`tab ${activeTab === 'upload' ? 'active' : ''}`}
+              onClick={() => setActiveTab('upload')}
+            >
+              <span className="flex items-center gap-1 sm:gap-2">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                </svg>
+                <span className="text-xs sm:text-sm">Upload</span>
               </span>
             </button>
           )}
@@ -869,6 +937,50 @@ const PuzzleSelectionModal = ({
                     Generate another
                   </button>
                 </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Upload Tab */}
+        {activeTab === 'upload' && (
+          <div className="space-y-3 sm:space-y-4">
+            <p className="text-sm sm:text-base text-[var(--color-text-secondary)]">
+              Upload a custom puzzle file in .txt format.
+            </p>
+
+            <div
+              className={`upload-zone ${dragOver ? 'dragover' : ''}`}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              onClick={() => document.getElementById('file-input')?.click()}
+            >
+              <svg className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <p className="text-base sm:text-lg font-medium mb-1">Drop your puzzle file here</p>
+              <p className="text-xs sm:text-sm text-[var(--color-text-muted)]">or click to browse</p>
+              <input
+                id="file-input"
+                type="file"
+                accept=".txt"
+                onChange={handleFileInput}
+                className="hidden"
+              />
+            </div>
+
+            {uploadError && (
+              <div className="p-3 sm:p-4 rounded-lg bg-[var(--color-error)]/20 border border-[var(--color-error)]/50">
+                <p className="text-sm sm:text-base text-[var(--color-error)] font-medium mb-2">{uploadError}</p>
+                <details className="text-xs sm:text-sm">
+                  <summary className="cursor-pointer text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
+                    Show expected format
+                  </summary>
+                  <pre className="mt-2 text-xs p-2 sm:p-3 rounded bg-[var(--color-bg-secondary)] overflow-x-auto">
+                    {getInstanceFileFormatDescription()}
+                  </pre>
+                </details>
               </div>
             )}
           </div>

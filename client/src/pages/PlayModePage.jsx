@@ -23,6 +23,7 @@ import {
 } from '../utils/wasmBridge';
 import { createSolverWorkerRunner } from '../utils/solverWorkerClient';
 import { downloadSolvedPuzzlePdf } from '../utils/gamePdfExport';
+import { savePuzzleFile } from '../utils/fileSystemManager';
 import LoadingScreen from '../components/LoadingScreen';
 import GameHeader from '../components/GameHeader';
 import SudokuGrid from '../components/SudokuGrid';
@@ -44,6 +45,19 @@ function computeChangedCells(previousGrid, nextGrid) {
     }
   }
   return changed;
+}
+
+function buildPuzzleInstanceFileContent(gridData, size) {
+  const firstLine = [9, 16, 25].includes(size) ? Math.sqrt(size) : size;
+  const header = `${firstLine}\n1\n`;
+  const body = gridData
+    .map((row) => row.map((cell) => {
+      if (cell === '' || cell == null) return -1;
+      const num = Number(cell);
+      return Number.isFinite(num) ? num : -1;
+    }).join(' '))
+    .join('\n');
+  return `${header}${body}\n`;
 }
 
 function PlayModePage({ mode }) {
@@ -433,6 +447,17 @@ function PlayModePage({ mode }) {
   const startSolve = isGameMode ? runGameSolve : runExperimentSolve;
   const effectivePaused = !isGameMode && isPaused;
 
+  const handleDownloadPuzzleTxt = useCallback(() => {
+    const sourceGrid = (originalGrid && originalGrid.length > 0) ? originalGrid : grid;
+    if (!sourceGrid || sourceGrid.length === 0) {
+      setError('No puzzle available to download.');
+      return;
+    }
+    const content = buildPuzzleInstanceFileContent(sourceGrid, size);
+    const filename = `sudaco_puzzle_${size}x${size}_${Date.now()}.txt`;
+    savePuzzleFile(filename, content, 'exports');
+  }, [grid, originalGrid, size]);
+
   const experimentPanel = (
     <aside className="card w-full lg:w-[560px] self-start">
       <h3 className="text-lg font-semibold mb-3">Experiment Controls</h3>
@@ -571,6 +596,15 @@ function PlayModePage({ mode }) {
       />
       {isGameMode && (
         <div className="flex items-center gap-2 flex-wrap justify-center mt-3">
+          {originalGrid && (
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={handleDownloadPuzzleTxt}
+            >
+              Download Puzzle (.txt)
+            </button>
+          )}
           {isSolving && (
             <button type="button" className="btn btn-danger" onClick={stopGameSolve}>
               Stop
@@ -648,7 +682,7 @@ function PlayModePage({ mode }) {
           if (originalGrid && !isGameMode) setIsPaused(false);
         }}
         onPuzzleSelect={handlePuzzleSelect}
-        allowedTabs={['library', 'daily', 'mypuzzles']}
+        allowedTabs={['library', 'daily', 'upload', 'mypuzzles']}
         initialTab={isGameMode ? 'library' : 'daily'}
       />
 
