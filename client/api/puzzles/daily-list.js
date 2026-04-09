@@ -36,7 +36,7 @@ export default async function handler(req, res) {
     for (const filename of uniqueFilenames) {
       try {
         // Extract date from filename (format: MMDDYYYY_size_difficulty.txt)
-        // e.g., "01082026_12x12_hard.txt" -> date: "2026-01-08"
+        // e.g., "01082026_16x16_hard.txt" -> date: "2026-01-08"
         const match = filename.match(/^(\d{2})(\d{2})(\d{4})_/);
         if (match) {
           const [, month, day, year] = match;

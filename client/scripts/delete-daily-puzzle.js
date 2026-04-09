@@ -1,7 +1,7 @@
 // Script to delete a daily puzzle from Vercel KV
 // Usage: node delete-daily-puzzle.js <date> [filename]
 // Example: node delete-daily-puzzle.js 2026-01-14
-// Example: node delete-daily-puzzle.js 2026-01-14 01142026_12x12_easy.txt
+// Example: node delete-daily-puzzle.js 2026-01-14 01142026_16x16_easy.txt
 
 import https from 'https';
 

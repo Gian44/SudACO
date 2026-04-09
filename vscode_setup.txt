@@ -26,10 +26,6 @@ for multi-colony:
 
 .\vs2017\x64\Release\sudoku_ants.exe --alg 2 --file instances/general/inst25x25_45_97.txt --showinitial --verbose --timeout 120
 
-.\vs2017\x64\Release\sudoku_ants.exe --alg 2 --file instances/logic-solvable/6x6easy.txt --showinitial --verbose
-
-.\vs2017\x64\Release\sudoku_ants.exe --alg 2 --file instances/logic-solvable/12x12hard.txt --showinitial --verbose
-
 to run tests:
 
 python scripts\run_9x9.py --alg 0 --verbose

@@ -90,8 +90,6 @@ export default async function handler(req, res) {
         // This allows the app to work even if index.json is missing
         indexData = {
           'logic-solvable': [],
-          '6x6': [],
-          '12x12': [],
           'general': {},
           'daily-puzzles': []
         };

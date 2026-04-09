@@ -68,7 +68,7 @@ export function addGeneratedPuzzle(category, size, fillPercent, filename, conten
 
 /**
  * Get the next puzzle number for a given category, size, and fill percentage
- * @param {string} category - Category name (e.g., '6x6', 'general')
+ * @param {string} category - Category name (e.g., 'general')
  * @param {number} size - Grid size
  * @param {number} fillPercent - Fill percentage
  * @param {Object} indexData - Current index.json data
@@ -99,7 +99,7 @@ export function getNextPuzzleNumber(category, size, fillPercent, indexData) {
         .filter(num => num >= 0);
     }
   } else {
-    // For simple categories (6x6, 12x12, logic-solvable)
+    // For simple categories (legacy/flat list categories)
     if (indexData[category] && Array.isArray(indexData[category])) {
       const files = indexData[category];
       existingNumbers = files
@@ -261,8 +261,6 @@ export function getFillPercentageOptions() {
  * @returns {string} Category name
  */
 export function getCategoryFromSize(size) {
-  if (size === 6) return '6x6';
-  if (size === 12) return '12x12';
   if (size === 9 || size === 16 || size === 25) return 'general';
   return 'general'; // Default fallback
 }

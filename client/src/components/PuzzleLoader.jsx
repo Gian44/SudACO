@@ -101,18 +101,6 @@ function PuzzleLoader({ onPuzzleLoad, onError }) {
           puzzleString = puzzle.puzzleString;
           size = parseInt(selectedSize.split('x')[0]);
         }
-      } else if (selectedCategory && generatedPuzzles[selectedCategory]) {
-        const sizeKey = selectedCategory === '6x6' ? '6x6' : selectedCategory === '12x12' ? '12x12' : null;
-        if (sizeKey && generatedPuzzles[selectedCategory][sizeKey]) {
-          Object.keys(generatedPuzzles[selectedCategory][sizeKey]).forEach(percent => {
-            const generated = generatedPuzzles[selectedCategory][sizeKey][percent] || [];
-            const puzzle = generated.find(p => p.filename === selectedPuzzle);
-            if (puzzle) {
-              puzzleString = puzzle.puzzleString;
-              size = parseInt(sizeKey.split('x')[0]);
-            }
-          });
-        }
       }
       
       // If not found in local storage, load from file
@@ -206,11 +194,7 @@ function PuzzleLoader({ onPuzzleLoad, onError }) {
     try {
       // Determine puzzle size from category
       let puzzleSize;
-      if (selectedCategory === '6x6') {
-        puzzleSize = 6;
-      } else if (selectedCategory === '12x12') {
-        puzzleSize = 12;
-      } else if (selectedCategory === 'general') {
+      if (selectedCategory === 'general') {
         // For general category, use the selected size
         if (!selectedSize) {
           throw new Error('Please select a puzzle size for general category');
@@ -395,15 +379,6 @@ function PuzzleLoader({ onPuzzleLoad, onError }) {
               if (selectedCategory === 'general' && selectedSize && selectedFillPercent) {
                 const generated = generatedPuzzles.general?.[selectedSize]?.[selectedFillPercent] || [];
                 puzzleList = [...puzzleList, ...generated.map(p => p.filename)];
-              } else if (selectedCategory && generatedPuzzles[selectedCategory]) {
-                const sizeKey = selectedCategory === '6x6' ? '6x6' : selectedCategory === '12x12' ? '12x12' : null;
-                if (sizeKey && generatedPuzzles[selectedCategory][sizeKey]) {
-                  // For simple categories, we need to get all generated puzzles
-                  Object.keys(generatedPuzzles[selectedCategory][sizeKey]).forEach(percent => {
-                    const generated = generatedPuzzles[selectedCategory][sizeKey][percent] || [];
-                    puzzleList = [...puzzleList, ...generated.map(p => p.filename)];
-                  });
-                }
               }
               
               return puzzleList.map(puzzle => (

@@ -47,7 +47,7 @@ string ReadFile( string fileName )
 		}
 		else if (values.size() == firstNumber * firstNumber)
 		{
-			// New format (6x6, 12x12): firstNumber is size
+			// New format: firstNumber is size
 			isOldFormat = false;
 			numUnits = firstNumber;
 		}
@@ -59,6 +59,12 @@ string ReadFile( string fileName )
 			return string();
 		}
 		
+		if (numUnits != 9 && numUnits != 16 && numUnits != 25)
+		{
+			cerr << "Unsupported puzzle size: " << numUnits << ". Supported sizes are 9, 16, and 25." << endl;
+			return string();
+		}
+
 		int numCells = numUnits * numUnits;
 		puzString = new char[numCells+1];
 		
@@ -67,17 +73,8 @@ string ReadFile( string fileName )
 			val = values[i];
 			if (val == -1)
 				puzString[i] = '.';
-			else if (numUnits == 6)
-				puzString[i] = '1' + (val - 1);  // 1-6 -> '1'-'6'
 			else if (numUnits == 9)
 				puzString[i] = '1' + (val - 1);  // 1-9 -> '1'-'9'
-			else if (numUnits == 12)
-			{
-				if (val <= 10)
-					puzString[i] = '0' + val - 1;  // 1-10 -> '0'-'9'
-				else
-					puzString[i] = 'a' + val - 11;  // 11-12 -> 'a'-'b'
-			}
 			else if (numUnits == 16)
 			{
 				if (val < 11)

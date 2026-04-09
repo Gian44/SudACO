@@ -699,7 +699,7 @@ function PlayModePage({ mode }) {
       />
 
       <footer className="mt-6 text-center text-xs sm:text-sm text-[var(--color-text-muted)] px-2">
-        <p>Built with React + WebAssembly | Supports 6x6, 9x9, 12x12, 16x16, and 25x25 puzzles</p>
+        <p>Built with React + WebAssembly | Supports 9x9, 16x16, and 25x25 puzzles</p>
       </footer>
     </div>
   );

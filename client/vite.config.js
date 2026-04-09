@@ -25,10 +25,15 @@ export default defineConfig({
     exclude: []
   },
   server: {
-    headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp'
-    },
+    // NOTE: COOP/COEP can break asset loading on some browsers (notably iOS Safari)
+    // when running over plain HTTP in dev. Enable only when you specifically need
+    // crossOriginIsolated features (e.g. SharedArrayBuffer).
+    headers: process.env.VITE_COEP === '1'
+      ? {
+          'Cross-Origin-Opener-Policy': 'same-origin',
+          'Cross-Origin-Embedder-Policy': 'require-corp'
+        }
+      : undefined,
     middlewareMode: false,
     fs: {
       strict: false
