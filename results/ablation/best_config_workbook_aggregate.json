@@ -1,0 +1,24 @@
+{
+  "_source": "Manual aggregate row for best_config (CP-DCM-ACO) when best_config_results_* CSVs are missing; entered from saved ablation workbook screenshot.",
+  "9x9": {
+    "success_mean": 100,
+    "time_mean_mean": 0.0736,
+    "time_std_mean": 0.06846,
+    "cycles_mean_mean": 47.3694,
+    "instances": 100
+  },
+  "16x16": {
+    "success_mean": 100,
+    "time_mean_mean": 0.0893,
+    "time_std_mean": 0.14781,
+    "cycles_mean_mean": 10.0118,
+    "instances": 100
+  },
+  "25x25": {
+    "success_mean": 99.5,
+    "time_mean_mean": 6.5601,
+    "time_std_mean": 6.07769,
+    "cycles_mean_mean": 151.87726,
+    "instances": 100
+  }
+}

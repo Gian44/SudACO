@@ -283,6 +283,20 @@ def run_benchmark_pool(
 
     if not pending:
         vlog('Pool mode: nothing pending.')
+        # Recovery path:
+        # It is possible (e.g., interrupted parent between progress and summary writes)
+        # that progress already has all reps, but summary is missing one or more instance rows.
+        # Backfill summary rows from progress so run CSVs remain complete.
+        repaired = 0
+        for fp in instance_files:
+            inst = fp.name
+            if inst in completed_instances:
+                continue
+            if _try_write_summary_if_complete(outfile, progress_file, inst, args, alg_name, vlog):
+                completed_instances.add(inst)
+                repaired += 1
+        if repaired:
+            vlog(f'Pool mode recovery: wrote {repaired} missing summary row(s) from progress.')
     else:
         vlog(f'Pool mode: {pool_workers} worker process(es), {len(pending)} (instance, rep) job(s) queued')
 

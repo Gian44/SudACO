@@ -9,11 +9,16 @@ Output workbook contains exactly 2 sheets:
 Parameter sheet:
 - Uses consolidated average-of-averages from consolidated_ablation_summary.csv
 - Bolds exactly one row per parameter using best_config.json
-- Appends a "best_config (CP-DCM-ACO)" aggregate section from best_config_results_* files
+- Appends a "best_config (CP-DCM-ACO)" aggregate section from best_config_results_* files,
+  or from results/ablation/best_config_workbook_aggregate.json for sizes missing CSVs
 
 Timeout sheet:
 - Uses average-of-averages from timeout/*_summary.csv
 - Keeps separate "Parameter Value" columns for 9x9, 16x16, 25x25 blocks
+- Also adds one row per size for the ablation study wall-clock limits (5 / 20 / 120 s):
+  CP-DCM-ACO uses the same aggregates as the best_config workbook section (CSV or
+  best_config_workbook_aggregate.json); ACO from aggregated CP-ACS CSVs (alg 0), with
+  all sizes preferring ``*_CP-ACS (100reps).csv`` when present.
 """
 
 from __future__ import annotations
@@ -21,10 +26,11 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 from collections import defaultdict
 from pathlib import Path
 from statistics import mean
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
@@ -32,6 +38,26 @@ from openpyxl.utils import get_column_letter
 
 
 SIZE_ORDER = ["9x9", "16x16", "25x25"]
+
+# Wall-clock limits used in scripts/run_ablation.py SIZE_CONFIGS (not the timeout sweep grid).
+ABLATION_WALL_TIMEOUT_S = {"9x9": 5, "16x16": 20, "25x25": 120}
+
+# Per-size CP-ACS CSVs for default-timeout ACO rows (first existing file wins).
+ACO_DEFAULT_TIMEOUT_CSV_CANDIDATES: Dict[str, List[str]] = {
+    "9x9": [
+        "results_9x9_CP-ACS (100reps).csv",
+        "results_9x9_CP-ACS.csv",
+    ],
+    "16x16": [
+        "results_16x16_CP-ACS (100reps).csv",
+        "results_16x16_CP-ACS.csv",
+    ],
+    "25x25": [
+        "results_25x25_CP-ACS (100reps).csv",
+        "results_25x25_CP-ACS.csv",
+    ],
+}
+
 PARAMETER_GROUPS = [
     ("Ant Colony System", ["nAnts", "numACS", "q0", "xi", "rho", "evap"]),
     ("Dynamic Collaborative Mechanism", ["convThresh", "entropyPct"]),
@@ -80,6 +106,8 @@ def load_best_config_aggregates(results_root: Path) -> Dict[str, dict]:
     }
     out = {}
     for size, path in files.items():
+        if not path.exists():
+            continue
         rows = read_csv_dicts(path)
         # Defensive dedupe by instance
         by_instance = {}
@@ -93,6 +121,24 @@ def load_best_config_aggregates(results_root: Path) -> Dict[str, dict]:
             "cycles_mean_mean": mean(float(x["cycles_mean"]) for x in uniq),
             "instances": len(uniq),
         }
+
+    # Fallback when CSVs were removed: results/ablation/best_config_workbook_aggregate.json
+    agg_json = results_root / "ablation" / "best_config_workbook_aggregate.json"
+    if agg_json.exists():
+        raw = json.loads(agg_json.read_text(encoding="utf-8"))
+        for size in SIZE_ORDER:
+            if size in out:
+                continue
+            block = raw.get(size)
+            if not isinstance(block, dict):
+                continue
+            out[size] = {
+                "success_mean": float(block["success_mean"]),
+                "time_mean_mean": float(block["time_mean_mean"]),
+                "time_std_mean": float(block["time_std_mean"]),
+                "cycles_mean_mean": float(block["cycles_mean_mean"]),
+                "instances": int(block.get("instances", 0)),
+            }
     return out
 
 
@@ -125,6 +171,124 @@ def load_timeout_groups(timeout_dir: Path) -> Dict[tuple, List[dict]]:
     for row in timeout_records:
         grouped[(row["alg"], row["alg_name"])].append(row)
     return grouped
+
+
+def load_default_ablation_timeout_cp_dcm_from_best_config(
+    best_config_agg: Dict[str, dict],
+) -> List[dict]:
+    """
+    One synthetic timeout row per puzzle size: wall time = ablation SIZE_CONFIGS timeout,
+    metrics identical to the workbook's best_config (CP-DCM-ACO) aggregate block.
+    """
+    out: List[dict] = []
+    for size in SIZE_ORDER:
+        item = best_config_agg.get(size)
+        if item is None:
+            continue
+        wall_s = float(ABLATION_WALL_TIMEOUT_S[size])
+        out.append(
+            {
+                "param_value": wall_s,
+                "puzzle_size": size,
+                "alg": 2,
+                "alg_name": "CP-DCM-ACO",
+                "success_mean": float(item["success_mean"]),
+                "time_mean_mean": float(item["time_mean_mean"]),
+                "time_std_mean": float(item["time_std_mean"]),
+                "cycles_mean_mean": float(item["cycles_mean_mean"]),
+            }
+        )
+    return out
+
+
+def _mean_csv_numeric(rows: List[dict], key: str) -> float:
+    vals: List[float] = []
+    for r in rows:
+        raw = (r.get(key) or "").strip()
+        if raw == "":
+            continue
+        try:
+            vals.append(float(raw))
+        except ValueError:
+            continue
+    return mean(vals) if vals else float("nan")
+
+
+def _resolve_aco_default_timeout_csv(results_root: Path, size: str) -> Optional[Path]:
+    rel = results_root / size
+    for name in ACO_DEFAULT_TIMEOUT_CSV_CANDIDATES.get(size, []):
+        p = rel / name
+        if p.exists():
+            return p
+    return None
+
+
+def load_default_ablation_timeout_aco(results_root: Path) -> List[dict]:
+    """
+    ACO (alg 0): use per-instance CP-ACS CSVs (alg 0) at ablation wall timeouts; see
+    ACO_DEFAULT_TIMEOUT_CSV_CANDIDATES (prefer ``*_CP-ACS (100reps).csv`` per size).
+    """
+    out: List[dict] = []
+    for size in SIZE_ORDER:
+        path = _resolve_aco_default_timeout_csv(results_root, size)
+        if path is None:
+            continue
+        rows = read_csv_dicts(path)
+        by_instance: Dict[str, dict] = {}
+        for row in rows:
+            by_instance.setdefault(row["instance"], row)
+        uniq = list(by_instance.values())
+        uniq = [r for r in uniq if int(float(r.get("alg", -1))) == 0]
+        if not uniq:
+            continue
+        sm = _mean_csv_numeric(uniq, "success_%")
+        tmm = _mean_csv_numeric(uniq, "time_mean")
+        tsm = _mean_csv_numeric(uniq, "time_std")
+        cmm = _mean_csv_numeric(uniq, "cycles_mean")
+        if any(math.isnan(x) for x in (sm, tmm, tsm, cmm)):
+            continue
+        wall_s = float(ABLATION_WALL_TIMEOUT_S[size])
+        out.append(
+            {
+                "param_value": wall_s,
+                "puzzle_size": size,
+                "alg": 0,
+                "alg_name": "ACO",
+                "success_mean": sm,
+                "time_mean_mean": tmm,
+                "time_std_mean": tsm,
+                "cycles_mean_mean": cmm,
+            }
+        )
+    return out
+
+
+def merge_ablation_default_timeout_rows(
+    grouped: Dict[tuple, List[dict]],
+    best_config_agg: Dict[str, dict],
+    results_root: Path,
+) -> None:
+    """Add/replace ablation default-wall-timeout rows (5/20/120 s) for each algorithm."""
+    bundles = [
+        load_default_ablation_timeout_cp_dcm_from_best_config(best_config_agg),
+        load_default_ablation_timeout_aco(results_root),
+    ]
+    for extras in bundles:
+        if not extras:
+            continue
+        key = (int(extras[0]["alg"]), str(extras[0]["alg_name"]))
+        existing = grouped.setdefault(key, [])
+        for row in extras:
+            sig_size = row["puzzle_size"]
+            sig_pv = float(row["param_value"])
+            replaced = False
+            for i, er in enumerate(existing):
+                if er["puzzle_size"] == sig_size and float(er["param_value"]) == sig_pv:
+                    existing[i] = row
+                    replaced = True
+                    break
+            if not replaced:
+                existing.append(row)
 
 
 def style_table_headers(ws, row_1: int, row_2: int, max_col: int) -> None:
@@ -261,11 +425,12 @@ def write_best_config_section(ws, start_row: int, best_config_agg: Dict[str, dic
     row_idx = hdr2 + 1
     col = 1
     for size in SIZE_ORDER:
-        item = best_config_agg[size]
-        ws.cell(row=row_idx, column=col, value=round(item["success_mean"], 5))
-        ws.cell(row=row_idx, column=col + 1, value=round(item["time_mean_mean"], 5))
-        ws.cell(row=row_idx, column=col + 2, value=round(item["time_std_mean"], 5))
-        ws.cell(row=row_idx, column=col + 3, value=round(item["cycles_mean_mean"], 5))
+        item = best_config_agg.get(size)
+        if item:
+            ws.cell(row=row_idx, column=col, value=round(item["success_mean"], 5))
+            ws.cell(row=row_idx, column=col + 1, value=round(item["time_mean_mean"], 5))
+            ws.cell(row=row_idx, column=col + 2, value=round(item["time_std_mean"], 5))
+            ws.cell(row=row_idx, column=col + 3, value=round(item["cycles_mean_mean"], 5))
         col += 4
     for c in range(1, last_metric_col + 1):
         ws.cell(row=row_idx, column=c).alignment = Alignment(horizontal="center", vertical="center")
@@ -345,8 +510,9 @@ def build_workbook(repo_root: Path, output_path: Path) -> None:
     best_cfg_path = ablation_root / "best_config.json"
 
     param_groups = load_param_groups(consolidated_csv)
-    timeout_groups = load_timeout_groups(timeout_dir)
     best_config_agg = load_best_config_aggregates(results_root)
+    timeout_groups = load_timeout_groups(timeout_dir)
+    merge_ablation_default_timeout_rows(timeout_groups, best_config_agg, results_root)
     best_cfg = json.loads(best_cfg_path.read_text(encoding="utf-8"))
 
     wb = Workbook()

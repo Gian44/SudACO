@@ -4013,3 +4013,1432 @@ Found 100 instances in instances\25x25
 Running algorithm: CP-ACS (alg=0)
 Repetitions per instance: 100
 Pool mode: 4 worker process(es), 6202 (instance, rep) job(s) queued
+[2026-04-09 07:58:38] Starting CP comparison reruns: runs=2..2, reps=100, pool_workers=4
+
+[2026-04-09 07:58:38] ===== SIZE 25x25 START =====
+[2026-04-09 07:58:38] ----- SIZE 25x25 | RUN 2 START -----
+[2026-04-09 07:58:38] [RUN 2] [SIZE 25x25] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 0 --run 2 --reps 100 --pool-workers 4 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 2 --run 2 --reps 100 --pool-workers 4 --verbose
+Output file: results\25x25\results_25x25_CP-ACS_run2.csv
+Progress file: results\25x25\progress_25x25_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Output file: results\25x25\results_25x25_CP-DCM-ACO_run2.csv
+Progress file: results\25x25\progress_25x25_CP-DCM-ACO_run2.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Found 100 instances in instances\25x25
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 100
+Auto-resuming: Found 37 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 39 instance(s)
+Found 100 instances in instances\25x25
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Pool mode: nothing pending.
+Sorted summary rows to instance-folder order (100): results\25x25\results_25x25_CP-DCM-ACO_run2.csv
+Progress file removed: results\25x25\progress_25x25_CP-DCM-ACO_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\results_25x25_CP-DCM-ACO_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-09 07:58:39] [RUN 2] [SIZE 25x25] CP-DCM-ACO finished with exit_code=0
+[2026-04-09 07:58:39] [RUN 2] [SIZE 25x25] transfer: restarting CP-ACS with --pool-workers 8
+Output file: results\25x25\results_25x25_CP-ACS_run2.csv
+Progress file: results\25x25\progress_25x25_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 37 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 39 instance(s)
+Found 100 instances in instances\25x25
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Pool mode: 8 worker process(es), 6196 (instance, rep) job(s) queued
+  Pool progress: 50/6196 jobs finished
+[2026-04-10 10:49:58] Starting CP comparison reruns: runs=2..2, reps=100, pool_workers=4
+
+[2026-04-10 10:49:58] ===== SIZE 25x25 START =====
+[2026-04-10 10:49:58] ----- SIZE 25x25 | RUN 2 START -----
+[2026-04-10 10:49:58] [RUN 2] [SIZE 25x25] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 0 --run 2 --reps 100 --pool-workers 4 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 2 --run 2 --reps 100 --pool-workers 4 --verbose
+Output file: results\25x25\results_25x25_CP-ACS_run2.csv
+Progress file: results\25x25\progress_25x25_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Output file: results\25x25\results_25x25_CP-DCM-ACO_run2.csv
+Progress file: results\25x25\progress_25x25_CP-DCM-ACO_run2.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Found 100 instances in instances\25x25
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 100
+Auto-resuming: Found 38 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 39 instance(s)
+Found 100 instances in instances\25x25
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Pool mode: nothing pending.
+Sorted summary rows to instance-folder order (100): results\25x25\results_25x25_CP-DCM-ACO_run2.csv
+Progress file removed: results\25x25\progress_25x25_CP-DCM-ACO_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\results_25x25_CP-DCM-ACO_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 10:49:58] [RUN 2] [SIZE 25x25] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 10:49:58] [RUN 2] [SIZE 25x25] transfer: restarting CP-ACS with --pool-workers 8
+Output file: results\25x25\results_25x25_CP-ACS_run2.csv
+Progress file: results\25x25\progress_25x25_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 38 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 39 instance(s)
+Found 100 instances in instances\25x25
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 100
+Pool mode: 8 worker process(es), 6110 (instance, rep) job(s) queued
+  Pool progress: 50/6110 jobs finished
+  Pool progress: 100/6110 jobs finished
+  Pool progress: 150/6110 jobs finished
+[2026-04-10 11:21:00] Starting CP comparison reruns: runs=1..5, reps=1, pool_workers=4
+
+[2026-04-10 11:21:00] ===== PHASE 1 | SIZE 9x9 START =====
+[2026-04-10 11:21:00] ----- PHASE 1 | SIZE 9x9 | RUN 1 START -----
+[2026-04-10 11:21:00] [RUN 1] [SIZE 9x9] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 0 --run 1 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 1 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+Output file: results\9x9\results_9x9_CP-ACS.csv
+Progress file: results\9x9\progress_9x9_CP-ACS.csv (temporary; deleted when all instances complete)
+Output file: results\9x9\results_9x9_CP-DCM-ACO.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-ACS.csv
+Progress file removed: results\9x9\progress_9x9_CP-ACS.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-ACS.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:21:03] [RUN 1] [SIZE 9x9] CP-ACS finished with exit_code=0
+[2026-04-10 11:21:03] [RUN 1] [SIZE 9x9] transfer: restarting CP-DCM-ACO with --pool-workers 8
+Output file: results\9x9\results_9x9_CP-DCM-ACO.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 99 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 99 instance(s)
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 1 (instance, rep) job(s) queued
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-DCM-ACO.csv
+Progress file removed: results\9x9\progress_9x9_CP-DCM-ACO.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-DCM-ACO.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:21:03] [RUN 1] [SIZE 9x9] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:21:03] [RUN 1] [SIZE 9x9] completed
+[2026-04-10 11:21:03] ----- PHASE 1 | SIZE 9x9 | RUN 1 DONE -----
+[2026-04-10 11:21:03] ----- PHASE 1 | SIZE 9x9 | RUN 2 START -----
+[2026-04-10 11:21:03] [RUN 2] [SIZE 9x9] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 0 --run 2 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 2 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+Output file: results\9x9\results_9x9_CP-ACS_run2.csv
+Progress file: results\9x9\progress_9x9_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run2.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run2.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-ACS_run2.csv
+Progress file removed: results\9x9\progress_9x9_CP-ACS_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-ACS_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:21:06] [RUN 2] [SIZE 9x9] CP-ACS finished with exit_code=0
+[2026-04-10 11:21:06] [RUN 2] [SIZE 9x9] transfer: restarting CP-DCM-ACO with --pool-workers 8
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run2.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run2.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 83 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 84 instance(s)
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 16 (instance, rep) job(s) queued
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-DCM-ACO_run2.csv
+Total instances: 100
+Completed: 99/100
+Remaining: 1
+Re-run with the same arguments to resume.
+======================================================================
+[2026-04-10 11:21:06] [RUN 2] [SIZE 9x9] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:21:06] [RUN 2] [SIZE 9x9] completed
+[2026-04-10 11:21:06] ----- PHASE 1 | SIZE 9x9 | RUN 2 DONE -----
+[2026-04-10 11:21:06] ----- PHASE 1 | SIZE 9x9 | RUN 3 START -----
+[2026-04-10 11:21:06] [RUN 3] [SIZE 9x9] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 0 --run 3 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 3 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+Output file: results\9x9\results_9x9_CP-ACS_run3.csv
+Progress file: results\9x9\progress_9x9_CP-ACS_run3.csv (temporary; deleted when all instances complete)
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run3.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run3.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-ACS_run3.csv
+Progress file removed: results\9x9\progress_9x9_CP-ACS_run3.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-ACS_run3.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:21:09] [RUN 3] [SIZE 9x9] CP-ACS finished with exit_code=0
+[2026-04-10 11:21:09] [RUN 3] [SIZE 9x9] transfer: restarting CP-DCM-ACO with --pool-workers 8
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run3.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run3.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 86 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 87 instance(s)
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 13 (instance, rep) job(s) queued
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-DCM-ACO_run3.csv
+Total instances: 100
+Completed: 99/100
+Remaining: 1
+Re-run with the same arguments to resume.
+======================================================================
+[2026-04-10 11:21:09] [RUN 3] [SIZE 9x9] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:21:09] [RUN 3] [SIZE 9x9] completed
+[2026-04-10 11:21:09] ----- PHASE 1 | SIZE 9x9 | RUN 3 DONE -----
+[2026-04-10 11:21:09] ----- PHASE 1 | SIZE 9x9 | RUN 4 START -----
+[2026-04-10 11:21:09] [RUN 4] [SIZE 9x9] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 0 --run 4 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 4 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+Output file: results\9x9\results_9x9_CP-ACS_run4.csv
+Progress file: results\9x9\progress_9x9_CP-ACS_run4.csv (temporary; deleted when all instances complete)
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run4.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run4.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-DCM-ACO_run4.csv
+Progress file removed: results\9x9\progress_9x9_CP-DCM-ACO_run4.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-DCM-ACO_run4.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:21:12] [RUN 4] [SIZE 9x9] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:21:12] [RUN 4] [SIZE 9x9] transfer: restarting CP-ACS with --pool-workers 8
+Output file: results\9x9\results_9x9_CP-ACS_run4.csv
+Progress file: results\9x9\progress_9x9_CP-ACS_run4.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 97 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 98 instance(s)
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 2 (instance, rep) job(s) queued
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-ACS_run4.csv
+Total instances: 100
+Completed: 99/100
+Remaining: 1
+Re-run with the same arguments to resume.
+======================================================================
+[2026-04-10 11:21:13] [RUN 4] [SIZE 9x9] CP-ACS finished with exit_code=0
+[2026-04-10 11:21:13] [RUN 4] [SIZE 9x9] completed
+[2026-04-10 11:21:13] ----- PHASE 1 | SIZE 9x9 | RUN 4 DONE -----
+[2026-04-10 11:21:13] ----- PHASE 1 | SIZE 9x9 | RUN 5 START -----
+[2026-04-10 11:21:13] [RUN 5] [SIZE 9x9] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 0 --run 5 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 5 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+Output file: results\9x9\results_9x9_CP-ACS_run5.csv
+Progress file: results\9x9\progress_9x9_CP-ACS_run5.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run5.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run5.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-ACS_run5.csv
+Progress file removed: results\9x9\progress_9x9_CP-ACS_run5.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-ACS_run5.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:21:15] [RUN 5] [SIZE 9x9] CP-ACS finished with exit_code=0
+[2026-04-10 11:21:15] [RUN 5] [SIZE 9x9] transfer: restarting CP-DCM-ACO with --pool-workers 8
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run5.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run5.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 79 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 79 instance(s)
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 21 (instance, rep) job(s) queued
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-DCM-ACO_run5.csv
+Progress file removed: results\9x9\progress_9x9_CP-DCM-ACO_run5.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-DCM-ACO_run5.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:21:16] [RUN 5] [SIZE 9x9] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:21:16] [RUN 5] [SIZE 9x9] completed
+[2026-04-10 11:21:16] ----- PHASE 1 | SIZE 9x9 | RUN 5 DONE -----
+[2026-04-10 11:21:16] ===== PHASE 1 | SIZE 9x9 DONE =====
+
+[2026-04-10 11:21:16] ===== PHASE 1 | SIZE 16x16 START =====
+[2026-04-10 11:21:16] ----- PHASE 1 | SIZE 16x16 | RUN 1 START -----
+[2026-04-10 11:21:16] [RUN 1] [SIZE 16x16] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 0 --run 1 --reps 1 --pool-workers 4 --outdir results\16x16 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 2 --run 1 --reps 1 --pool-workers 4 --outdir results\16x16 --verbose
+Output file: results\16x16\results_16x16_CP-ACS.csv
+Progress file: results\16x16\progress_16x16_CP-ACS.csv (temporary; deleted when all instances complete)
+Output file: results\16x16\results_16x16_CP-DCM-ACO.csv
+Progress file: results\16x16\progress_16x16_CP-DCM-ACO.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\16x16
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Found 100 instances in instances\16x16
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-DCM-ACO.csv
+Progress file removed: results\16x16\progress_16x16_CP-DCM-ACO.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-DCM-ACO.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:21:19] [RUN 1] [SIZE 16x16] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:21:19] [RUN 1] [SIZE 16x16] transfer: restarting CP-ACS with --pool-workers 8
+Output file: results\16x16\results_16x16_CP-ACS.csv
+Progress file: results\16x16\progress_16x16_CP-ACS.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 46 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 47 instance(s)
+Found 100 instances in instances\16x16
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 53 (instance, rep) job(s) queued
+  Pool progress: 50/53 jobs finished
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-ACS.csv
+Total instances: 100
+Completed: 99/100
+Remaining: 1
+Re-run with the same arguments to resume.
+======================================================================
+[2026-04-10 11:21:40] [RUN 1] [SIZE 16x16] CP-ACS finished with exit_code=0
+[2026-04-10 11:21:40] [RUN 1] [SIZE 16x16] completed
+[2026-04-10 11:21:40] ----- PHASE 1 | SIZE 16x16 | RUN 1 DONE -----
+[2026-04-10 11:21:40] ----- PHASE 1 | SIZE 16x16 | RUN 2 START -----
+[2026-04-10 11:21:40] [RUN 2] [SIZE 16x16] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 0 --run 2 --reps 1 --pool-workers 4 --outdir results\16x16 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 2 --run 2 --reps 1 --pool-workers 4 --outdir results\16x16 --verbose
+Output file: results\16x16\results_16x16_CP-ACS_run2.csv
+Progress file: results\16x16\progress_16x16_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Output file: results\16x16\results_16x16_CP-DCM-ACO_run2.csv
+Progress file: results\16x16\progress_16x16_CP-DCM-ACO_run2.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\16x16
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Found 100 instances in instances\16x16
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-DCM-ACO_run2.csv
+Progress file removed: results\16x16\progress_16x16_CP-DCM-ACO_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-DCM-ACO_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:21:43] [RUN 2] [SIZE 16x16] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:21:43] [RUN 2] [SIZE 16x16] transfer: restarting CP-ACS with --pool-workers 8
+Output file: results\16x16\results_16x16_CP-ACS_run2.csv
+Progress file: results\16x16\progress_16x16_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 35 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 35 instance(s)
+Found 100 instances in instances\16x16
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 65 (instance, rep) job(s) queued
+  Pool progress: 50/65 jobs finished
+[2026-04-10 11:27:39] Starting CP comparison reruns: runs=1..5, reps=1, pool_workers=4
+
+[2026-04-10 11:27:39] ===== PHASE 1 | SIZE 9x9 START =====
+[2026-04-10 11:27:39] ----- PHASE 1 | SIZE 9x9 | RUN 1 START -----
+[2026-04-10 11:27:39] [RUN 1] [SIZE 9x9] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 0 --run 1 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 1 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+Output file: results\9x9\results_9x9_CP-ACS.csv
+Progress file: results\9x9\progress_9x9_CP-ACS.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Output file: results\9x9\results_9x9_CP-DCM-ACO.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: nothing pending.
+Pool mode: nothing pending.
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-ACS.csv
+Progress file removed: results\9x9\progress_9x9_CP-ACS.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-ACS.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-DCM-ACO.csv
+Progress file removed: results\9x9\progress_9x9_CP-DCM-ACO.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-DCM-ACO.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:27:39] [RUN 1] [SIZE 9x9] CP-ACS finished with exit_code=0
+[2026-04-10 11:27:39] [RUN 1] [SIZE 9x9] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:27:39] [RUN 1] [SIZE 9x9] completed
+[2026-04-10 11:27:39] ----- PHASE 1 | SIZE 9x9 | RUN 1 DONE -----
+[2026-04-10 11:27:39] ----- PHASE 1 | SIZE 9x9 | RUN 2 START -----
+[2026-04-10 11:27:39] [RUN 2] [SIZE 9x9] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 0 --run 2 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 2 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+Output file: results\9x9\results_9x9_CP-ACS_run2.csv
+Progress file: results\9x9\progress_9x9_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run2.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run2.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 99 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 100 instance(s)
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: nothing pending.
+Pool mode: nothing pending.
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-DCM-ACO_run2.csv
+Total instances: 100
+Completed: 99/100
+Remaining: 1
+Re-run with the same arguments to resume.
+======================================================================
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-ACS_run2.csv
+Progress file removed: results\9x9\progress_9x9_CP-ACS_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-ACS_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:27:39] [RUN 2] [SIZE 9x9] CP-ACS finished with exit_code=0
+[2026-04-10 11:27:39] [RUN 2] [SIZE 9x9] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:27:39] [RUN 2] [SIZE 9x9] completed
+[2026-04-10 11:27:39] ----- PHASE 1 | SIZE 9x9 | RUN 2 DONE -----
+[2026-04-10 11:27:39] ----- PHASE 1 | SIZE 9x9 | RUN 3 START -----
+[2026-04-10 11:27:39] [RUN 3] [SIZE 9x9] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 0 --run 3 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 3 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+Output file: results\9x9\results_9x9_CP-ACS_run3.csv
+Progress file: results\9x9\progress_9x9_CP-ACS_run3.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run3.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run3.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 99 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 100 instance(s)
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: nothing pending.
+Pool mode: nothing pending.
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-DCM-ACO_run3.csv
+Total instances: 100
+Completed: 99/100
+Remaining: 1
+Re-run with the same arguments to resume.
+======================================================================
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-ACS_run3.csv
+Progress file removed: results\9x9\progress_9x9_CP-ACS_run3.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-ACS_run3.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:27:40] [RUN 3] [SIZE 9x9] CP-ACS finished with exit_code=0
+[2026-04-10 11:27:40] [RUN 3] [SIZE 9x9] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:27:40] [RUN 3] [SIZE 9x9] completed
+[2026-04-10 11:27:40] ----- PHASE 1 | SIZE 9x9 | RUN 3 DONE -----
+[2026-04-10 11:27:40] ----- PHASE 1 | SIZE 9x9 | RUN 4 START -----
+[2026-04-10 11:27:40] [RUN 4] [SIZE 9x9] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 0 --run 4 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 4 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+Output file: results\9x9\results_9x9_CP-ACS_run4.csv
+Progress file: results\9x9\progress_9x9_CP-ACS_run4.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 99 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 100 instance(s)
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run4.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run4.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: nothing pending.
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-ACS_run4.csv
+Total instances: 100
+Completed: 99/100
+Remaining: 1
+Re-run with the same arguments to resume.
+======================================================================
+Pool mode: nothing pending.
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-DCM-ACO_run4.csv
+Progress file removed: results\9x9\progress_9x9_CP-DCM-ACO_run4.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-DCM-ACO_run4.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:27:40] [RUN 4] [SIZE 9x9] CP-ACS finished with exit_code=0
+[2026-04-10 11:27:40] [RUN 4] [SIZE 9x9] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:27:40] [RUN 4] [SIZE 9x9] completed
+[2026-04-10 11:27:40] ----- PHASE 1 | SIZE 9x9 | RUN 4 DONE -----
+[2026-04-10 11:27:40] ----- PHASE 1 | SIZE 9x9 | RUN 5 START -----
+[2026-04-10 11:27:40] [RUN 5] [SIZE 9x9] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 0 --run 5 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 5 --reps 1 --pool-workers 4 --outdir results\9x9 --verbose
+Output file: results\9x9\results_9x9_CP-ACS_run5.csv
+Progress file: results\9x9\progress_9x9_CP-ACS_run5.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Output file: results\9x9\results_9x9_CP-DCM-ACO_run5.csv
+Progress file: results\9x9\progress_9x9_CP-DCM-ACO_run5.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Found 100 instances in instances\9x9
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: nothing pending.
+Pool mode: nothing pending.
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-ACS_run5.csv
+Progress file removed: results\9x9\progress_9x9_CP-ACS_run5.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-ACS_run5.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+Sorted summary rows to instance-folder order (100): results\9x9\results_9x9_CP-DCM-ACO_run5.csv
+Progress file removed: results\9x9\progress_9x9_CP-DCM-ACO_run5.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\results_9x9_CP-DCM-ACO_run5.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:27:40] [RUN 5] [SIZE 9x9] CP-ACS finished with exit_code=0
+[2026-04-10 11:27:40] [RUN 5] [SIZE 9x9] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:27:40] [RUN 5] [SIZE 9x9] completed
+[2026-04-10 11:27:40] ----- PHASE 1 | SIZE 9x9 | RUN 5 DONE -----
+[2026-04-10 11:27:40] ===== PHASE 1 | SIZE 9x9 DONE =====
+
+[2026-04-10 11:27:40] ===== PHASE 1 | SIZE 16x16 START =====
+[2026-04-10 11:27:40] ----- PHASE 1 | SIZE 16x16 | RUN 1 START -----
+[2026-04-10 11:27:40] [RUN 1] [SIZE 16x16] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 0 --run 1 --reps 1 --pool-workers 4 --outdir results\16x16 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 2 --run 1 --reps 1 --pool-workers 4 --outdir results\16x16 --verbose
+Output file: results\16x16\results_16x16_CP-ACS.csv
+Progress file: results\16x16\progress_16x16_CP-ACS.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 99 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 100 instance(s)
+Output file: results\16x16\results_16x16_CP-DCM-ACO.csv
+Progress file: results\16x16\progress_16x16_CP-DCM-ACO.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Found 100 instances in instances\16x16
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Found 100 instances in instances\16x16
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: nothing pending.
+Pool mode: nothing pending.
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-ACS.csv
+Total instances: 100
+Completed: 99/100
+Remaining: 1
+Re-run with the same arguments to resume.
+======================================================================
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-DCM-ACO.csv
+Progress file removed: results\16x16\progress_16x16_CP-DCM-ACO.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-DCM-ACO.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:27:40] [RUN 1] [SIZE 16x16] CP-ACS finished with exit_code=0
+[2026-04-10 11:27:40] [RUN 1] [SIZE 16x16] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:27:40] [RUN 1] [SIZE 16x16] completed
+[2026-04-10 11:27:40] ----- PHASE 1 | SIZE 16x16 | RUN 1 DONE -----
+[2026-04-10 11:27:40] ----- PHASE 1 | SIZE 16x16 | RUN 2 START -----
+[2026-04-10 11:27:40] [RUN 2] [SIZE 16x16] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 0 --run 2 --reps 1 --pool-workers 4 --outdir results\16x16 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 2 --run 2 --reps 1 --pool-workers 4 --outdir results\16x16 --verbose
+Output file: results\16x16\results_16x16_CP-ACS_run2.csv
+Progress file: results\16x16\progress_16x16_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 99 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 99 instance(s)
+Output file: results\16x16\results_16x16_CP-DCM-ACO_run2.csv
+Progress file: results\16x16\progress_16x16_CP-DCM-ACO_run2.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 100 completed instance(s) in summary CSV
+Found 100 instances in instances\16x16
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Found 100 instances in instances\16x16
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 4 worker process(es), 1 (instance, rep) job(s) queued
+Pool mode: nothing pending.
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-DCM-ACO_run2.csv
+Progress file removed: results\16x16\progress_16x16_CP-DCM-ACO_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-DCM-ACO_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:27:41] [RUN 2] [SIZE 16x16] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:27:41] [RUN 2] [SIZE 16x16] transfer: restarting CP-ACS with --pool-workers 8
+Output file: results\16x16\results_16x16_CP-ACS_run2.csv
+Progress file: results\16x16\progress_16x16_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 99 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 99 instance(s)
+Found 100 instances in instances\16x16
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 1 (instance, rep) job(s) queued
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-ACS_run2.csv
+Progress file removed: results\16x16\progress_16x16_CP-ACS_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-ACS_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:27:41] [RUN 2] [SIZE 16x16] CP-ACS finished with exit_code=0
+[2026-04-10 11:27:41] [RUN 2] [SIZE 16x16] completed
+[2026-04-10 11:27:41] ----- PHASE 1 | SIZE 16x16 | RUN 2 DONE -----
+[2026-04-10 11:27:41] ----- PHASE 1 | SIZE 16x16 | RUN 3 START -----
+[2026-04-10 11:27:41] [RUN 3] [SIZE 16x16] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 0 --run 3 --reps 1 --pool-workers 4 --outdir results\16x16 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 2 --run 3 --reps 1 --pool-workers 4 --outdir results\16x16 --verbose
+Output file: results\16x16\results_16x16_CP-ACS_run3.csv
+Progress file: results\16x16\progress_16x16_CP-ACS_run3.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\16x16
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Output file: results\16x16\results_16x16_CP-DCM-ACO_run3.csv
+Progress file: results\16x16\progress_16x16_CP-DCM-ACO_run3.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\16x16
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-DCM-ACO_run3.csv
+Progress file removed: results\16x16\progress_16x16_CP-DCM-ACO_run3.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-DCM-ACO_run3.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:27:46] [RUN 3] [SIZE 16x16] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:27:46] [RUN 3] [SIZE 16x16] transfer: restarting CP-ACS with --pool-workers 8
+Output file: results\16x16\results_16x16_CP-ACS_run3.csv
+Progress file: results\16x16\progress_16x16_CP-ACS_run3.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 84 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 84 instance(s)
+Found 100 instances in instances\16x16
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 16 (instance, rep) job(s) queued
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-ACS_run3.csv
+Progress file removed: results\16x16\progress_16x16_CP-ACS_run3.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-ACS_run3.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:28:01] [RUN 3] [SIZE 16x16] CP-ACS finished with exit_code=0
+[2026-04-10 11:28:01] [RUN 3] [SIZE 16x16] completed
+[2026-04-10 11:28:01] ----- PHASE 1 | SIZE 16x16 | RUN 3 DONE -----
+[2026-04-10 11:28:01] ----- PHASE 1 | SIZE 16x16 | RUN 4 START -----
+[2026-04-10 11:28:01] [RUN 4] [SIZE 16x16] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 0 --run 4 --reps 1 --pool-workers 4 --outdir results\16x16 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 2 --run 4 --reps 1 --pool-workers 4 --outdir results\16x16 --verbose
+Output file: results\16x16\results_16x16_CP-ACS_run4.csv
+Progress file: results\16x16\progress_16x16_CP-ACS_run4.csv (temporary; deleted when all instances complete)
+Output file: results\16x16\results_16x16_CP-DCM-ACO_run4.csv
+Progress file: results\16x16\progress_16x16_CP-DCM-ACO_run4.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\16x16
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Found 100 instances in instances\16x16
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-DCM-ACO_run4.csv
+Progress file removed: results\16x16\progress_16x16_CP-DCM-ACO_run4.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-DCM-ACO_run4.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:28:05] [RUN 4] [SIZE 16x16] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:28:05] [RUN 4] [SIZE 16x16] transfer: restarting CP-ACS with --pool-workers 8
+Output file: results\16x16\results_16x16_CP-ACS_run4.csv
+Progress file: results\16x16\progress_16x16_CP-ACS_run4.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 72 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 72 instance(s)
+Found 100 instances in instances\16x16
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 28 (instance, rep) job(s) queued
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-ACS_run4.csv
+Progress file removed: results\16x16\progress_16x16_CP-ACS_run4.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-ACS_run4.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:28:12] [RUN 4] [SIZE 16x16] CP-ACS finished with exit_code=0
+[2026-04-10 11:28:12] [RUN 4] [SIZE 16x16] completed
+[2026-04-10 11:28:12] ----- PHASE 1 | SIZE 16x16 | RUN 4 DONE -----
+[2026-04-10 11:28:12] ----- PHASE 1 | SIZE 16x16 | RUN 5 START -----
+[2026-04-10 11:28:12] [RUN 5] [SIZE 16x16] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 0 --run 5 --reps 1 --pool-workers 4 --outdir results\16x16 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 2 --run 5 --reps 1 --pool-workers 4 --outdir results\16x16 --verbose
+Output file: results\16x16\results_16x16_CP-ACS_run5.csv
+Progress file: results\16x16\progress_16x16_CP-ACS_run5.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\16x16
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Output file: results\16x16\results_16x16_CP-DCM-ACO_run5.csv
+Progress file: results\16x16\progress_16x16_CP-DCM-ACO_run5.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\16x16
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\16x16\results_16x16_CP-DCM-ACO_run5.csv
+Progress file removed: results\16x16\progress_16x16_CP-DCM-ACO_run5.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-DCM-ACO_run5.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:28:15] [RUN 5] [SIZE 16x16] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:28:15] [RUN 5] [SIZE 16x16] transfer: restarting CP-ACS with --pool-workers 8
+Output file: results\16x16\results_16x16_CP-ACS_run5.csv
+Progress file: results\16x16\progress_16x16_CP-ACS_run5.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 63 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 64 instance(s)
+Found 100 instances in instances\16x16
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 36 (instance, rep) job(s) queued
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\results_16x16_CP-ACS_run5.csv
+Total instances: 100
+Completed: 99/100
+Remaining: 1
+Re-run with the same arguments to resume.
+======================================================================
+[2026-04-10 11:28:34] [RUN 5] [SIZE 16x16] CP-ACS finished with exit_code=0
+[2026-04-10 11:28:34] [RUN 5] [SIZE 16x16] completed
+[2026-04-10 11:28:34] ----- PHASE 1 | SIZE 16x16 | RUN 5 DONE -----
+[2026-04-10 11:28:34] ===== PHASE 1 | SIZE 16x16 DONE =====
+
+[2026-04-10 11:28:34] ===== PHASE 1 | SIZE 25x25 START =====
+[2026-04-10 11:28:34] ----- PHASE 1 | SIZE 25x25 | RUN 1 START -----
+[2026-04-10 11:28:34] [RUN 1] [SIZE 25x25] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 0 --run 1 --reps 1 --pool-workers 4 --outdir results\25x25 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 2 --run 1 --reps 1 --pool-workers 4 --outdir results\25x25 --verbose
+Output file: results\25x25\results_25x25_CP-ACS.csv
+Progress file: results\25x25\progress_25x25_CP-ACS.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\25x25
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Output file: results\25x25\results_25x25_CP-DCM-ACO.csv
+Progress file: results\25x25\progress_25x25_CP-DCM-ACO.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\25x25
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\25x25\results_25x25_CP-DCM-ACO.csv
+Progress file removed: results\25x25\progress_25x25_CP-DCM-ACO.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\results_25x25_CP-DCM-ACO.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:32:50] [RUN 1] [SIZE 25x25] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:32:50] [RUN 1] [SIZE 25x25] transfer: restarting CP-ACS with --pool-workers 8
+Output file: results\25x25\results_25x25_CP-ACS.csv
+Progress file: results\25x25\progress_25x25_CP-ACS.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 43 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 43 instance(s)
+Found 100 instances in instances\25x25
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 57 (instance, rep) job(s) queued
+  Pool progress: 50/57 jobs finished
+Sorted summary rows to instance-folder order (100): results\25x25\results_25x25_CP-ACS.csv
+Progress file removed: results\25x25\progress_25x25_CP-ACS.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\results_25x25_CP-ACS.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:38:21] [RUN 1] [SIZE 25x25] CP-ACS finished with exit_code=0
+[2026-04-10 11:38:21] [RUN 1] [SIZE 25x25] completed
+[2026-04-10 11:38:21] ----- PHASE 1 | SIZE 25x25 | RUN 1 DONE -----
+[2026-04-10 11:38:21] ----- PHASE 1 | SIZE 25x25 | RUN 2 START -----
+[2026-04-10 11:38:21] [RUN 2] [SIZE 25x25] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 0 --run 2 --reps 1 --pool-workers 4 --outdir results\25x25 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 2 --run 2 --reps 1 --pool-workers 4 --outdir results\25x25 --verbose
+Output file: results\25x25\results_25x25_CP-ACS_run2.csv
+Progress file: results\25x25\progress_25x25_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\25x25
+Output file: results\25x25\results_25x25_CP-DCM-ACO_run2.csv
+Running algorithm: CP-ACS (alg=0)
+Progress file: results\25x25\progress_25x25_CP-DCM-ACO_run2.csv (temporary; deleted when all instances complete)
+Repetitions per instance: 1
+Found 100 instances in instances\25x25
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\25x25\results_25x25_CP-DCM-ACO_run2.csv
+Progress file removed: results\25x25\progress_25x25_CP-DCM-ACO_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\results_25x25_CP-DCM-ACO_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:41:01] [RUN 2] [SIZE 25x25] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:41:01] [RUN 2] [SIZE 25x25] transfer: restarting CP-ACS with --pool-workers 8
+Output file: results\25x25\results_25x25_CP-ACS_run2.csv
+Progress file: results\25x25\progress_25x25_CP-ACS_run2.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 30 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 30 instance(s)
+Found 100 instances in instances\25x25
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 70 (instance, rep) job(s) queued
+  Pool progress: 50/70 jobs finished
+Sorted summary rows to instance-folder order (100): results\25x25\results_25x25_CP-ACS_run2.csv
+Progress file removed: results\25x25\progress_25x25_CP-ACS_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\results_25x25_CP-ACS_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:46:13] [RUN 2] [SIZE 25x25] CP-ACS finished with exit_code=0
+[2026-04-10 11:46:13] [RUN 2] [SIZE 25x25] completed
+[2026-04-10 11:46:13] ----- PHASE 1 | SIZE 25x25 | RUN 2 DONE -----
+[2026-04-10 11:46:13] ----- PHASE 1 | SIZE 25x25 | RUN 3 START -----
+[2026-04-10 11:46:13] [RUN 3] [SIZE 25x25] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 0 --run 3 --reps 1 --pool-workers 4 --outdir results\25x25 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 2 --run 3 --reps 1 --pool-workers 4 --outdir results\25x25 --verbose
+Output file: results\25x25\results_25x25_CP-ACS_run3.csv
+Progress file: results\25x25\progress_25x25_CP-ACS_run3.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\25x25
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Output file: results\25x25\results_25x25_CP-DCM-ACO_run3.csv
+Progress file: results\25x25\progress_25x25_CP-DCM-ACO_run3.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\25x25
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\25x25\results_25x25_CP-DCM-ACO_run3.csv
+Progress file removed: results\25x25\progress_25x25_CP-DCM-ACO_run3.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\results_25x25_CP-DCM-ACO_run3.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:48:57] [RUN 3] [SIZE 25x25] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:48:57] [RUN 3] [SIZE 25x25] transfer: restarting CP-ACS with --pool-workers 8
+Output file: results\25x25\results_25x25_CP-ACS_run3.csv
+Progress file: results\25x25\progress_25x25_CP-ACS_run3.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 25 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 25 instance(s)
+Found 100 instances in instances\25x25
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 75 (instance, rep) job(s) queued
+  Pool progress: 50/75 jobs finished
+Sorted summary rows to instance-folder order (100): results\25x25\results_25x25_CP-ACS_run3.csv
+Progress file removed: results\25x25\progress_25x25_CP-ACS_run3.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\results_25x25_CP-ACS_run3.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:53:28] [RUN 3] [SIZE 25x25] CP-ACS finished with exit_code=0
+[2026-04-10 11:53:28] [RUN 3] [SIZE 25x25] completed
+[2026-04-10 11:53:28] ----- PHASE 1 | SIZE 25x25 | RUN 3 DONE -----
+[2026-04-10 11:53:28] ----- PHASE 1 | SIZE 25x25 | RUN 4 START -----
+[2026-04-10 11:53:28] [RUN 4] [SIZE 25x25] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 0 --run 4 --reps 1 --pool-workers 4 --outdir results\25x25 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 2 --run 4 --reps 1 --pool-workers 4 --outdir results\25x25 --verbose
+Output file: results\25x25\results_25x25_CP-ACS_run4.csv
+Progress file: results\25x25\progress_25x25_CP-ACS_run4.csv (temporary; deleted when all instances complete)
+Output file: results\25x25\results_25x25_CP-DCM-ACO_run4.csv
+Progress file: results\25x25\progress_25x25_CP-DCM-ACO_run4.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\25x25
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Found 100 instances in instances\25x25
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\25x25\results_25x25_CP-DCM-ACO_run4.csv
+Progress file removed: results\25x25\progress_25x25_CP-DCM-ACO_run4.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\results_25x25_CP-DCM-ACO_run4.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 11:56:27] [RUN 4] [SIZE 25x25] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 11:56:27] [RUN 4] [SIZE 25x25] transfer: restarting CP-ACS with --pool-workers 8
+Output file: results\25x25\results_25x25_CP-ACS_run4.csv
+Progress file: results\25x25\progress_25x25_CP-ACS_run4.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 29 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 29 instance(s)
+Found 100 instances in instances\25x25
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 71 (instance, rep) job(s) queued
+  Pool progress: 50/71 jobs finished
+Sorted summary rows to instance-folder order (100): results\25x25\results_25x25_CP-ACS_run4.csv
+Progress file removed: results\25x25\progress_25x25_CP-ACS_run4.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\results_25x25_CP-ACS_run4.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:01:55] [RUN 4] [SIZE 25x25] CP-ACS finished with exit_code=0
+[2026-04-10 12:01:55] [RUN 4] [SIZE 25x25] completed
+[2026-04-10 12:01:55] ----- PHASE 1 | SIZE 25x25 | RUN 4 DONE -----
+[2026-04-10 12:01:55] ----- PHASE 1 | SIZE 25x25 | RUN 5 START -----
+[2026-04-10 12:01:55] [RUN 5] [SIZE 25x25] starting 2 algorithm processes in parallel
+  - CP-ACS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 0 --run 5 --reps 1 --pool-workers 4 --outdir results\25x25 --verbose
+  - CP-DCM-ACO: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 2 --run 5 --reps 1 --pool-workers 4 --outdir results\25x25 --verbose
+Output file: results\25x25\results_25x25_CP-ACS_run5.csv
+Progress file: results\25x25\progress_25x25_CP-ACS_run5.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\25x25
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Output file: results\25x25\results_25x25_CP-DCM-ACO_run5.csv
+Progress file: results\25x25\progress_25x25_CP-DCM-ACO_run5.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\25x25
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+Pool mode: 4 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\25x25\results_25x25_CP-DCM-ACO_run5.csv
+Progress file removed: results\25x25\progress_25x25_CP-DCM-ACO_run5.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\results_25x25_CP-DCM-ACO_run5.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:06:09] [RUN 5] [SIZE 25x25] CP-DCM-ACO finished with exit_code=0
+[2026-04-10 12:06:09] [RUN 5] [SIZE 25x25] transfer: restarting CP-ACS with --pool-workers 8
+Output file: results\25x25\results_25x25_CP-ACS_run5.csv
+Progress file: results\25x25\progress_25x25_CP-ACS_run5.csv (temporary; deleted when all instances complete)
+Auto-resuming: Found 30 completed instance(s) in summary CSV
+Auto-resuming: Found per-rep progress for 30 instance(s)
+Found 100 instances in instances\25x25
+Running algorithm: CP-ACS (alg=0)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 70 (instance, rep) job(s) queued
+  Pool progress: 50/70 jobs finished
+Sorted summary rows to instance-folder order (100): results\25x25\results_25x25_CP-ACS_run5.csv
+Progress file removed: results\25x25\progress_25x25_CP-ACS_run5.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\results_25x25_CP-ACS_run5.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:11:33] [RUN 5] [SIZE 25x25] CP-ACS finished with exit_code=0
+[2026-04-10 12:11:33] [RUN 5] [SIZE 25x25] completed
+[2026-04-10 12:11:33] ----- PHASE 1 | SIZE 25x25 | RUN 5 DONE -----
+[2026-04-10 12:11:33] ===== PHASE 1 | SIZE 25x25 DONE =====
+
+[2026-04-10 12:11:33] ===== PHASE 2 (DCM-ACO 9 ants) | SIZE 9x9 START =====
+[2026-04-10 12:11:33] ----- PHASE 2 | SIZE 9x9 | RUN 1 START -----
+[2026-04-10 12:11:33] [RUN 1] [SIZE 9x9] starting 1 algorithm processes in parallel
+  - CP-DCM-ACO-9ANTS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 1 --reps 1 --pool-workers 8 --outdir results\9x9\dcm_9ants --nAnts 3 --numACS 2 --verbose
+Output file: results\9x9\dcm_9ants\results_9x9_CP-DCM-ACO.csv
+Progress file: results\9x9\dcm_9ants\progress_9x9_CP-DCM-ACO.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\9x9\dcm_9ants\results_9x9_CP-DCM-ACO.csv
+Progress file removed: results\9x9\dcm_9ants\progress_9x9_CP-DCM-ACO.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\dcm_9ants\results_9x9_CP-DCM-ACO.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:11:35] [RUN 1] [SIZE 9x9] CP-DCM-ACO-9ANTS finished with exit_code=0
+[2026-04-10 12:11:35] [RUN 1] [SIZE 9x9] completed
+[2026-04-10 12:11:35] ----- PHASE 2 | SIZE 9x9 | RUN 1 DONE -----
+[2026-04-10 12:11:35] ----- PHASE 2 | SIZE 9x9 | RUN 2 START -----
+[2026-04-10 12:11:35] [RUN 2] [SIZE 9x9] starting 1 algorithm processes in parallel
+  - CP-DCM-ACO-9ANTS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 2 --reps 1 --pool-workers 8 --outdir results\9x9\dcm_9ants --nAnts 3 --numACS 2 --verbose
+Output file: results\9x9\dcm_9ants\results_9x9_CP-DCM-ACO_run2.csv
+Progress file: results\9x9\dcm_9ants\progress_9x9_CP-DCM-ACO_run2.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\9x9\dcm_9ants\results_9x9_CP-DCM-ACO_run2.csv
+Progress file removed: results\9x9\dcm_9ants\progress_9x9_CP-DCM-ACO_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\dcm_9ants\results_9x9_CP-DCM-ACO_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:11:37] [RUN 2] [SIZE 9x9] CP-DCM-ACO-9ANTS finished with exit_code=0
+[2026-04-10 12:11:37] [RUN 2] [SIZE 9x9] completed
+[2026-04-10 12:11:37] ----- PHASE 2 | SIZE 9x9 | RUN 2 DONE -----
+[2026-04-10 12:11:37] ----- PHASE 2 | SIZE 9x9 | RUN 3 START -----
+[2026-04-10 12:11:37] [RUN 3] [SIZE 9x9] starting 1 algorithm processes in parallel
+  - CP-DCM-ACO-9ANTS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 3 --reps 1 --pool-workers 8 --outdir results\9x9\dcm_9ants --nAnts 3 --numACS 2 --verbose
+Output file: results\9x9\dcm_9ants\results_9x9_CP-DCM-ACO_run3.csv
+Progress file: results\9x9\dcm_9ants\progress_9x9_CP-DCM-ACO_run3.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\9x9\dcm_9ants\results_9x9_CP-DCM-ACO_run3.csv
+Progress file removed: results\9x9\dcm_9ants\progress_9x9_CP-DCM-ACO_run3.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\dcm_9ants\results_9x9_CP-DCM-ACO_run3.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:11:39] [RUN 3] [SIZE 9x9] CP-DCM-ACO-9ANTS finished with exit_code=0
+[2026-04-10 12:11:39] [RUN 3] [SIZE 9x9] completed
+[2026-04-10 12:11:39] ----- PHASE 2 | SIZE 9x9 | RUN 3 DONE -----
+[2026-04-10 12:11:39] ----- PHASE 2 | SIZE 9x9 | RUN 4 START -----
+[2026-04-10 12:11:39] [RUN 4] [SIZE 9x9] starting 1 algorithm processes in parallel
+  - CP-DCM-ACO-9ANTS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 4 --reps 1 --pool-workers 8 --outdir results\9x9\dcm_9ants --nAnts 3 --numACS 2 --verbose
+Output file: results\9x9\dcm_9ants\results_9x9_CP-DCM-ACO_run4.csv
+Progress file: results\9x9\dcm_9ants\progress_9x9_CP-DCM-ACO_run4.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\9x9\dcm_9ants\results_9x9_CP-DCM-ACO_run4.csv
+Progress file removed: results\9x9\dcm_9ants\progress_9x9_CP-DCM-ACO_run4.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\dcm_9ants\results_9x9_CP-DCM-ACO_run4.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:11:41] [RUN 4] [SIZE 9x9] CP-DCM-ACO-9ANTS finished with exit_code=0
+[2026-04-10 12:11:41] [RUN 4] [SIZE 9x9] completed
+[2026-04-10 12:11:41] ----- PHASE 2 | SIZE 9x9 | RUN 4 DONE -----
+[2026-04-10 12:11:41] ----- PHASE 2 | SIZE 9x9 | RUN 5 START -----
+[2026-04-10 12:11:41] [RUN 5] [SIZE 9x9] starting 1 algorithm processes in parallel
+  - CP-DCM-ACO-9ANTS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_9x9.py --alg 2 --run 5 --reps 1 --pool-workers 8 --outdir results\9x9\dcm_9ants --nAnts 3 --numACS 2 --verbose
+Output file: results\9x9\dcm_9ants\results_9x9_CP-DCM-ACO_run5.csv
+Progress file: results\9x9\dcm_9ants\progress_9x9_CP-DCM-ACO_run5.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\9x9
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\9x9\dcm_9ants\results_9x9_CP-DCM-ACO_run5.csv
+Progress file removed: results\9x9\dcm_9ants\progress_9x9_CP-DCM-ACO_run5.csv
+
+======================================================================
+Completed (pool). Results saved to: results\9x9\dcm_9ants\results_9x9_CP-DCM-ACO_run5.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:11:43] [RUN 5] [SIZE 9x9] CP-DCM-ACO-9ANTS finished with exit_code=0
+[2026-04-10 12:11:43] [RUN 5] [SIZE 9x9] completed
+[2026-04-10 12:11:43] ----- PHASE 2 | SIZE 9x9 | RUN 5 DONE -----
+[2026-04-10 12:11:43] ===== PHASE 2 | SIZE 9x9 DONE =====
+
+[2026-04-10 12:11:43] ===== PHASE 2 (DCM-ACO 9 ants) | SIZE 16x16 START =====
+[2026-04-10 12:11:43] ----- PHASE 2 | SIZE 16x16 | RUN 1 START -----
+[2026-04-10 12:11:43] [RUN 1] [SIZE 16x16] starting 1 algorithm processes in parallel
+  - CP-DCM-ACO-9ANTS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 2 --run 1 --reps 1 --pool-workers 8 --outdir results\16x16\dcm_9ants --nAnts 3 --numACS 2 --verbose
+Output file: results\16x16\dcm_9ants\results_16x16_CP-DCM-ACO.csv
+Progress file: results\16x16\dcm_9ants\progress_16x16_CP-DCM-ACO.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\16x16
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\16x16\dcm_9ants\results_16x16_CP-DCM-ACO.csv
+Progress file removed: results\16x16\dcm_9ants\progress_16x16_CP-DCM-ACO.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\dcm_9ants\results_16x16_CP-DCM-ACO.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:11:49] [RUN 1] [SIZE 16x16] CP-DCM-ACO-9ANTS finished with exit_code=0
+[2026-04-10 12:11:49] [RUN 1] [SIZE 16x16] completed
+[2026-04-10 12:11:49] ----- PHASE 2 | SIZE 16x16 | RUN 1 DONE -----
+[2026-04-10 12:11:49] ----- PHASE 2 | SIZE 16x16 | RUN 2 START -----
+[2026-04-10 12:11:49] [RUN 2] [SIZE 16x16] starting 1 algorithm processes in parallel
+  - CP-DCM-ACO-9ANTS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 2 --run 2 --reps 1 --pool-workers 8 --outdir results\16x16\dcm_9ants --nAnts 3 --numACS 2 --verbose
+Output file: results\16x16\dcm_9ants\results_16x16_CP-DCM-ACO_run2.csv
+Progress file: results\16x16\dcm_9ants\progress_16x16_CP-DCM-ACO_run2.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\16x16
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\16x16\dcm_9ants\results_16x16_CP-DCM-ACO_run2.csv
+Progress file removed: results\16x16\dcm_9ants\progress_16x16_CP-DCM-ACO_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\dcm_9ants\results_16x16_CP-DCM-ACO_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:11:52] [RUN 2] [SIZE 16x16] CP-DCM-ACO-9ANTS finished with exit_code=0
+[2026-04-10 12:11:52] [RUN 2] [SIZE 16x16] completed
+[2026-04-10 12:11:52] ----- PHASE 2 | SIZE 16x16 | RUN 2 DONE -----
+[2026-04-10 12:11:52] ----- PHASE 2 | SIZE 16x16 | RUN 3 START -----
+[2026-04-10 12:11:52] [RUN 3] [SIZE 16x16] starting 1 algorithm processes in parallel
+  - CP-DCM-ACO-9ANTS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 2 --run 3 --reps 1 --pool-workers 8 --outdir results\16x16\dcm_9ants --nAnts 3 --numACS 2 --verbose
+Output file: results\16x16\dcm_9ants\results_16x16_CP-DCM-ACO_run3.csv
+Progress file: results\16x16\dcm_9ants\progress_16x16_CP-DCM-ACO_run3.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\16x16
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\16x16\dcm_9ants\results_16x16_CP-DCM-ACO_run3.csv
+Progress file removed: results\16x16\dcm_9ants\progress_16x16_CP-DCM-ACO_run3.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\dcm_9ants\results_16x16_CP-DCM-ACO_run3.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:11:55] [RUN 3] [SIZE 16x16] CP-DCM-ACO-9ANTS finished with exit_code=0
+[2026-04-10 12:11:55] [RUN 3] [SIZE 16x16] completed
+[2026-04-10 12:11:55] ----- PHASE 2 | SIZE 16x16 | RUN 3 DONE -----
+[2026-04-10 12:11:55] ----- PHASE 2 | SIZE 16x16 | RUN 4 START -----
+[2026-04-10 12:11:55] [RUN 4] [SIZE 16x16] starting 1 algorithm processes in parallel
+  - CP-DCM-ACO-9ANTS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 2 --run 4 --reps 1 --pool-workers 8 --outdir results\16x16\dcm_9ants --nAnts 3 --numACS 2 --verbose
+Output file: results\16x16\dcm_9ants\results_16x16_CP-DCM-ACO_run4.csv
+Progress file: results\16x16\dcm_9ants\progress_16x16_CP-DCM-ACO_run4.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\16x16
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\16x16\dcm_9ants\results_16x16_CP-DCM-ACO_run4.csv
+Progress file removed: results\16x16\dcm_9ants\progress_16x16_CP-DCM-ACO_run4.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\dcm_9ants\results_16x16_CP-DCM-ACO_run4.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:11:57] [RUN 4] [SIZE 16x16] CP-DCM-ACO-9ANTS finished with exit_code=0
+[2026-04-10 12:11:57] [RUN 4] [SIZE 16x16] completed
+[2026-04-10 12:11:57] ----- PHASE 2 | SIZE 16x16 | RUN 4 DONE -----
+[2026-04-10 12:11:57] ----- PHASE 2 | SIZE 16x16 | RUN 5 START -----
+[2026-04-10 12:11:57] [RUN 5] [SIZE 16x16] starting 1 algorithm processes in parallel
+  - CP-DCM-ACO-9ANTS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_16x16.py --alg 2 --run 5 --reps 1 --pool-workers 8 --outdir results\16x16\dcm_9ants --nAnts 3 --numACS 2 --verbose
+Output file: results\16x16\dcm_9ants\results_16x16_CP-DCM-ACO_run5.csv
+Progress file: results\16x16\dcm_9ants\progress_16x16_CP-DCM-ACO_run5.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\16x16
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\16x16\dcm_9ants\results_16x16_CP-DCM-ACO_run5.csv
+Progress file removed: results\16x16\dcm_9ants\progress_16x16_CP-DCM-ACO_run5.csv
+
+======================================================================
+Completed (pool). Results saved to: results\16x16\dcm_9ants\results_16x16_CP-DCM-ACO_run5.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:11:59] [RUN 5] [SIZE 16x16] CP-DCM-ACO-9ANTS finished with exit_code=0
+[2026-04-10 12:11:59] [RUN 5] [SIZE 16x16] completed
+[2026-04-10 12:11:59] ----- PHASE 2 | SIZE 16x16 | RUN 5 DONE -----
+[2026-04-10 12:11:59] ===== PHASE 2 | SIZE 16x16 DONE =====
+
+[2026-04-10 12:11:59] ===== PHASE 2 (DCM-ACO 9 ants) | SIZE 25x25 START =====
+[2026-04-10 12:11:59] ----- PHASE 2 | SIZE 25x25 | RUN 1 START -----
+[2026-04-10 12:11:59] [RUN 1] [SIZE 25x25] starting 1 algorithm processes in parallel
+  - CP-DCM-ACO-9ANTS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 2 --run 1 --reps 1 --pool-workers 8 --outdir results\25x25\dcm_9ants --nAnts 3 --numACS 2 --verbose
+Output file: results\25x25\dcm_9ants\results_25x25_CP-DCM-ACO.csv
+Progress file: results\25x25\dcm_9ants\progress_25x25_CP-DCM-ACO.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\25x25
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\25x25\dcm_9ants\results_25x25_CP-DCM-ACO.csv
+Progress file removed: results\25x25\dcm_9ants\progress_25x25_CP-DCM-ACO.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\dcm_9ants\results_25x25_CP-DCM-ACO.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:15:38] [RUN 1] [SIZE 25x25] CP-DCM-ACO-9ANTS finished with exit_code=0
+[2026-04-10 12:15:38] [RUN 1] [SIZE 25x25] completed
+[2026-04-10 12:15:38] ----- PHASE 2 | SIZE 25x25 | RUN 1 DONE -----
+[2026-04-10 12:15:38] ----- PHASE 2 | SIZE 25x25 | RUN 2 START -----
+[2026-04-10 12:15:38] [RUN 2] [SIZE 25x25] starting 1 algorithm processes in parallel
+  - CP-DCM-ACO-9ANTS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 2 --run 2 --reps 1 --pool-workers 8 --outdir results\25x25\dcm_9ants --nAnts 3 --numACS 2 --verbose
+Output file: results\25x25\dcm_9ants\results_25x25_CP-DCM-ACO_run2.csv
+Progress file: results\25x25\dcm_9ants\progress_25x25_CP-DCM-ACO_run2.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\25x25
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\25x25\dcm_9ants\results_25x25_CP-DCM-ACO_run2.csv
+Progress file removed: results\25x25\dcm_9ants\progress_25x25_CP-DCM-ACO_run2.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\dcm_9ants\results_25x25_CP-DCM-ACO_run2.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:18:57] [RUN 2] [SIZE 25x25] CP-DCM-ACO-9ANTS finished with exit_code=0
+[2026-04-10 12:18:57] [RUN 2] [SIZE 25x25] completed
+[2026-04-10 12:18:57] ----- PHASE 2 | SIZE 25x25 | RUN 2 DONE -----
+[2026-04-10 12:18:57] ----- PHASE 2 | SIZE 25x25 | RUN 3 START -----
+[2026-04-10 12:18:57] [RUN 3] [SIZE 25x25] starting 1 algorithm processes in parallel
+  - CP-DCM-ACO-9ANTS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 2 --run 3 --reps 1 --pool-workers 8 --outdir results\25x25\dcm_9ants --nAnts 3 --numACS 2 --verbose
+Output file: results\25x25\dcm_9ants\results_25x25_CP-DCM-ACO_run3.csv
+Progress file: results\25x25\dcm_9ants\progress_25x25_CP-DCM-ACO_run3.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\25x25
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\25x25\dcm_9ants\results_25x25_CP-DCM-ACO_run3.csv
+Progress file removed: results\25x25\dcm_9ants\progress_25x25_CP-DCM-ACO_run3.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\dcm_9ants\results_25x25_CP-DCM-ACO_run3.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:22:00] [RUN 3] [SIZE 25x25] CP-DCM-ACO-9ANTS finished with exit_code=0
+[2026-04-10 12:22:00] [RUN 3] [SIZE 25x25] completed
+[2026-04-10 12:22:00] ----- PHASE 2 | SIZE 25x25 | RUN 3 DONE -----
+[2026-04-10 12:22:00] ----- PHASE 2 | SIZE 25x25 | RUN 4 START -----
+[2026-04-10 12:22:00] [RUN 4] [SIZE 25x25] starting 1 algorithm processes in parallel
+  - CP-DCM-ACO-9ANTS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 2 --run 4 --reps 1 --pool-workers 8 --outdir results\25x25\dcm_9ants --nAnts 3 --numACS 2 --verbose
+Output file: results\25x25\dcm_9ants\results_25x25_CP-DCM-ACO_run4.csv
+Progress file: results\25x25\dcm_9ants\progress_25x25_CP-DCM-ACO_run4.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\25x25
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\25x25\dcm_9ants\results_25x25_CP-DCM-ACO_run4.csv
+Progress file removed: results\25x25\dcm_9ants\progress_25x25_CP-DCM-ACO_run4.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\dcm_9ants\results_25x25_CP-DCM-ACO_run4.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:24:40] [RUN 4] [SIZE 25x25] CP-DCM-ACO-9ANTS finished with exit_code=0
+[2026-04-10 12:24:40] [RUN 4] [SIZE 25x25] completed
+[2026-04-10 12:24:40] ----- PHASE 2 | SIZE 25x25 | RUN 4 DONE -----
+[2026-04-10 12:24:40] ----- PHASE 2 | SIZE 25x25 | RUN 5 START -----
+[2026-04-10 12:24:40] [RUN 5] [SIZE 25x25] starting 1 algorithm processes in parallel
+  - CP-DCM-ACO-9ANTS: C:\Users\renom\AppData\Local\Programs\Python\Python312\python.exe scripts/run_25x25.py --alg 2 --run 5 --reps 1 --pool-workers 8 --outdir results\25x25\dcm_9ants --nAnts 3 --numACS 2 --verbose
+Output file: results\25x25\dcm_9ants\results_25x25_CP-DCM-ACO_run5.csv
+Progress file: results\25x25\dcm_9ants\progress_25x25_CP-DCM-ACO_run5.csv (temporary; deleted when all instances complete)
+Found 100 instances in instances\25x25
+Running algorithm: CP-DCM-ACO (alg=2)
+Repetitions per instance: 1
+Pool mode: 8 worker process(es), 100 (instance, rep) job(s) queued
+  Pool progress: 50/100 jobs finished
+  Pool progress: 100/100 jobs finished
+Sorted summary rows to instance-folder order (100): results\25x25\dcm_9ants\results_25x25_CP-DCM-ACO_run5.csv
+Progress file removed: results\25x25\dcm_9ants\progress_25x25_CP-DCM-ACO_run5.csv
+
+======================================================================
+Completed (pool). Results saved to: results\25x25\dcm_9ants\results_25x25_CP-DCM-ACO_run5.csv
+Total instances: 100
+Completed: 100/100
+======================================================================
+[2026-04-10 12:27:01] [RUN 5] [SIZE 25x25] CP-DCM-ACO-9ANTS finished with exit_code=0
+[2026-04-10 12:27:01] [RUN 5] [SIZE 25x25] completed
+[2026-04-10 12:27:01] ----- PHASE 2 | SIZE 25x25 | RUN 5 DONE -----
+[2026-04-10 12:27:01] ===== PHASE 2 | SIZE 25x25 DONE =====
+[2026-04-10 12:27:02] Consolidated Excel saved: results\cp_comparison_summary.xlsx
+
+[2026-04-10 12:27:02] All requested runs completed successfully.

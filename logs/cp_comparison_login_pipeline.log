@@ -26,3 +26,30 @@ Detailed log: logs\cp_comparison\cp_comparison_orchestrator.log
 Detailed log: logs\cp_comparison\cp_comparison_orchestrator.log
 ================================================================
 [Thu 04/09/2026  7:55:57.61] Step 1: Resume 25x25 run2 for alg0 with legacy reps=100
+[Thu 04/09/2026  7:56:48.54] CP comparison reruns end exit_code=
+
+================================================================
+[Thu 04/09/2026  7:58:38.68] CP comparison reruns start (25x25 only workflow)
+Detailed log: logs\cp_comparison\cp_comparison_orchestrator.log
+================================================================
+[Thu 04/09/2026  7:58:38.70] Step 1: Resume 25x25 run2 for alg0+alg2 with legacy reps=100 (transfer enabled)
+
+================================================================
+[Fri 04/10/2026 10:49:53.91] CP comparison reruns start (25x25 only workflow)
+Detailed log: logs\cp_comparison\cp_comparison_orchestrator.log
+================================================================
+[Fri 04/10/2026 10:49:54.14] Step 1: Resume 25x25 run2 for alg0+alg2 with legacy reps=100 (transfer enabled)
+[Fri 04/10/2026 10:59:55.62] CP comparison reruns end exit_code=
+
+================================================================
+[Fri 04/10/2026 11:21:00.44] CP comparison reruns start (all sizes, runs 1-5, reps=1)
+Detailed log: logs\cp_comparison\cp_comparison_orchestrator.log
+================================================================
+[Fri 04/10/2026 11:21:00.47] Running orchestrator (Phase 1: CP comparison, Phase 2: DCM-ACO 9 ants)
+[Fri 04/10/2026 11:21:47.98] CP comparison reruns end exit_code=
+
+================================================================
+[Fri 04/10/2026 11:27:39.31] CP comparison reruns start (all sizes, runs 1-5, reps=1)
+Detailed log: logs\cp_comparison\cp_comparison_orchestrator.log
+================================================================
+[Fri 04/10/2026 11:27:39.32] Running orchestrator (Phase 1: CP comparison, Phase 2: DCM-ACO 9 ants)
