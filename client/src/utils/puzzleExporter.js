@@ -80,7 +80,7 @@ export function generateIndexUpdate() {
         });
       });
     } else {
-      // Simple categories (6x6, 12x12)
+      // Simple categories (flat list categories)
       const allPuzzles = [];
       
       Object.keys(categoryData).forEach(sizeKey => {
@@ -114,8 +114,8 @@ export function printSaveInstructions() {
 3. Create files in client/public/instances/{category}/ directory
 4. Update client/public/instances/index.json with the new puzzles
 
-Example for 6x6 puzzle:
-- Create file: client/public/instances/6x6/inst6x6_50_0.txt
+Example for 9x9 puzzle:
+- Create file: client/public/instances/general/9x9/50/inst9x9_50_0.txt
 - Add content from console output
 - Update index.json to include the new filename
 

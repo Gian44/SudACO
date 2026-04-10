@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import SudokuGrid from '../components/SudokuGrid';
 import NumberPad from '../components/NumberPad';
@@ -15,6 +15,7 @@ import { saveUserCreatedPuzzle } from '../utils/userCreatedPuzzles';
 import { parseInstanceFile, getInstanceFileFormatDescription } from '../utils/fileParser';
 import { generatePuzzle } from '../utils/puzzleGenerator';
 import { getDefaultParameters } from '../utils/wasmBridge';
+import { createSolverWorkerRunner } from '../utils/solverWorkerClient';
 
 function CreateUploadPage({ tab }) {
   const navigate = useNavigate();
@@ -28,8 +29,15 @@ function CreateUploadPage({ tab }) {
   const [selectedCell, setSelectedCell] = useState(null);
   const [notesMode, setNotesMode] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
   const [generatedPuzzle, setGeneratedPuzzle] = useState(null);
   const [createAlgorithm, setCreateAlgorithm] = useState(2);
+  const validationWorkerRef = useRef(null);
+
+  useEffect(() => () => {
+    validationWorkerRef.current?.dispose();
+    validationWorkerRef.current = null;
+  }, []);
 
   // Upload page state
   const [dragOver, setDragOver] = useState(false);
@@ -63,7 +71,18 @@ function CreateUploadPage({ tab }) {
     handleCellChange(row, col, '');
   }, [handleCellChange, selectedCell]);
 
-  const createPuzzleFromGrid = useCallback((nextGrid, size, sourceLabel = 'created') => {
+  const validateSolvableByDcmAco = useCallback(async (puzzleString, size) => {
+    if (!validationWorkerRef.current) {
+      validationWorkerRef.current = createSolverWorkerRunner();
+    }
+    const params = getDefaultParameters(size)[2];
+    const result = await validationWorkerRef.current.start(puzzleString, 2, params, { withProgress: false });
+    return Boolean(result?.success && result?.solution);
+  }, []);
+
+  const createPuzzleFromGrid = useCallback(async (nextGrid, size, sourceLabel = 'created') => {
+    if (isValidating) return;
+    setError('');
     const formatValidation = validateGrid(nextGrid, size);
     if (!formatValidation.isValid) {
       setError(formatValidation.errors[0] || 'Invalid puzzle format.');
@@ -81,6 +100,20 @@ function CreateUploadPage({ tab }) {
     }
 
     const puzzleString = gridToString(nextGrid, size);
+    setIsValidating(true);
+    try {
+      const isSolvable = await validateSolvableByDcmAco(puzzleString, size);
+      if (!isSolvable) {
+        setError('This puzzle is not solvable by DCM-ACO. Please create another puzzle.');
+        return;
+      }
+    } catch (err) {
+      setError(`Failed to validate puzzle solvability: ${err.message || 'Unknown error'}`);
+      return;
+    } finally {
+      setIsValidating(false);
+    }
+
     const difficulty = calculateDifficulty(puzzleString, size);
     const entry = saveUserCreatedPuzzle({ size, puzzleString, difficulty });
     navigate('/game', {
@@ -96,10 +129,10 @@ function CreateUploadPage({ tab }) {
         }
       }
     });
-  }, [navigate]);
+  }, [isValidating, navigate, validateSolvableByDcmAco]);
 
   const handleManualPlay = useCallback(() => {
-    createPuzzleFromGrid(grid, createSize, 'manual-create');
+    void createPuzzleFromGrid(grid, createSize, 'manual-create');
   }, [createPuzzleFromGrid, createSize, grid]);
 
   const handleGeneratePuzzle = useCallback(async () => {
@@ -107,6 +140,8 @@ function CreateUploadPage({ tab }) {
     setGeneratedPuzzle(null);
     setIsGenerating(true);
     try {
+      // Let React paint the "Generating..." button state before heavy solver work begins.
+      await new Promise((resolve) => setTimeout(resolve, 0));
       const randomFill = [35, 45, 55][Math.floor(Math.random() * 3)];
       const params = getDefaultParameters(createSize)[createAlgorithm];
       const result = await generatePuzzle(createSize, createAlgorithm, randomFill, params, null);
@@ -202,12 +237,12 @@ function CreateUploadPage({ tab }) {
             onNumberClick={handleNumberClick}
             onDelete={handleDelete}
             onAction={handleManualPlay}
-            actionLabel="Play Created Puzzle"
+            actionLabel={isValidating ? 'Validating...' : 'Play Created Puzzle'}
             actionClassName="btn btn-primary"
             notesMode={notesMode}
             onToggleNotes={() => setNotesMode((prev) => !prev)}
             grid={grid}
-            disabled={false}
+            disabled={isValidating}
           />
         </>
       ) : (
@@ -254,9 +289,10 @@ function CreateUploadPage({ tab }) {
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={() => createPuzzleFromGrid(generatedPuzzle, createSize, 'generated-create')}
+                onClick={() => { void createPuzzleFromGrid(generatedPuzzle, createSize, 'generated-create'); }}
+                disabled={isValidating}
               >
-                Play Generated Puzzle
+                {isValidating ? 'Validating...' : 'Play Generated Puzzle'}
               </button>
             </div>
           )}
@@ -322,6 +358,19 @@ function CreateUploadPage({ tab }) {
         )}
         {tab === 'create' ? createContent : uploadContent}
       </div>
+      {isValidating && (
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="validate-puzzle-title">
+          <div className="modal-content w-full max-w-md text-center" onClick={(e) => e.stopPropagation()}>
+            <h2 id="validate-puzzle-title" className="text-xl font-bold text-gradient mb-2">
+              Validating Puzzle
+            </h2>
+            <div className="mt-3 flex items-center justify-center gap-2 text-[var(--color-primary)] font-semibold">
+              <div className="spinner" />
+              <span>Please wait...</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 3001;
+const HOST = '0.0.0.0';
 
 // Middleware
 app.use(cors());
@@ -230,7 +231,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`Development API server running on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Development API server running on http://${HOST}:${PORT}`);
   console.log(`Instances directory: ${INSTANCES_DIR}`);
 });

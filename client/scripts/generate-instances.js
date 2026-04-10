@@ -2,7 +2,7 @@
 /**
  * Bulk Puzzle Instance Generator
  * 
- * Generates puzzle instances for 6x6 and 12x12 Sudoku grids with various fill percentages.
+ * Generates puzzle instances for 9x9, 16x16, and 25x25 Sudoku grids with various fill percentages.
  * Uses the Multi-Colony DCM-ACO algorithm (Algorithm 2) for puzzle generation.
  * 
  * Usage:
@@ -10,7 +10,7 @@
  *   npm run generate-instances [-- options]
  * 
  * Options:
- *   --sizes <sizes>              Comma-separated sizes (default: "6,12")
+ *   --sizes <sizes>              Comma-separated sizes (default: "9,16,25")
  *   --fill-percentages <percs>   Comma-separated percentages (default: "0,5,10,...,100")
  *   --count <num>                Instances per configuration (default: 100)
  *   --skip-existing              Skip if instances already exist
@@ -28,7 +28,7 @@ const __dirname = path.dirname(__filename);
 function parseArgs() {
   const args = process.argv.slice(2);
   const options = {
-    sizes: [6, 12],
+    sizes: [9, 16, 25],
     fillPercentages: Array.from({ length: 21 }, (_, i) => i * 5), // 0, 5, 10, ..., 100
     count: 100,
     skipExisting: false,
@@ -56,7 +56,7 @@ Usage:
   node scripts/generate-instances.js [options]
 
 Options:
-  --sizes <sizes>              Comma-separated sizes (default: "6,12")
+  --sizes <sizes>              Comma-separated sizes (default: "9,16,25")
   --fill-percentages <percs>   Comma-separated percentages (default: "0,5,10,...,100")
   --count <num>                Instances per configuration (default: 100)
   --skip-existing              Skip if instances already exist
@@ -176,9 +176,7 @@ function gridToInstanceFormat(puzzleString, size) {
   let content = '';
   
   // Line 1: Size or order
-  if (size === 6 || size === 12) {
-    content += `${size}\n`;
-  } else if (size === 9) {
+  if (size === 9) {
     content += '3\n';
   } else if (size === 16) {
     content += '4\n';

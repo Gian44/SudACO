@@ -1,4 +1,4 @@
-// Replace 6x6 and 12x12 daily puzzles with 9x9, 16x16, or 25x25 in date range.
+// Replace unsupported daily puzzle sizes with 9x9, 16x16, or 25x25 in date range.
 // Usage: node replace-daily-size.js [fromDate] [toDate]
 // Example: node replace-daily-size.js 2026-01-10 2026-02-19
 // Default: 2026-01-10 to 2026-02-19
@@ -11,7 +11,7 @@ const toDate = process.argv[3] || '2026-02-19';
 const url = new URL('https://sud-aco.vercel.app/api/puzzles/admin');
 const postData = JSON.stringify({ action: 'replace-size', fromDate, toDate });
 
-console.log(`Replacing 6x6 and 12x12 with 9x9/16x16/25x25 from ${fromDate} to ${toDate}...`);
+console.log(`Replacing unsupported sizes with 9x9/16x16/25x25 from ${fromDate} to ${toDate}...`);
 
 const options = {
   hostname: url.hostname,

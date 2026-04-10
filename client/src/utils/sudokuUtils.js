@@ -2,14 +2,12 @@
 
 /**
  * Get box dimensions for a given size
- * @param {number} size - Grid size (6, 9, 12, 16, or 25)
+ * @param {number} size - Grid size (9, 16, or 25)
  * @returns {Object} {boxRows, boxCols}
  */
 export function getBoxDimensions(size) {
   const dimensions = {
-    6: { boxRows: 2, boxCols: 3 },
     9: { boxRows: 3, boxCols: 3 },
-    12: { boxRows: 3, boxCols: 4 },
     16: { boxRows: 4, boxCols: 4 },
     25: { boxRows: 5, boxCols: 5 }
   };
@@ -24,7 +22,7 @@ export function getBoxDimensions(size) {
 /**
  * Convert 2D grid array to puzzle string format
  * @param {Array<Array<string>>} grid - 2D array representing the puzzle (display format)
- * @param {number} size - Grid size (6, 9, 12, 16, or 25)
+ * @param {number} size - Grid size (9, 16, or 25)
  * @returns {string} Puzzle string with dots for empty cells (backend format)
  */
 export function gridToString(grid, size) {
@@ -54,16 +52,8 @@ export function gridToString(grid, size) {
 function backendToDisplay(backendChar, size) {
   if (backendChar === '.' || backendChar === '') return '';
   
-  if (size === 6 || size === 9) {
+  if (size === 9) {
     return backendChar; // Already correct (1-9)
-  } else if (size === 12) {
-    // Backend: '0'-'9', 'a', 'b' -> Display: '1'-'12'
-    const charCode = backendChar.charCodeAt(0);
-    if (charCode >= 48 && charCode <= 57) { // '0'-'9'
-      return String(charCode - 48 + 1); // '0'->1, '1'->2, ..., '9'->10
-    } else if (backendChar >= 'a' && backendChar <= 'b') {
-      return String(11 + backendChar.charCodeAt(0) - 97); // 'a'->11, 'b'->12
-    }
   } else if (size === 16) {
     // Backend: '0'-'9', 'a'-'f' -> Display: '1'-'16'
     const charCode = backendChar.charCodeAt(0);
@@ -94,15 +84,8 @@ function displayToBackend(displayChar, size) {
     return '.'; // Invalid, treat as empty
   }
   
-  if (size === 6 || size === 9) {
+  if (size === 9) {
     return displayChar; // Already correct (1-9)
-  } else if (size === 12) {
-    // Display: '1'-'12' -> Backend: '0'-'9', 'a', 'b'
-    if (num <= 10) {
-      return String(num - 1); // 1->0, 2->1, ..., 10->9
-    } else {
-      return String.fromCharCode(97 + num - 11); // 11->a, 12->b
-    }
   } else if (size === 16) {
     // Display: '1'-'16' -> Backend: '0'-'9', 'a'-'f'
     if (num <= 10) {
@@ -121,7 +104,7 @@ function displayToBackend(displayChar, size) {
 /**
  * Convert puzzle string to 2D grid array
  * @param {string} puzzleString - Puzzle string with dots for empty cells (backend format)
- * @param {number} size - Grid size (6, 9, 12, 16, or 25)
+ * @param {number} size - Grid size (9, 16, or 25)
  * @returns {Array<Array<string>>} 2D array representing the puzzle (display format)
  */
 export function stringToGrid(puzzleString, size) {
@@ -141,7 +124,7 @@ export function stringToGrid(puzzleString, size) {
 
 /**
  * Create empty grid for given size
- * @param {number} size - Grid size (6, 9, 12, 16, or 25)
+ * @param {number} size - Grid size (9, 16, or 25)
  * @returns {Array<Array<string>>} Empty 2D array
  */
 export function createEmptyGrid(size) {
@@ -160,7 +143,7 @@ export function createEmptyGrid(size) {
 /**
  * Validate grid for basic format issues
  * @param {Array<Array<string>>} grid - 2D array representing the puzzle
- * @param {number} size - Grid size (6, 9, 12, 16, or 25)
+ * @param {number} size - Grid size (9, 16, or 25)
  * @returns {Object} Validation result with isValid and errors
  */
 export function validateGrid(grid, size) {
@@ -218,9 +201,7 @@ export function getValidCharacters(size) {
 export function getPuzzleSizeFromString(puzzleString) {
   const length = puzzleString.length;
   
-  if (length === 36) return 6;   // 6x6
   if (length === 81) return 9;   // 9x9
-  if (length === 144) return 12; // 12x12
   if (length === 256) return 16; // 16x16
   if (length === 625) return 25; // 25x25
   
@@ -230,7 +211,7 @@ export function getPuzzleSizeFromString(puzzleString) {
 /**
  * Convert instance format values to puzzle string characters
  * @param {Array<Array<number>>} values - 2D array with -1 for empty, 1-based values for filled
- * @param {number} size - Grid size (6, 9, 12, 16, or 25)
+ * @param {number} size - Grid size (9, 16, or 25)
  * @returns {string} Puzzle string
  */
 export function instanceFormatToString(values, size) {
@@ -256,20 +237,12 @@ export function instanceFormatToString(values, size) {
 /**
  * Convert instance value to character (helper function)
  * @param {number} value - 1-based value
- * @param {number} size - Grid size (6, 9, 12, 16, or 25)
+ * @param {number} size - Grid size (9, 16, or 25)
  * @returns {string} Character
  */
 function instanceValueToChar(value, size) {
-  if (size === 6) {
-    return String(value);  // 1-6 -> '1'-'6'
-  } else if (size === 9) {
+  if (size === 9) {
     return String(value);  // 1-9 -> '1'-'9'
-  } else if (size === 12) {
-    if (value <= 9) {
-      return String(value);  // 1-9 -> '1'-'9'
-    } else {
-      return String.fromCharCode(65 + value - 10);  // 10-12 -> 'A'-'C'
-    }
   } else if (size === 16) {
     if (value <= 9) {
       return String(value);  // 1-9 -> '1'-'9'
@@ -289,7 +262,7 @@ function instanceValueToChar(value, size) {
 
 /**
  * Get puzzle size display name
- * @param {number} size - Grid size (6, 9, 12, 16, or 25)
+ * @param {number} size - Grid size (9, 16, or 25)
  * @returns {string} Display name
  */
 export function getPuzzleSizeName(size) {

@@ -1,7 +1,7 @@
 // File parser for instance .txt format
 // Supports two formats:
 // - Old format: Line 1=order (3,4,5), has order^4 values
-// - New format: Line 1=size (6,12), has size^2 values
+// - New format: Line 1=size, has size^2 values
 
 /**
  * Parse instance file content
@@ -41,7 +41,7 @@ export function parseInstanceFile(fileContent) {
     isOldFormat = true;
     size = firstNumber * firstNumber;
   } else if (puzzleLines.length === firstNumber) {
-    // New format (6x6, 12x12): firstNumber is size
+    // New format: firstNumber is size
     isOldFormat = false;
     size = firstNumber;
   } else {
@@ -49,8 +49,8 @@ export function parseInstanceFile(fileContent) {
   }
   
   // Validate size
-  if (![6, 9, 12, 16, 25].includes(size)) {
-    throw new Error(`Invalid puzzle size: ${size}. Must be 6, 9, 12, 16, or 25`);
+  if (![9, 16, 25].includes(size)) {
+    throw new Error(`Invalid puzzle size: ${size}. Must be 9, 16, or 25`);
   }
   
   // Parse each line and convert to puzzle string
@@ -91,23 +91,13 @@ export function parseInstanceFile(fileContent) {
 /**
  * Convert instance file value to puzzle string character
  * @param {number} value - Value from instance file (1-based)
- * @param {number} size - Grid size (6, 9, 12, 16, or 25)
+ * @param {number} size - Grid size (9, 16, or 25)
  * @returns {string} Character for puzzle string
  */
 function instanceValueToChar(value, size) {
-  if (size === 6) {
-    // 6x6: values 1-6 -> characters '1'-'6'
-    return String(value);
-  } else if (size === 9) {
+  if (size === 9) {
     // 9x9: values 1-9 -> characters '1'-'9'
     return String(value);
-  } else if (size === 12) {
-    // 12x12: values 1-12 -> characters '0'-'9' then 'a'-'b'
-    if (value <= 10) {
-      return String(value - 1); // 1-10 -> 0-9
-    } else {
-      return String.fromCharCode(97 + value - 11); // 11-12 -> a-b
-    }
   } else if (size === 16) {
     // 16x16: values 1-16 -> characters '0'-'9' then 'a'-'f'
     if (value <= 10) {
