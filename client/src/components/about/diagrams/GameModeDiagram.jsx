@@ -6,7 +6,7 @@ const CALLOUTS = [
   {
     id: 1,
     label: 'Header and branding',
-    description: 'SudACO identity plus puzzle size and difficulty indicators.',
+    description: 'SudACO identity plus puzzle size indicator.',
     position: { top: '10%', left: '18%' }
   },
   {
@@ -36,7 +36,7 @@ const CALLOUTS = [
   {
     id: 6,
     label: 'Download puzzle',
-    description: 'Export the current puzzle to a .txt file.',
+    description: 'Open download options for initial or solved/current puzzle exports.',
     position: { top: '20%', left: '40%' }
   }
 ];
@@ -89,7 +89,6 @@ function GameModeDiagram() {
               <em>Sudoku Game</em>
             </span>
             <span className="size-label">9x9</span>
-            <span className="difficulty-pill">HARD ★★★★</span>
           </div>
           <div className="about-game-meta region-2">
             <span className="meta-timer">00:01</span>
@@ -97,7 +96,7 @@ function GameModeDiagram() {
           </div>
         </div>
         <div className="about-game-download region-6">
-          <span className="download-btn">Download Puzzle (.txt)</span>
+          <span className="download-btn">Download</span>
         </div>
         <div className="about-game-board-wrap region-3">
           <div className={`about-mock-grid ${notesOn ? 'notes-on' : ''}`}>

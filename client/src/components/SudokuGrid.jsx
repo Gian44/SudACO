@@ -13,7 +13,8 @@ const SudokuGrid = ({
   selectedCell = null,
   onCellSelect = null,
   animatingCells = new Set(),
-  isPaused = false
+  isPaused = false,
+  onResume = null
 }) => {
   const validChars = getValidCharacters(size);
   const { boxRows, boxCols } = getBoxDimensions(size);
@@ -331,29 +332,45 @@ const SudokuGrid = ({
   // Blur overlay when paused
   if (isPaused) {
     return (
-      <div className="relative w-full max-w-full">
-        <div className="sudoku-grid blur-md opacity-50" style={{
-          gridTemplateColumns: `repeat(${size}, ${cellSize.width})`,
-          maxWidth: '100%',
-          margin: '0 auto',
-        }}>
-          {grid.map((row, rowIndex) =>
-            row.map((cell, colIndex) => (
-              <div
-                key={`${rowIndex}-${colIndex}`}
-                className="sudoku-cell"
-                style={{ width: cellSize.width, height: cellSize.height }}
-              />
-            ))
-          )}
-        </div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="card text-center">
-            <svg className="w-12 h-12 mx-auto mb-3 text-[var(--color-primary)]" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
-            <p className="text-lg font-semibold">Game Paused</p>
-            <p className="text-sm text-[var(--color-text-muted)]">Click resume to continue</p>
+      <div className="flex justify-center w-full max-w-full">
+        <div className="relative inline-block">
+          <div className="sudoku-grid blur-md opacity-50" style={{
+            gridTemplateColumns: `repeat(${size}, ${cellSize.width})`,
+            maxWidth: '100%',
+            margin: '0 auto',
+          }}>
+            {grid.map((row, rowIndex) =>
+              row.map((cell, colIndex) => (
+                <div
+                  key={`${rowIndex}-${colIndex}`}
+                  className="sudoku-cell"
+                  style={{ width: cellSize.width, height: cellSize.height }}
+                />
+              ))
+            )}
+          </div>
+          <div
+            className="absolute inset-0 flex items-center justify-center cursor-pointer"
+            onClick={() => {
+              if (typeof onResume === 'function') onResume();
+            }}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if ((e.key === 'Enter' || e.key === ' ') && typeof onResume === 'function') {
+                e.preventDefault();
+                onResume();
+              }
+            }}
+            aria-label="Resume game"
+          >
+            <div className="card text-center">
+              <svg className="w-12 h-12 mx-auto mb-3 text-[var(--color-primary)]" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <p className="text-lg font-semibold">Game Paused</p>
+              <p className="text-sm text-[var(--color-text-muted)]">Click anywhere to resume</p>
+            </div>
           </div>
         </div>
       </div>

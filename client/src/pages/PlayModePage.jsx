@@ -22,14 +22,15 @@ import {
   getDefaultParameters
 } from '../utils/wasmBridge';
 import { createSolverWorkerRunner } from '../utils/solverWorkerClient';
-import { downloadSolvedPuzzlePdf } from '../utils/gamePdfExport';
-import { savePuzzleFile } from '../utils/fileSystemManager';
+import { downloadInitialGridPdf, downloadPuzzleReportPdf } from '../utils/gamePdfExport';
+import { downloadPuzzleReportTxt, downloadPuzzleTxt } from '../utils/puzzleExport';
 import LoadingScreen from '../components/LoadingScreen';
 import GameHeader from '../components/GameHeader';
 import SudokuGrid from '../components/SudokuGrid';
 import NumberPad from '../components/NumberPad';
 import PuzzleSelectionModal from '../components/PuzzleSelectionModal';
 import CompletionModal from '../components/CompletionModal';
+import DownloadModal from '../components/DownloadModal';
 
 function computeEntropyThreshold(nAnts, entropyPct) {
   return Math.log2(nAnts) * (entropyPct / 100);
@@ -47,17 +48,8 @@ function computeChangedCells(previousGrid, nextGrid) {
   return changed;
 }
 
-function buildPuzzleInstanceFileContent(gridData, size) {
-  const firstLine = [9, 16, 25].includes(size) ? Math.sqrt(size) : size;
-  const header = `${firstLine}\n1\n`;
-  const body = gridData
-    .map((row) => row.map((cell) => {
-      if (cell === '' || cell == null) return -1;
-      const num = Number(cell);
-      return Number.isFinite(num) ? num : -1;
-    }).join(' '))
-    .join('\n');
-  return `${header}${body}\n`;
+function cloneNotesGrid(notesGrid) {
+  return notesGrid.map((row) => row.map((cell) => new Set(cell)));
 }
 
 function PlayModePage({ mode }) {
@@ -76,7 +68,6 @@ function PlayModePage({ mode }) {
   const [notes, setNotes] = useState(() => createEmptyNotesGrid(9));
   const [notesMode, setNotesMode] = useState(false);
   const [selectedCell, setSelectedCell] = useState(null);
-  const [difficulty, setDifficulty] = useState('medium');
   const [isDaily, setIsDaily] = useState(false);
   const [puzzleKey, setPuzzleKey] = useState(null);
   const [initialTimerSeconds, setInitialTimerSeconds] = useState(0);
@@ -85,6 +76,7 @@ function PlayModePage({ mode }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [showPuzzleModal, setShowPuzzleModal] = useState(false);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [wasAlgorithmSolved, setWasAlgorithmSolved] = useState(false);
   const [error, setError] = useState('');
@@ -93,6 +85,7 @@ function PlayModePage({ mode }) {
   const [animatingCells, setAnimatingCells] = useState(() => new Set());
   const [lastSolveMeta, setLastSolveMeta] = useState(null);
   const [solverParams, setSolverParams] = useState(() => ({ ...getDefaultParameters(9)[2], entropyPct: 92.5 }));
+  const [historyStack, setHistoryStack] = useState([]);
 
   useEffect(() => {
     setSolverParams({ ...getDefaultParameters(size)[2], entropyPct: 92.5 });
@@ -113,18 +106,29 @@ function PlayModePage({ mode }) {
     setAnimatingCells(new Set());
   }, []);
 
+  const pushHistorySnapshot = useCallback(() => {
+    setHistoryStack((prev) => {
+      const snapshot = {
+        grid: grid.map((row) => [...row]),
+        notes: cloneNotesGrid(notes)
+      };
+      const next = [...prev, snapshot];
+      return next.length > 150 ? next.slice(next.length - 150) : next;
+    });
+  }, [grid, notes]);
+
   const handlePuzzleSelect = useCallback((puzzleData) => {
-    const { grid: newGrid, size: newSize, difficulty: newDifficulty, isDaily: newIsDaily, puzzleKey: newPuzzleKey } = puzzleData;
+    const { grid: newGrid, size: newSize, isDaily: newIsDaily, puzzleKey: newPuzzleKey } = puzzleData;
     setGrid(newGrid);
     setSize(newSize);
     setOriginalGrid(newGrid.map((row) => [...row]));
     setNotes(createEmptyNotesGrid(newSize));
-    setDifficulty(newDifficulty);
     setIsDaily(newIsDaily);
     setPuzzleKey(newPuzzleKey || `puzzle-${Date.now()}`);
     setInitialTimerSeconds(0);
     setIsPlaying(true);
     setIsPaused(false);
+    setHistoryStack([]);
     resetTransientState();
   }, [resetTransientState]);
 
@@ -147,11 +151,11 @@ function PlayModePage({ mode }) {
             setSize(restored.size);
             setOriginalGrid(restored.originalGrid);
             setNotes(restored.notes);
-            setDifficulty(restored.difficulty);
             setIsDaily(restored.isDaily);
             setPuzzleKey(restored.puzzleKey);
             setInitialTimerSeconds(restored.timerSeconds);
             setIsPlaying(true);
+            setHistoryStack([]);
             setIsLoading(false);
             return;
           }
@@ -196,11 +200,22 @@ function PlayModePage({ mode }) {
     }
   }, [size]);
 
+  const applyUserCellChange = useCallback((row, col, value) => {
+    pushHistorySnapshot();
+    handleCellChange(row, col, value);
+  }, [handleCellChange, pushHistorySnapshot]);
+
+  const handleNotesChange = useCallback((nextNotes) => {
+    pushHistorySnapshot();
+    setNotes(nextNotes);
+  }, [pushHistorySnapshot]);
+
   const handleNumberClick = useCallback((num) => {
     if (!selectedCell) return;
     const [row, col] = selectedCell;
     if (originalGrid && originalGrid[row][col] !== '') return;
     if (notesMode) {
+      pushHistorySnapshot();
       setNotes((prevNotes) => {
         const newNotes = prevNotes.map((r) => r.map((c) => new Set(c)));
         if (newNotes[row][col].has(num)) newNotes[row][col].delete(num);
@@ -208,30 +223,49 @@ function PlayModePage({ mode }) {
         return newNotes;
       });
     } else {
-      handleCellChange(row, col, String(num));
+      applyUserCellChange(row, col, String(num));
     }
-  }, [selectedCell, originalGrid, notesMode, handleCellChange]);
+  }, [selectedCell, originalGrid, notesMode, applyUserCellChange, pushHistorySnapshot]);
 
   const handleDelete = useCallback(() => {
     if (!selectedCell) return;
     const [row, col] = selectedCell;
     if (originalGrid && originalGrid[row][col] !== '') return;
     if (notesMode) {
+      pushHistorySnapshot();
       setNotes((prevNotes) => clearCellNotes(prevNotes, row, col));
     } else {
-      handleCellChange(row, col, '');
+      applyUserCellChange(row, col, '');
     }
-  }, [selectedCell, originalGrid, notesMode, handleCellChange]);
+  }, [selectedCell, originalGrid, notesMode, applyUserCellChange, pushHistorySnapshot]);
+
+  const handleUndo = useCallback(() => {
+    setHistoryStack((prev) => {
+      if (prev.length === 0) return prev;
+      const previousState = prev[prev.length - 1];
+      setGrid(previousState.grid);
+      setNotes(cloneNotesGrid(previousState.notes));
+      return prev.slice(0, -1);
+    });
+  }, []);
 
   const finalizeSolveResult = useCallback(async (result, params, puzzleString) => {
     if (result?.success && result.solution) {
       const solvedGrid = stringToGrid(result.solution, size);
+      const previousGrid = latestGridRef.current ?? grid;
+      const changed = computeChangedCells(previousGrid, solvedGrid);
       setWasAlgorithmSolved(true);
       const ms = result.time != null ? result.time * 1000 : null;
       if (ms != null) setAlgorithmSolveTime(ms);
       setGrid(solvedGrid);
       latestGridRef.current = solvedGrid;
-      setAnimatingCells(new Set());
+      setAnimatingCells(changed);
+      if (animationClearTimeoutRef.current) {
+        clearTimeout(animationClearTimeoutRef.current);
+      }
+      animationClearTimeoutRef.current = setTimeout(() => {
+        setAnimatingCells(new Set());
+      }, 550);
       setLastSolveMeta({
         algorithm: 2,
         algorithmName: 'Multi-Colony DCM-ACO',
@@ -424,11 +458,10 @@ function PlayModePage({ mode }) {
       originalGrid,
       notes,
       size,
-      difficulty,
       isDaily,
       timerSeconds: timerRef.current ?? 0
     });
-  }, [difficulty, grid, isDaily, isPlaying, notes, originalGrid, puzzleKey, showCompletionModal, size]);
+  }, [grid, isDaily, isPlaying, notes, originalGrid, puzzleKey, showCompletionModal, size]);
 
   useEffect(() => {
     if (!puzzleKey || !isPlaying || showCompletionModal) return;
@@ -445,18 +478,53 @@ function PlayModePage({ mode }) {
   }, [isPlaying, persistState, puzzleKey]);
 
   const startSolve = isGameMode ? runGameSolve : runExperimentSolve;
-  const effectivePaused = !isGameMode && isPaused;
+  const effectivePaused = isPaused;
 
-  const handleDownloadPuzzleTxt = useCallback(() => {
-    const sourceGrid = (originalGrid && originalGrid.length > 0) ? originalGrid : grid;
-    if (!sourceGrid || sourceGrid.length === 0) {
-      setError('No puzzle available to download.');
+  const handleDownloadConfirm = useCallback(({ target, format }) => {
+    const initial = (originalGrid && originalGrid.length > 0) ? originalGrid : null;
+    const currentOrSolved = (lastSolveMeta?.solvedGrid && lastSolveMeta.solvedGrid.length > 0)
+      ? lastSolveMeta.solvedGrid
+      : (grid && grid.length > 0 ? grid : null);
+    const selectedGrid = target === 'initial' ? initial : currentOrSolved;
+    if (!selectedGrid) {
+      setError('Selected puzzle data is not available for download.');
       return;
     }
-    const content = buildPuzzleInstanceFileContent(sourceGrid, size);
-    const filename = `sudaco_puzzle_${size}x${size}_${Date.now()}.txt`;
-    savePuzzleFile(filename, content, 'exports');
-  }, [grid, originalGrid, size]);
+    if (format === 'txt') {
+      if (target === 'initial') {
+        downloadPuzzleTxt({
+          grid: selectedGrid,
+          size,
+          typeLabel: 'initial_grid'
+        });
+      } else {
+        downloadPuzzleReportTxt({
+          initialGrid: initial || selectedGrid,
+          targetGrid: selectedGrid,
+          size,
+          targetLabel: 'Solved Sudoku Puzzle/Current Progress',
+          algorithmName: lastSolveMeta?.algorithmName || 'Multi-Colony DCM-ACO'
+        });
+      }
+    } else {
+      if (target === 'initial') {
+        downloadInitialGridPdf({
+          initialGrid: initial || selectedGrid,
+          size
+        });
+      } else {
+        downloadPuzzleReportPdf({
+          initialGrid: initial || selectedGrid,
+          targetGrid: selectedGrid,
+          targetLabel: 'Solved Sudoku Puzzle/Current Progress',
+          size,
+          algorithmName: lastSolveMeta?.algorithmName || 'Multi-Colony DCM-ACO',
+          params: lastSolveMeta?.params || {}
+        });
+      }
+    }
+    setShowDownloadModal(false);
+  }, [grid, lastSolveMeta, originalGrid, size]);
 
   const experimentPanel = (
     <aside className="card w-full lg:w-[560px] self-start">
@@ -580,50 +648,31 @@ function PlayModePage({ mode }) {
         key={puzzleKey || 'no-puzzle'}
         isPlaying={isPlaying}
         isPaused={effectivePaused}
-        difficulty={difficulty}
         puzzleSize={size}
         onNewPuzzle={() => {
           setShowPuzzleModal(true);
-          if (!isGameMode && isPlaying) setIsPaused(true);
+          if (isPlaying) setIsPaused(true);
         }}
         onPause={() => setIsPaused(true)}
         onResume={() => setIsPaused(false)}
-        showPauseControl={!isGameMode}
+        showPauseControl
         timerRef={timerRef}
         isDaily={isDaily}
         algorithmSolveTime={algorithmSolveTime}
         initialSeconds={initialTimerSeconds}
       />
-      {isGameMode && (
+      {originalGrid && isGameMode && (
         <div className="flex items-center gap-2 flex-wrap justify-center mt-3">
-          {originalGrid && (
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={handleDownloadPuzzleTxt}
-            >
-              Download Puzzle (.txt)
-            </button>
-          )}
-          {isSolving && (
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => setShowDownloadModal(true)}
+          >
+            Download
+          </button>
+          {isGameMode && isSolving && (
             <button type="button" className="btn btn-danger" onClick={stopGameSolve}>
               Stop
-            </button>
-          )}
-          {lastSolveMeta?.solvedGrid && (
-            <button
-              type="button"
-              className="btn btn-success"
-              onClick={() => downloadSolvedPuzzlePdf({
-                originalGrid: lastSolveMeta.originalGrid,
-                solvedGrid: lastSolveMeta.solvedGrid,
-                size,
-                difficulty,
-                algorithmName: lastSolveMeta.algorithmName,
-                params: lastSolveMeta.params
-              })}
-            >
-              Download PDF
             </button>
           )}
         </div>
@@ -633,19 +682,31 @@ function PlayModePage({ mode }) {
         <div className="flex-1 w-full flex flex-col items-center">
           <div className="relative w-full flex justify-center px-2 sm:px-4">
             <div className="w-full max-w-full overflow-x-auto">
+              {originalGrid && !isGameMode && (
+                <div className="flex justify-center mb-2">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setShowDownloadModal(true)}
+                  >
+                    Download
+                  </button>
+                </div>
+              )}
               <SudokuGrid
                 grid={grid}
-                onChange={handleCellChange}
+                onChange={applyUserCellChange}
                 size={size}
                 readOnly={!isPlaying || showCompletionModal}
                 originalGrid={originalGrid}
                 notes={notes}
-                onNotesChange={setNotes}
+                onNotesChange={handleNotesChange}
                 notesMode={notesMode}
                 selectedCell={selectedCell}
                 onCellSelect={setSelectedCell}
                 animatingCells={animatingCells}
                 isPaused={effectivePaused}
+                onResume={() => setIsPaused(false)}
               />
             </div>
           </div>
@@ -662,6 +723,8 @@ function PlayModePage({ mode }) {
               onToggleNotes={() => setNotesMode(!notesMode)}
               grid={grid}
               disabled={!isPlaying || showCompletionModal || isSolving}
+              onUndo={handleUndo}
+              canUndo={historyStack.length > 0}
             />
           )}
         </div>
@@ -679,7 +742,7 @@ function PlayModePage({ mode }) {
         isOpen={showPuzzleModal}
         onClose={() => {
           setShowPuzzleModal(false);
-          if (originalGrid && !isGameMode) setIsPaused(false);
+          if (originalGrid) setIsPaused(false);
         }}
         onPuzzleSelect={handlePuzzleSelect}
         allowedTabs={['library', 'daily', 'upload', 'mypuzzles']}
@@ -693,9 +756,18 @@ function PlayModePage({ mode }) {
         timeSeconds={timerRef.current}
         algorithmSolveTimeMs={algorithmSolveTime}
         puzzleSize={size}
-        difficulty={difficulty}
         isDaily={isDaily}
         wasAlgorithmSolved={wasAlgorithmSolved}
+      />
+
+      <DownloadModal
+        isOpen={showDownloadModal}
+        onClose={() => setShowDownloadModal(false)}
+        onConfirm={handleDownloadConfirm}
+        disabledTargets={new Set([
+          ...(originalGrid ? [] : ['initial']),
+          ...(grid ? [] : ['solved'])
+        ])}
       />
 
       <footer className="mt-6 text-center text-xs sm:text-sm text-[var(--color-text-muted)] px-2">

@@ -28,11 +28,17 @@ export function createSolverWorkerRunner() {
         }
       };
       worker.onerror = (event) => {
+        const details = [
+          event?.message,
+          event?.filename ? `file: ${event.filename}` : '',
+          Number.isFinite(event?.lineno) ? `line: ${event.lineno}` : '',
+          Number.isFinite(event?.colno) ? `col: ${event.colno}` : ''
+        ].filter(Boolean).join(' | ');
         if (worker) {
           worker.terminate();
           worker = null;
         }
-        resolve({ success: false, error: event.message || 'Solver worker crashed' });
+        resolve({ success: false, error: details || 'Solver worker crashed' });
       };
       worker.postMessage({
         type: 'solve',

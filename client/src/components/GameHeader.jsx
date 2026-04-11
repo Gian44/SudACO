@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import DifficultyBadge from './DifficultyBadge';
 import sudacoLogo from '../assets/sudaco-logo.svg';
 
 const GameHeader = ({ 
   isPlaying, 
   isPaused,
-  difficulty,
   puzzleSize,
   onNewPuzzle,
   onPause,
@@ -160,8 +158,6 @@ const GameHeader = ({
         <div className="text-xs sm:text-sm text-[var(--color-text-secondary)]">
           {puzzleSize}×{puzzleSize}
         </div>
-        
-        {difficulty && <DifficultyBadge difficulty={difficulty} />}
       </div>
     </header>
   );

@@ -185,6 +185,12 @@ function CreateUploadPage({ tab }) {
     }
   }, [navigate]);
 
+  const createConflicts = findConflicts(grid, createSize);
+  const hasCreateConflicts = createConflicts.size > 0;
+  const generatedHasConflicts = generatedPuzzle
+    ? findConflicts(generatedPuzzle, createSize).size > 0
+    : false;
+
   const createContent = (
     <div className="card">
       <div className="flex items-center gap-2 mb-4">
@@ -243,7 +249,13 @@ function CreateUploadPage({ tab }) {
             onToggleNotes={() => setNotesMode((prev) => !prev)}
             grid={grid}
             disabled={isValidating}
+            actionDisabled={isValidating || hasCreateConflicts}
           />
+          {hasCreateConflicts && (
+            <p className="text-sm text-[var(--color-warning)] mt-2 text-center">
+              Resolve row, column, or box conflicts before playing this puzzle.
+            </p>
+          )}
         </>
       ) : (
         <div className="space-y-3">
@@ -290,10 +302,15 @@ function CreateUploadPage({ tab }) {
                 type="button"
                 className="btn btn-primary"
                 onClick={() => { void createPuzzleFromGrid(generatedPuzzle, createSize, 'generated-create'); }}
-                disabled={isValidating}
+                disabled={isValidating || generatedHasConflicts}
               >
                 {isValidating ? 'Validating...' : 'Play Generated Puzzle'}
               </button>
+              {generatedHasConflicts && (
+                <p className="text-sm text-[var(--color-warning)]">
+                  Generated puzzle has conflicts and cannot be played.
+                </p>
+              )}
             </div>
           )}
         </div>

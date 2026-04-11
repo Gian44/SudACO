@@ -3,7 +3,8 @@ import React from 'react';
 function AboutTabs({ activeTab, onChange }) {
   const tabs = [
     { id: 'howToPlay', label: 'How to Play' },
-    { id: 'userManual', label: 'User Manual' }
+    { id: 'userManual', label: 'User Manual' },
+    { id: 'about', label: 'About' }
   ];
 
   return (

@@ -4,14 +4,14 @@ import AboutDiagram from '../AboutDiagram';
 const CALLOUTS = [
   {
     id: 1,
-    label: 'Export actions',
-    description: 'Download Puzzle (.txt) is always available; PDF appears after solve.',
+    label: 'Single download action',
+    description: 'One Download button opens options for target (initial/solved) and format (.txt/.pdf).',
     position: { top: '14%', left: '36%' }
   },
   {
     id: 2,
-    label: 'Solved grid + report data',
-    description: 'Solved board is used to build the final PDF report.',
+    label: 'Target preview',
+    description: 'Initial and current/solved puzzle states are available for export selection.',
     position: { top: '38%', left: '34%' }
   },
   {
@@ -23,20 +23,19 @@ const CALLOUTS = [
   {
     id: 4,
     label: 'PDF report format',
-    description: 'Shows title, metadata, original/solved boards, and parameter values.',
+    description: 'Shows initial and selected puzzle grids; fixed clues are bold in the second grid.',
     position: { top: '73%', left: '50%' }
   }
 ];
 
 function ExportDiagram() {
   const [activeId, setActiveId] = useState(CALLOUTS[0].id);
-  const [solverFinished, setSolverFinished] = useState(false);
   const activeClass = useMemo(() => `active-${activeId}`, [activeId]);
 
   return (
     <AboutDiagram
       title="Export and Output Guide"
-      description="Both exports are available from Game Mode; PDF appears after a solved run."
+      description="Download options are available in Game and Experiment modes at any time."
       callouts={CALLOUTS}
       activeId={activeId}
       onActivate={setActiveId}
@@ -44,8 +43,8 @@ function ExportDiagram() {
     >
       <div className={`about-mock about-mock-export ${activeClass}`}>
         <div className="export-actions region-1">
-          <span className="exp-btn">Download Puzzle (.txt)</span>
-          <span className={`exp-btn primary ${solverFinished ? '' : 'is-disabled'}`}>Download PDF</span>
+          <span className="exp-btn primary">Download</span>
+          <span className="exp-btn">Target + Format Modal</span>
         </div>
 
         <div className="export-preview region-2">
@@ -65,17 +64,17 @@ function ExportDiagram() {
 
         <div className="export-pdf region-4">
           <div className="pdf-header">
-            <strong>SudACO - Solved Puzzle Report</strong>
+            <strong>SudACO - Puzzle Report</strong>
             <span>Generated: 4/9/2026, 5:40:06 PM</span>
-            <span>Size: 9x9 | Difficulty: hard | Algorithm: Multi-Colony DCM-ACO</span>
+            <span>Size: 9x9 | Algorithm: Multi-Colony DCM-ACO</span>
           </div>
           <div className="pdf-grids">
             <div className="pdf-grid">
-              <em>Original Puzzle</em>
+              <em>Initial Puzzle</em>
               <div className="mini-grid white" />
             </div>
             <div className="pdf-grid">
-              <em>Solved Puzzle</em>
+              <em>Solved Puzzle (fixed clues in bold)</em>
               <div className="mini-grid white" />
             </div>
           </div>
@@ -85,11 +84,6 @@ function ExportDiagram() {
           </div>
         </div>
 
-        <div className="about-mock-toggles">
-          <button type="button" onClick={() => setSolverFinished((v) => !v)}>
-            {solverFinished ? 'Solver: Finished' : 'Solver: Not Finished'}
-          </button>
-        </div>
       </div>
     </AboutDiagram>
   );

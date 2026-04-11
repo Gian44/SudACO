@@ -11,8 +11,11 @@ const NumberPad = ({
   onToggleNotes,
   grid,
   disabled = false,
+  actionDisabled = false,
   actionLabel = 'Give Up',
-  actionClassName = 'btn btn-danger'
+  actionClassName = 'btn btn-danger',
+  onUndo = null,
+  canUndo = false
 }) => {
   // Get completed numbers (all 9 instances placed)
   const completedNumbers = grid ? getCompletedNumbers(grid, size) : [];
@@ -88,7 +91,7 @@ const NumberPad = ({
         {showAction && (
           <button
             onClick={onAction}
-            disabled={disabled}
+            disabled={disabled || actionDisabled}
             className={`${actionClassName} text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2`}
           >
             <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,6 +99,15 @@ const NumberPad = ({
             </svg>
             <span className="hidden sm:inline">{actionLabel}</span>
             <span className="sm:hidden">{actionLabel}</span>
+          </button>
+        )}
+        {onUndo && (
+          <button
+            onClick={onUndo}
+            disabled={disabled || !canUndo}
+            className="btn btn-secondary text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2"
+          >
+            Undo
           </button>
         )}
       </div>

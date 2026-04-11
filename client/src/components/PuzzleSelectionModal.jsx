@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { getDailyPuzzle, getDailyPuzzleForDate, isDailyCompleted, getDifficultyInfo, calculateDifficulty, getDailyPuzzleInfo, getTodayISOString } from '../utils/dailyPuzzleService';
+import { getDailyPuzzle, getDailyPuzzleForDate, isDailyCompleted, calculateDifficulty, getDailyPuzzleInfo, getTodayISOString } from '../utils/dailyPuzzleService';
 import { parseInstanceFile, getInstanceFileFormatDescription } from '../utils/fileParser';
 import { stringToGrid, getBoxDimensions } from '../utils/sudokuUtils';
 import { loadPuzzlesFromServer, checkServerHealth } from '../utils/apiClient';
@@ -7,7 +7,6 @@ import { generatePuzzle } from '../utils/puzzleGenerator';
 import { getDefaultParameters } from '../utils/wasmBridge';
 import { getGenerationAlgorithmOptions } from '../utils/fileSystemManager';
 import { getUserCreatedPuzzles, saveUserCreatedPuzzle, deleteUserCreatedPuzzle } from '../utils/userCreatedPuzzles';
-import DifficultyBadge from './DifficultyBadge';
 import DailyCalendar from './DailyCalendar';
 
 const ALL_TABS = ['daily', 'library', 'upload', 'create', 'mypuzzles'];
@@ -335,13 +334,26 @@ const PuzzleSelectionModal = ({
         if (response.ok) {
           fileContent = await response.text();
         } else if (response.status === 404) {
-          // Puzzle not available in production
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Puzzle file not available in production. Please use Daily puzzles or upload your own.');
+          // Puzzle not available in production. Some deployments return HTML for errors,
+          // so only parse JSON when content-type is actually JSON.
+          const contentType = response.headers.get('content-type') || '';
+          if (contentType.includes('application/json')) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Puzzle file not available in production. Please use Daily puzzles or upload your own.');
+          }
+          throw new Error('Puzzle file not available in production. Please use Daily puzzles or upload your own.');
+        } else {
+          throw new Error(`API returned ${response.status}`);
         }
       } catch (apiErr) {
         // Fallback to direct file fetch (for development)
-        console.warn('API failed, trying direct file fetch:', apiErr);
+        const apiMessage = apiErr?.message || '';
+        const expectedProductionFallback = apiMessage.includes('Puzzle file not available in production');
+        if (!expectedProductionFallback) {
+          console.warn('API failed, trying direct file fetch:', apiMessage || apiErr);
+        } else {
+          console.info('Using direct instance fetch fallback for this puzzle.');
+        }
         const puzzlePath = `/instances/${selectedCategory}/${puzzleFile}`;
         response = await fetch(puzzlePath);
         
@@ -512,8 +524,6 @@ const PuzzleSelectionModal = ({
 
   if (!isOpen) return null;
 
-  const difficultyInfo = dailyInfo ? getDifficultyInfo(dailyInfo.difficulty) : null;
-
   const modalBody = (
     <div className="modal-content w-full max-w-2xl" onClick={e => e.stopPropagation()}>
         {/* Header */}
@@ -645,9 +655,6 @@ const PuzzleSelectionModal = ({
                   <div className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-[var(--color-bg-elevated)]">
                     <span className="text-xl sm:text-2xl font-bold">{dailyInfo.size}×{dailyInfo.size}</span>
                   </div>
-                  {difficultyInfo && (
-                    <DifficultyBadge difficulty={dailyInfo.difficulty} />
-                  )}
                 </div>
               )}
             </div>
@@ -814,7 +821,7 @@ const PuzzleSelectionModal = ({
         {activeTab === 'create' && (
           <div className="space-y-3 sm:space-y-4">
             <p className="text-sm sm:text-base text-[var(--color-text-secondary)]">
-              Choose size and algorithm. A random difficulty (fill %) will be used. Generation runs in your browser.
+              Choose size and algorithm. A random fill percentage will be used. Generation runs in your browser.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
@@ -876,7 +883,6 @@ const PuzzleSelectionModal = ({
                   <p className="text-xs sm:text-sm font-medium text-[var(--color-text-muted)] mb-2">Generated puzzle</p>
                   <div className="flex items-center gap-3 flex-wrap mb-3">
                     <span className="font-bold text-xl">{generatedPuzzle.size}×{generatedPuzzle.size}</span>
-                    <DifficultyBadge difficulty={generatedPuzzle.difficulty} />
                   </div>
                   <p className="text-xs text-[var(--color-text-muted)] mb-2">Preview</p>
                   <div className="flex justify-center">
@@ -1013,7 +1019,6 @@ const PuzzleSelectionModal = ({
                             minute: '2-digit'
                           })}
                         </div>
-                        <DifficultyBadge difficulty={puzzle.difficulty} />
                       </div>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">

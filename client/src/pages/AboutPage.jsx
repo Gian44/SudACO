@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import AboutTabs from '../components/about/AboutTabs';
+import { CoreRuleVisualCards, SolvingHabitVisualCards } from '../components/about/HowToPlayVisualCards';
 import GameModeDiagram from '../components/about/diagrams/GameModeDiagram';
 import PuzzleModalDiagram from '../components/about/diagrams/PuzzleModalDiagram';
 import MainMenuDiagram from '../components/about/diagrams/MainMenuDiagram';
@@ -15,60 +16,28 @@ function AboutPage() {
       <div className="max-w-6xl mx-auto card about-page">
         <h1 className="text-3xl font-bold text-gradient mb-3">About Game</h1>
         <p className="about-intro">
-          SudACO is a Sudoku web app powered by WebAssembly solvers. Use this guide to learn gameplay,
-          discover every app section, and troubleshoot common issues.
+          SudACO is a Sudoku web app powered by WebAssembly solvers. Use these tabs for Sudoku rules,
+          app guidance, and project background.
         </p>
 
         <AboutTabs activeTab={activeTab} onChange={setActiveTab} />
 
         {activeTab === 'howToPlay' && (
           <section className="about-section">
-            <h2>How to Play (Game Mode)</h2>
+            <h2>How to Play (Sudoku Rules)</h2>
             <p>
-              Game Mode is the fastest path for standard Sudoku play. Start from a puzzle source, fill
-              values and notes, then solve manually or with the built-in solver.
+              Sudoku is a logic puzzle where each row, column, and box must contain every number exactly once.
             </p>
 
             <div className="about-subsection">
-              <h3>Step-by-step workflow</h3>
-              <ol>
-                <li>
-                  Press <strong>Choose Puzzle</strong> and select a source (Daily, Library, Upload, or My Puzzles).
-                </li>
-                <li>
-                  Read the board: fixed givens are locked, while empty cells are editable.
-                </li>
-                <li>
-                  Select a cell and enter numbers using keyboard or Number Pad.
-                </li>
-                <li>
-                  Toggle <strong>Notes</strong> to place candidate values when unsure.
-                </li>
-                <li>
-                  Use row/column/box highlights and conflict coloring to locate mistakes quickly.
-                </li>
-                <li>
-                  Press <strong>Solve</strong> to run default parameters; press <strong>Stop</strong> to cancel an active run.
-                </li>
-                <li>
-                  After successful solving, use <strong>Download PDF</strong> for original vs solved board plus parameter snapshot.
-                </li>
-              </ol>
+              <h3>Core rules</h3>
+              <CoreRuleVisualCards />
             </div>
-
-            <GameModeDiagram />
 
             <div className="about-subsection">
-              <h3>Puzzle source behavior</h3>
-              <ul>
-                <li><strong>Daily:</strong> one rotating daily challenge.</li>
-                <li><strong>Library:</strong> preloaded puzzles across sizes and difficulties.</li>
-                <li><strong>Upload:</strong> load supported `.txt` puzzle files.</li>
-                <li><strong>My Puzzles:</strong> puzzles you created or uploaded previously.</li>
-              </ul>
+              <h3>Helpful solving habits</h3>
+              <SolvingHabitVisualCards />
             </div>
-
-            <PuzzleModalDiagram />
           </section>
         )}
 
@@ -76,8 +45,7 @@ function AboutPage() {
           <section className="about-section">
             <h2>User Manual</h2>
             <p>
-              This manual covers all sections in SudACO: navigation, puzzle sources, solving, exports,
-              persistence, and troubleshooting.
+              This manual explains how to use the SudACO application and all available features.
             </p>
 
             <div className="about-subsection">
@@ -94,36 +62,35 @@ function AboutPage() {
             <MainMenuDiagram />
 
             <div className="about-subsection">
-              <h3>Game Mode vs Experiment Mode</h3>
+              <h3>Play workflow</h3>
               <ul>
-                <li><strong>Game Mode:</strong> clean UI for regular play, quick solve, and export.</li>
-                <li>
-                  <strong>Experiment Mode:</strong> exposes timeout and tuning controls (`nAnts`, `numACS`,
-                  `q0`, `xi`, `rho`, `evap`, `convThresh`, `entropy %`).
-                </li>
-                <li>Use Experiment Mode when you want to compare solve behavior under different settings.</li>
+                <li>Open puzzle sources from the modal (Daily, Library, Upload, or My Puzzles).</li>
+                <li>Fill values using keyboard or Number Pad; use Notes mode for candidates.</li>
+                <li>Use <strong>Undo</strong> to revert user edits in both Game and Experiment modes.</li>
+                <li>Press <strong>Solve</strong> to run the solver and watch progress updates.</li>
               </ul>
             </div>
 
+            <GameModeDiagram />
             <ExperimentModeDiagram />
-
-            <div className="about-subsection">
-              <h3>Solver controls and outputs</h3>
-              <ul>
-                <li><strong>Solve:</strong> starts algorithm execution for current puzzle state.</li>
-                <li><strong>Stop:</strong> cancels an in-progress solve run.</li>
-                <li><strong>Progress feedback:</strong> grid updates and status changes while solving.</li>
-                <li><strong>Error toast:</strong> appears when solve fails or is canceled.</li>
-              </ul>
-            </div>
+            <PuzzleModalDiagram />
 
             <ExportDiagram />
+
+            <div className="about-subsection">
+              <h3>Download and export</h3>
+              <ul>
+                <li>Use one <strong>Download</strong> button to choose puzzle target and file format.</li>
+                <li>Available targets: <strong>Initial Grid</strong> and <strong>Solved Sudoku Puzzle</strong>.</li>
+                <li>Available formats: <strong>.txt</strong> (instance format) and <strong>.pdf</strong> (grid report).</li>
+              </ul>
+            </div>
 
             <div className="about-subsection">
               <h3>Autosave and persistence</h3>
               <ul>
                 <li>In-progress game state auto-saves during active play and periodic intervals.</li>
-                <li>Saved state includes grid, original puzzle, notes, size, difficulty, and timer.</li>
+                <li>Saved state includes grid, original puzzle, notes, size, and timer.</li>
                 <li>State is cleared on completion to avoid stale resume states.</li>
               </ul>
             </div>
@@ -133,10 +100,31 @@ function AboutPage() {
               <ul>
                 <li><strong>Conflicts highlighted in red:</strong> verify duplicates in row, column, or box.</li>
                 <li><strong>Upload rejected:</strong> confirm file is `.txt` and format matches expected schema.</li>
-                <li><strong>No PDF button:</strong> appears only after a successful solver run.</li>
                 <li><strong>Slow solve:</strong> reduce puzzle size or adjust timeout/parameters in Experiment Mode.</li>
                 <li><strong>Unexpected puzzle state:</strong> open a new puzzle from modal to reset context.</li>
               </ul>
+            </div>
+          </section>
+        )}
+
+        {activeTab === 'about' && (
+          <section className="about-section">
+            <h2>About</h2>
+            <p>
+              SudACO is a research-driven Sudoku platform focused on puzzle solving and experimentation.
+            </p>
+            <div className="about-subsection">
+              <h3>What this game is about</h3>
+              <p>
+                This project combines classic Sudoku gameplay with algorithmic solving tools so players can both
+                enjoy puzzles and observe solver behavior across different configurations.
+              </p>
+            </div>
+            <div className="about-subsection">
+              <h3>Who made it</h3>
+              <p>
+                Placeholder: This section will include the author/team, advisers, and contributors in a future update.
+              </p>
             </div>
           </section>
         )}

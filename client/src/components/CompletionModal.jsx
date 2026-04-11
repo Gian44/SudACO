@@ -8,7 +8,6 @@ const CompletionModal = ({
   timeSeconds,
   algorithmSolveTimeMs = null,
   puzzleSize,
-  difficulty,
   isDaily,
   wasAlgorithmSolved = false
 }) => {
