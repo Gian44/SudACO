@@ -456,6 +456,7 @@ export async function getDailyPuzzleForDate(date) {
  */
 export async function getDailyPuzzle() {
   const todayISO = getTodayISOString();
+  console.info(`[daily] getDailyPuzzle start: today=${todayISO}`);
 
   // Always try server first for today's puzzle so we get the latest (e.g. after admin replace)
   try {
@@ -465,6 +466,7 @@ export async function getDailyPuzzle() {
       cacheDailyPuzzle(serverPuzzle);
       return serverPuzzle;
     }
+    console.info('[daily] server path returned no puzzle, checking local cache');
   } catch (e) {
     console.warn('Could not load today\'s puzzle from server:', e);
   }
@@ -477,9 +479,10 @@ export async function getDailyPuzzle() {
   }
 
   // No server puzzle and no cache: generate and save
-  console.log('Generating new daily puzzle...');
+  console.warn('[daily] no server/cache puzzle, generating new daily puzzle');
   const puzzleData = await generateAndSaveDailyPuzzle();
   cacheDailyPuzzle(puzzleData);
+  console.info('[daily] generated puzzle cached locally');
   return puzzleData;
 }
 

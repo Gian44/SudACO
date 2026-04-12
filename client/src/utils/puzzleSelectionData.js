@@ -11,6 +11,7 @@ const modalDataCache = {
 
 function buildPreviousDailyPuzzles(serverPuzzles) {
   const allPuzzles = [];
+  let localCount = 0;
 
   (Array.isArray(serverPuzzles) ? serverPuzzles : []).forEach((puzzle) => {
     allPuzzles.push({
@@ -40,6 +41,7 @@ function buildPreviousDailyPuzzles(serverPuzzles) {
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
         const puzzleData = JSON.parse(cached);
+        localCount += 1;
         allPuzzles.push({
           date: dateISO,
           dateDisplay: past.toLocaleDateString('en-US', {
@@ -61,15 +63,32 @@ function buildPreviousDailyPuzzles(serverPuzzles) {
 
   allPuzzles.sort((a, b) => new Date(b.date) - new Date(a.date));
   const todayISO = getTodayISOString();
-  return allPuzzles.filter((p) => p.date <= todayISO);
+  const filtered = allPuzzles.filter((p) => p.date <= todayISO);
+  console.info(
+    `[puzzle-selection] daily merge: server=${Array.isArray(serverPuzzles) ? serverPuzzles.length : 0}, local=${localCount}, final=${filtered.length}`
+  );
+  return filtered;
 }
 
 async function loadSelectionModalData() {
+  console.info('[puzzle-selection] loading modal data...');
   const dailyInfo = getDailyPuzzleInfo();
   const [serverPuzzles, categoriesResult] = await Promise.allSettled([
-    loadDailyList({ timeoutMs: 2500, ttlMs: 120000 }),
+    loadDailyList({ timeoutMs: 4500, ttlMs: 120000 }),
     loadPuzzleIndexWithFallback({ timeoutMs: 3000, ttlMs: 120000 })
   ]);
+
+  if (serverPuzzles.status === 'fulfilled') {
+    console.info(`[puzzle-selection] daily-list resolved: ${Array.isArray(serverPuzzles.value) ? serverPuzzles.value.length : 0} items`);
+  } else {
+    console.warn('[puzzle-selection] daily-list failed:', serverPuzzles.reason?.message || serverPuzzles.reason);
+  }
+
+  if (categoriesResult.status === 'fulfilled') {
+    console.info(`[puzzle-selection] categories resolved: ${Object.keys(categoriesResult.value || {}).length} groups`);
+  } else {
+    console.warn('[puzzle-selection] categories failed:', categoriesResult.reason?.message || categoriesResult.reason);
+  }
 
   const previousDailyPuzzles = buildPreviousDailyPuzzles(
     serverPuzzles.status === 'fulfilled' ? serverPuzzles.value : []
@@ -101,6 +120,7 @@ export function getCachedSelectionModalSnapshot() {
 export async function getCachedSelectionModalData({ forceRefresh = false } = {}) {
   const snapshot = getCachedSelectionModalSnapshot();
   if (!forceRefresh && snapshot) {
+    console.info('[puzzle-selection] using cached modal snapshot');
     return snapshot;
   }
 
@@ -120,5 +140,6 @@ export async function getCachedSelectionModalData({ forceRefresh = false } = {})
 }
 
 export function prefetchSelectionModalData() {
+  console.info('[puzzle-selection] prefetch requested');
   void getCachedSelectionModalData();
 }

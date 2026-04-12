@@ -134,14 +134,33 @@ export async function loadPuzzleIndexWithFallback(options = {}) {
 }
 
 export async function loadDailyList(options = {}) {
+  const timeoutMs = options.timeoutMs ?? 4500;
+  const ttlMs = options.ttlMs ?? 120000;
+  const forceRefresh = options.forceRefresh ?? false;
+
   try {
-    return await fetchJsonWithCache(`${API_BASE_URL}/puzzles/daily-list`, {
-      timeoutMs: options.timeoutMs ?? 2500,
-      ttlMs: options.ttlMs ?? 120000,
+    const data = await fetchJsonWithCache(`${API_BASE_URL}/puzzles/daily-list`, {
+      timeoutMs,
+      ttlMs,
       cacheKey: 'daily-list',
-      forceRefresh: options.forceRefresh ?? false
+      forceRefresh
     });
+    console.info(`[daily-list] primary fetch success: ${Array.isArray(data) ? data.length : 0} items`);
+    return data;
   } catch (error) {
+    console.warn('[daily-list] primary fetch failed, retrying once:', error?.message || error);
+    try {
+      const retryData = await fetchJsonWithCache(`${API_BASE_URL}/puzzles/daily-list`, {
+        timeoutMs: 9000,
+        ttlMs,
+        cacheKey: 'daily-list',
+        forceRefresh: true
+      });
+      console.info(`[daily-list] retry fetch success: ${Array.isArray(retryData) ? retryData.length : 0} items`);
+      return retryData;
+    } catch (retryError) {
+      console.warn('[daily-list] retry fetch failed, returning empty list:', retryError?.message || retryError);
+    }
     return [];
   }
 }
@@ -149,7 +168,7 @@ export async function loadDailyList(options = {}) {
 export function prefetchCorePuzzleData() {
   void Promise.allSettled([
     loadPuzzlesFromServer({ timeoutMs: 3000, ttlMs: 120000 }),
-    loadDailyList({ timeoutMs: 2500, ttlMs: 120000 })
+    loadDailyList({ timeoutMs: 4500, ttlMs: 120000 })
   ]);
 }
 
