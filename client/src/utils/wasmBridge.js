@@ -1,6 +1,32 @@
 // WebAssembly bridge for Sudoku solver
 let wasmModule = null;
 
+function isNodeRuntime() {
+  return typeof process !== 'undefined'
+    && !!process.versions?.node
+    && process.release?.name === 'node';
+}
+
+async function importWasmFactory() {
+  const candidates = [
+    new URL('../wasm/sudoku_solver.js', import.meta.url).href,
+    '/sudoku_solver.js'
+  ];
+
+  let lastError = null;
+  for (const candidate of candidates) {
+    try {
+      // Use explicit URL strings to avoid worker-relative path issues.
+      // eslint-disable-next-line no-await-in-loop
+      return await import(/* @vite-ignore */ candidate);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error('Unable to import sudoku_solver.js');
+}
+
 function normalizeSolutionString(solution) {
   if (typeof solution !== 'string') return solution;
   // Defensive cleanup in case solver output includes formatting/newlines.
@@ -84,14 +110,28 @@ export function getDefaultTimeout(size = 9) {
  */
 export async function initWasm() {
   if (!wasmModule) {
+    const runningInBrowserLikeRuntime = !isNodeRuntime();
+    const originalProcess = globalThis.process;
+    const needsProcessOverride = runningInBrowserLikeRuntime
+      && originalProcess
+      && originalProcess.versions?.node
+      && originalProcess.type !== 'renderer';
+
     try {
-      // Import the WASM module using standard ES6 import
-      const wasmModuleFactory = await import('../wasm/sudoku_solver.js');
+      // Some generated loaders detect Node via global process. Force browser behavior in workers.
+      if (needsProcessOverride) {
+        globalThis.process = { ...originalProcess, type: 'renderer' };
+      }
+      const wasmModuleFactory = await importWasmFactory();
       wasmModule = await wasmModuleFactory.default();
       console.log('✓ WebAssembly module loaded successfully');
     } catch (error) {
       console.error('✗ Failed to load WebAssembly module:', error);
-      throw new Error('Failed to load WebAssembly module. Please ensure sudoku_solver.js and sudoku_solver.wasm are in the src/wasm directory.');
+      throw new Error('Failed to load WebAssembly module. Ensure sudoku_solver.js and sudoku_solver.wasm are available in client/src/wasm or client/public.');
+    } finally {
+      if (needsProcessOverride) {
+        globalThis.process = originalProcess;
+      }
     }
   }
   return wasmModule;
