@@ -36,6 +36,12 @@ function computeEntropyThreshold(nAnts, entropyPct) {
   return Math.log2(nAnts) * (entropyPct / 100);
 }
 
+function parseNumericParam(value, fallback) {
+  if (value === '' || value == null) return fallback;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
 function computeChangedCells(previousGrid, nextGrid) {
   const changed = new Set();
   for (let row = 0; row < nextGrid.length; row += 1) {
@@ -292,21 +298,22 @@ function PlayModePage({ mode }) {
     setError('');
     setAnimatingCells(new Set());
     const puzzleString = gridToString(originalGrid, size);
-    const nAnts = Number(solverParams.nAnts);
-    const numACS = Number(solverParams.numACS);
-    const entropyPct = Number(solverParams.entropyPct);
+    const defaultParams = { ...getDefaultParameters(size)[2], entropyPct: 92.5, timeout: getDefaultTimeout(size) };
+    const nAnts = parseNumericParam(solverParams.nAnts, defaultParams.nAnts);
+    const numACS = parseNumericParam(solverParams.numACS, defaultParams.numACS);
+    const entropyPct = parseNumericParam(solverParams.entropyPct, defaultParams.entropyPct);
     const entropyThresh = computeEntropyThreshold(nAnts, entropyPct);
     const paramsSnapshot = {
       nAnts,
       numACS,
       numColonies: numACS + 1,
-      q0: Number(solverParams.q0),
-      xi: Number(solverParams.xi),
-      rho: Number(solverParams.rho),
-      evap: Number(solverParams.evap),
-      convThresh: Number(solverParams.convThresh),
+      q0: parseNumericParam(solverParams.q0, defaultParams.q0),
+      xi: parseNumericParam(solverParams.xi, defaultParams.xi),
+      rho: parseNumericParam(solverParams.rho, defaultParams.rho),
+      evap: parseNumericParam(solverParams.evap, defaultParams.evap),
+      convThresh: parseNumericParam(solverParams.convThresh, defaultParams.convThresh),
       entropyThresh,
-      timeout: Number(solverParams.timeout)
+      timeout: parseNumericParam(solverParams.timeout, defaultParams.timeout)
     };
     try {
       if (!workerRunnerRef.current) {
@@ -549,7 +556,7 @@ function PlayModePage({ mode }) {
             min="1"
             max="300"
             value={solverParams.timeout ?? 10}
-            onChange={(e) => setSolverParams((prev) => ({ ...prev, timeout: Number(e.target.value) }))}
+            onChange={(e) => setSolverParams((prev) => ({ ...prev, timeout: e.target.value }))}
             disabled={isSolving}
           />
         </div>
@@ -562,7 +569,7 @@ function PlayModePage({ mode }) {
             min="1"
             max="50"
             value={solverParams.nAnts ?? 3}
-            onChange={(e) => setSolverParams((prev) => ({ ...prev, nAnts: Number(e.target.value) }))}
+            onChange={(e) => setSolverParams((prev) => ({ ...prev, nAnts: e.target.value }))}
             disabled={isSolving}
           />
         </div>
@@ -575,34 +582,34 @@ function PlayModePage({ mode }) {
             min="1"
             max="12"
             value={solverParams.numACS ?? 6}
-            onChange={(e) => setSolverParams((prev) => ({ ...prev, numACS: Number(e.target.value) }))}
+            onChange={(e) => setSolverParams((prev) => ({ ...prev, numACS: e.target.value }))}
             disabled={isSolving}
           />
         </div>
 
         <div>
           <label className="block text-sm mb-1">q0</label>
-          <input className="input w-full" type="number" step="0.01" min="0" max="1" value={solverParams.q0 ?? 0.9} onChange={(e) => setSolverParams((prev) => ({ ...prev, q0: Number(e.target.value) }))} disabled={isSolving} />
+          <input className="input w-full" type="number" step="0.01" min="0" max="1" value={solverParams.q0 ?? 0.9} onChange={(e) => setSolverParams((prev) => ({ ...prev, q0: e.target.value }))} disabled={isSolving} />
         </div>
 
         <div>
           <label className="block text-sm mb-1">xi</label>
-          <input className="input w-full" type="number" step="0.01" min="0" max="1" value={solverParams.xi ?? 0.1} onChange={(e) => setSolverParams((prev) => ({ ...prev, xi: Number(e.target.value) }))} disabled={isSolving} />
+          <input className="input w-full" type="number" step="0.01" min="0" max="1" value={solverParams.xi ?? 0.1} onChange={(e) => setSolverParams((prev) => ({ ...prev, xi: e.target.value }))} disabled={isSolving} />
         </div>
 
         <div>
           <label className="block text-sm mb-1">rho</label>
-          <input className="input w-full" type="number" step="0.01" min="0" max="1" value={solverParams.rho ?? 0.9} onChange={(e) => setSolverParams((prev) => ({ ...prev, rho: Number(e.target.value) }))} disabled={isSolving} />
+          <input className="input w-full" type="number" step="0.01" min="0" max="1" value={solverParams.rho ?? 0.9} onChange={(e) => setSolverParams((prev) => ({ ...prev, rho: e.target.value }))} disabled={isSolving} />
         </div>
 
         <div>
           <label className="block text-sm mb-1">evap</label>
-          <input className="input w-full" type="number" step="0.0001" min="0" max="1" value={solverParams.evap ?? 0.0125} onChange={(e) => setSolverParams((prev) => ({ ...prev, evap: Number(e.target.value) }))} disabled={isSolving} />
+          <input className="input w-full" type="number" step="0.0001" min="0" max="1" value={solverParams.evap ?? 0.0125} onChange={(e) => setSolverParams((prev) => ({ ...prev, evap: e.target.value }))} disabled={isSolving} />
         </div>
 
         <div>
           <label className="block text-sm mb-1">convThresh</label>
-          <input className="input w-full" type="number" step="0.01" min="0" max="1" value={solverParams.convThresh ?? 0.8} onChange={(e) => setSolverParams((prev) => ({ ...prev, convThresh: Number(e.target.value) }))} disabled={isSolving} />
+          <input className="input w-full" type="number" step="0.01" min="0" max="1" value={solverParams.convThresh ?? 0.8} onChange={(e) => setSolverParams((prev) => ({ ...prev, convThresh: e.target.value }))} disabled={isSolving} />
         </div>
 
         <div>
@@ -614,20 +621,26 @@ function PlayModePage({ mode }) {
             min="0"
             max="100"
             value={solverParams.entropyPct ?? 92.5}
-            onChange={(e) => setSolverParams((prev) => ({ ...prev, entropyPct: Number(e.target.value) }))}
+            onChange={(e) => setSolverParams((prev) => ({ ...prev, entropyPct: e.target.value }))}
             disabled={isSolving}
           />
         </div>
 
         <div className="md:col-span-2">
           <p className="text-xs text-[var(--color-text-muted)] mb-2">
-            Computed entropyThresh: {Number.isFinite(solverParams.nAnts) && Number.isFinite(solverParams.entropyPct)
+            Computed entropyThresh: {Number.isFinite(Number(solverParams.nAnts)) && Number.isFinite(Number(solverParams.entropyPct))
               ? computeEntropyThreshold(Number(solverParams.nAnts), Number(solverParams.entropyPct)).toFixed(6)
               : 'N/A'}
           </p>
-          <button type="button" className="btn btn-primary w-full" onClick={startSolve} disabled={isSolving || !originalGrid}>
-            {isSolving ? 'Solving...' : 'Solve'}
-          </button>
+          {isSolving ? (
+            <button type="button" className="btn btn-danger w-full" onClick={stopGameSolve}>
+              Stop
+            </button>
+          ) : (
+            <button type="button" className="btn btn-primary w-full" onClick={startSolve} disabled={!originalGrid}>
+              Solve
+            </button>
+          )}
         </div>
       </div>
     </aside>
