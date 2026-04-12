@@ -3,7 +3,6 @@
 // Saves to "daily-puzzles" folder following the same pattern as user-created puzzles
 
 import { generatePuzzle } from './puzzleGenerator';
-import { savePuzzleToServer, checkServerHealth } from './apiClient';
 import { getDefaultParameters } from './wasmBridge';
 import { parseInstanceFile } from './fileParser';
 import { stringToGrid } from './sudokuUtils';
@@ -224,21 +223,17 @@ async function generateAndSaveDailyPuzzle() {
   
   // Try to save to server (daily-puzzles folder)
   try {
-    const serverOk = await checkServerHealth();
-    if (serverOk) {
-      // Save to daily-puzzles category
-      const saveResult = await saveDailyPuzzleToServer(puzzleData);
-      
-      // If puzzle already existed, use the existing puzzle data instead
-      if (saveResult && saveResult.existingPuzzle) {
-        console.log(`Using existing daily puzzle from server: ${saveResult.existingPuzzle.filename}`);
-        // Cache the existing puzzle
-        cacheDailyPuzzle(saveResult.existingPuzzle);
-        return saveResult.existingPuzzle;
-      }
-      
-      console.log(`Daily puzzle saved to server: ${filename}`);
+    const saveResult = await saveDailyPuzzleToServer(puzzleData);
+
+    // If puzzle already existed, use the existing puzzle data instead
+    if (saveResult && saveResult.existingPuzzle) {
+      console.log(`Using existing daily puzzle from server: ${saveResult.existingPuzzle.filename}`);
+      // Cache the existing puzzle
+      cacheDailyPuzzle(saveResult.existingPuzzle);
+      return saveResult.existingPuzzle;
     }
+
+    console.log(`Daily puzzle saved to server: ${filename}`);
   } catch (e) {
     console.warn('Could not save daily puzzle to server:', e);
   }
@@ -458,14 +453,11 @@ export async function getDailyPuzzle() {
 
   // Always try server first for today's puzzle so we get the latest (e.g. after admin replace)
   try {
-    const serverOk = await checkServerHealth();
-    if (serverOk) {
-      const serverPuzzle = await loadDailyPuzzleFromServer(todayISO);
-      if (serverPuzzle) {
-        console.log('Loaded daily puzzle from server:', serverPuzzle.filename);
-        cacheDailyPuzzle(serverPuzzle);
-        return serverPuzzle;
-      }
+    const serverPuzzle = await loadDailyPuzzleFromServer(todayISO);
+    if (serverPuzzle) {
+      console.log('Loaded daily puzzle from server:', serverPuzzle.filename);
+      cacheDailyPuzzle(serverPuzzle);
+      return serverPuzzle;
     }
   } catch (e) {
     console.warn('Could not load today\'s puzzle from server:', e);

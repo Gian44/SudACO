@@ -3,7 +3,7 @@
 import { parseInstanceFile } from './fileParser';
 import { stringToGrid } from './sudokuUtils';
 import { calculateDifficulty } from './dailyPuzzleService';
-import { loadPuzzlesFromServer, checkServerHealth } from './apiClient';
+import { fetchWithTimeout, loadPuzzleIndexWithFallback } from './apiClient';
 
 /**
  * Get flat list of { category, file } from index/categories
@@ -44,23 +44,9 @@ function flattenPuzzleIndex(categories) {
 export async function loadRandomLibraryPuzzle() {
   let categories = {};
   try {
-    const serverOk = await checkServerHealth();
-    if (serverOk) {
-      categories = await loadPuzzlesFromServer();
-    } else {
-      const response = await fetch('/instances/index.json');
-      if (response.ok) {
-        categories = await response.json();
-      }
-    }
+    categories = await loadPuzzleIndexWithFallback({ timeoutMs: 3000, ttlMs: 120000 });
   } catch (e) {
     console.warn('Failed to load puzzle index:', e);
-    try {
-      const response = await fetch('/instances/index.json');
-      if (response.ok) categories = await response.json();
-    } catch (e2) {
-      console.warn('Fallback index fetch failed:', e2);
-    }
   }
 
   const flat = flattenPuzzleIndex(categories);
@@ -70,7 +56,11 @@ export async function loadRandomLibraryPuzzle() {
 
   let fileContent = null;
   try {
-    const response = await fetch(`/api/puzzles/load?category=${encodeURIComponent(category)}&file=${encodeURIComponent(file)}`);
+    const response = await fetchWithTimeout(
+      `/api/puzzles/load?category=${encodeURIComponent(category)}&file=${encodeURIComponent(file)}`,
+      {},
+      2500
+    );
     if (response.ok) {
       fileContent = await response.text();
     }
@@ -79,7 +69,7 @@ export async function loadRandomLibraryPuzzle() {
   }
   if (!fileContent) {
     try {
-      const response = await fetch(`/instances/${category}/${file}`);
+      const response = await fetchWithTimeout(`/instances/${category}/${file}`, {}, 2500);
       if (response.ok) fileContent = await response.text();
     } catch (e) {
       console.warn('Failed to load puzzle file:', e);

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import sudacoLogo from '../assets/sudaco-logo.svg';
+import { prefetchCorePuzzleData } from '../utils/apiClient';
+import { prefetchSelectionModalData } from '../utils/puzzleSelectionData';
 
 const menuItems = [
   {
@@ -91,6 +93,10 @@ function MainMenuPage() {
   const secondaryItem = menuItems.find((item) => item.tier === 'secondary');
   const tertiaryItems = menuItems.filter((item) => item.tier === 'tertiary');
   const getMenuItemVariantClass = (item) => `menu-item-${item.icon}`;
+  const prefetchPlayableData = () => {
+    prefetchCorePuzzleData();
+    prefetchSelectionModalData();
+  };
 
   return (
     <div className="menu-shell">
@@ -115,6 +121,8 @@ function MainMenuPage() {
                 key={primaryItem.path}
                 to={primaryItem.path}
                 className={`menu-item menu-item-primary ${getMenuItemVariantClass(primaryItem)}`}
+                onMouseEnter={prefetchPlayableData}
+                onFocus={prefetchPlayableData}
               >
                 <div className="menu-item-top">
                   <MenuIcon name={primaryItem.icon} />
@@ -129,6 +137,8 @@ function MainMenuPage() {
                 key={secondaryItem.path}
                 to={secondaryItem.path}
                 className={`menu-item menu-item-secondary ${getMenuItemVariantClass(secondaryItem)}`}
+                onMouseEnter={prefetchPlayableData}
+                onFocus={prefetchPlayableData}
               >
                 <div className="menu-item-top">
                   <MenuIcon name={secondaryItem.icon} />

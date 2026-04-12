@@ -14,8 +14,7 @@ import {
 import { 
   savePuzzleToServer, 
   loadPuzzlesFromServer, 
-  checkServerHealth,
-  getFallbackMessage 
+  loadPuzzleIndexWithFallback
 } from '../utils/apiClient';
 import { getDefaultParameters } from '../utils/wasmBridge';
 
@@ -35,24 +34,18 @@ function PuzzleLoader({ onPuzzleLoad, onError }) {
   const [serverAvailable, setServerAvailable] = useState(false);
 
   useEffect(() => {
-    // Check server availability and load puzzles
+    // Load puzzle index quickly, fallback to static index on failure
     const initializePuzzles = async () => {
       try {
-        // Check if server is available
-        const serverOk = await checkServerHealth();
-        setServerAvailable(serverOk);
-        
         let data;
-        if (serverOk) {
-          // Load from server (includes generated puzzles)
+        try {
           data = await loadPuzzlesFromServer();
-          setCategories(data);
-        } else {
-          // Fallback to loading from file
-          const response = await fetch('/instances/index.json');
-          data = await response.json();
-          setCategories(data);
+          setServerAvailable(true);
+        } catch {
+          data = await loadPuzzleIndexWithFallback();
+          setServerAvailable(false);
         }
+        setCategories(data);
         
         // Set initial category selection
         const firstCategory = Object.keys(data)[0];
