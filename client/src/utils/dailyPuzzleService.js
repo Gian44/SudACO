@@ -6,6 +6,7 @@ import { generatePuzzle } from './puzzleGenerator';
 import { getDefaultParameters } from './wasmBridge';
 import { parseInstanceFile } from './fileParser';
 import { stringToGrid } from './sudokuUtils';
+import { fetchWithTimeout } from './apiClient';
 
 // Available sizes and difficulties
 const SIZES = [9, 16, 25];
@@ -62,15 +63,20 @@ function getDateISOString(date) {
   return date.toISOString().split('T')[0];
 }
 
+function parseISODate(dateISO) {
+  const [year, month, day] = dateISO.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
 /**
  * Get date string in MMDDYYYY format for a specific date
  * @param {Date} date - Date object
  * @returns {string} Date string like "12142025"
  */
 function getDateString(date) {
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const year = date.getFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const year = date.getUTCFullYear();
   return `${month}${day}${year}`;
 }
 
@@ -247,7 +253,7 @@ async function generateAndSaveDailyPuzzle() {
  */
 async function saveDailyPuzzleToServer(puzzleData) {
   try {
-    const response = await fetch('/api/puzzles/save-daily', {
+    const response = await fetchWithTimeout('/api/puzzles/save-daily', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -260,7 +266,7 @@ async function saveDailyPuzzleToServer(puzzleData) {
         puzzleString: puzzleData.puzzleString,
         date: puzzleData.date
       })
-    });
+    }, 4000);
     
     if (!response.ok) {
       throw new Error(`Server responded with ${response.status}`);
@@ -311,7 +317,7 @@ async function loadDailyPuzzleFromServer(dateISO) {
   try {
     // First try to get from KV via API
     try {
-      const response = await fetch(`/api/puzzles/daily?date=${dateISO}`);
+      const response = await fetchWithTimeout(`/api/puzzles/daily?date=${dateISO}`, {}, 3000);
       if (response.ok) {
         const puzzleData = await response.json();
         return {
@@ -330,13 +336,13 @@ async function loadDailyPuzzleFromServer(dateISO) {
     }
     
     // Fallback: Try to fetch from static files
-    const date = new Date(dateISO);
+    const date = parseISODate(dateISO);
     const { size, difficulty } = getRandomSizeAndDifficulty(date);
     const dateStr = getDateString(date);
     const filename = generateDailyFilename(dateStr, size, difficulty);
     
     const puzzlePath = `/instances/daily-puzzles/${filename}`;
-    const response = await fetch(puzzlePath);
+    const response = await fetchWithTimeout(puzzlePath, {}, 2500);
     
     if (response.ok) {
       const fileContent = await response.text();
@@ -366,7 +372,7 @@ async function loadDailyPuzzleFromServer(dateISO) {
  * @returns {Promise<Object>} Puzzle data
  */
 export async function getDailyPuzzleForDate(date) {
-  const targetDate = typeof date === 'string' ? new Date(date) : date;
+  const targetDate = typeof date === 'string' ? parseISODate(date) : date;
   const dateISO = getDateISOString(targetDate);
   
   // Check if it's today - use cached version if available
