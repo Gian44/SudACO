@@ -1,5 +1,6 @@
 // WebAssembly bridge for Sudoku solver
 let wasmModule = null;
+const bundledWasmUrl = new URL('../wasm/sudoku_solver.wasm', import.meta.url).href;
 
 function isNodeRuntime() {
   return typeof process !== 'undefined'
@@ -130,10 +131,10 @@ export async function initWasm() {
       const wasmModuleFactory = await importWasmFactory();
       wasmModule = await wasmModuleFactory.default({
         // Production bundles import a hashed JS wrapper from /assets/,
-        // but the wasm binary is served from public at the app base path.
+        // so always point to the matching bundled wasm artifact.
         locateFile: (path, scriptDirectory) => {
           if (path.endsWith('.wasm')) {
-            return `${normalizedBaseUrl}sudoku_solver.wasm`;
+            return bundledWasmUrl;
           }
           return `${scriptDirectory}${path}`;
         }
