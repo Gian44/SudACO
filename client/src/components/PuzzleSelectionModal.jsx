@@ -473,13 +473,6 @@ const PuzzleSelectionModal = ({
     return 'Unknown';
   }, [selectedDailyPuzzle]);
 
-  const selectedDailyDifficultyLabel = useMemo(() => {
-    const difficulty = selectedDailyPuzzle?.difficulty;
-    if (!difficulty) return 'Unknown';
-    const value = String(difficulty);
-    return value.charAt(0).toUpperCase() + value.slice(1);
-  }, [selectedDailyPuzzle]);
-
   const selectedDailyCompleted = useMemo(() => {
     if (!selectedDailyDateISO) return false;
     if (selectedDailyPuzzle && typeof selectedDailyPuzzle.isCompleted === 'boolean') {
@@ -487,6 +480,10 @@ const PuzzleSelectionModal = ({
     }
     return selectedDailyDateISO === getTodayISOString() ? !!dailyInfo?.isCompleted : false;
   }, [selectedDailyDateISO, selectedDailyPuzzle, dailyInfo]);
+
+  const selectedChallengeTitle = selectedDailyDateISO === getTodayISOString()
+    ? 'Daily Challenge'
+    : 'Selected Challenge';
 
   if (!isOpen) return null;
 
@@ -600,7 +597,7 @@ const PuzzleSelectionModal = ({
                     </svg>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-base sm:text-lg font-bold">Selected Challenge</h3>
+                    <h3 className="text-base sm:text-lg font-bold">{selectedChallengeTitle}</h3>
                     <p className="text-xs sm:text-sm text-[var(--color-text-muted)] truncate">
                       {selectedDailyDateDisplay}
                     </p>
@@ -620,11 +617,6 @@ const PuzzleSelectionModal = ({
                 <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
                   <div className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-[var(--color-bg-elevated)]">
                     <span className="text-xl sm:text-2xl font-bold">{selectedDailySizeLabel}</span>
-                  </div>
-                  <div className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-[var(--color-bg-elevated)]">
-                    <span className="text-xs sm:text-sm font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
-                      {selectedDailyDifficultyLabel}
-                    </span>
                   </div>
                 </div>
               )}
