@@ -7,10 +7,11 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
  * Daily puzzle calendar - month view with clickable days
  * @param {Object} props
  * @param {Array<{date: string, dateDisplay?: string, size?: number, difficulty?: string}>} props.puzzles - List of puzzles with date (YYYY-MM-DD)
- * @param {Function} props.onSelect - (dateISO: string) => void
+ * @param {Function} props.onDateSelect - (dateISO: string) => void
+ * @param {string|null} props.selectedDateISO - currently selected date
  * @param {boolean} props.isLoading
  */
-const DailyCalendar = ({ puzzles = [], onSelect, isLoading = false }) => {
+const DailyCalendar = ({ puzzles = [], onDateSelect, selectedDateISO = null, isLoading = false }) => {
   const [viewDate, setViewDate] = useState(() => {
     const [y, m] = getTodayISOString().split('-').map(Number);
     return new Date(y, m - 1, 1);
@@ -147,14 +148,15 @@ const DailyCalendar = ({ puzzles = [], onSelect, isLoading = false }) => {
             const inRange = day && !future;
             const hasPuzzle = inRange && dateISO && puzzleDates.has(dateISO);
             const completed = hasPuzzle && isDailyCompleted(dateISO);
-            const clickable = hasPuzzle && !isLoading;
+            const selected = hasPuzzle && selectedDateISO === dateISO;
 
             return (
               <button
                 key={`${wi}-${di}-${day ?? 'e'}`}
                 type="button"
-                onClick={() => clickable && onSelect(dateISO)}
-                disabled={!clickable}
+                onClick={() => hasPuzzle && onDateSelect?.(dateISO)}
+                disabled={!hasPuzzle}
+                aria-pressed={selected}
                 className={`
                   min-h-[36px] sm:min-h-[40px] flex flex-col items-center justify-center
                   text-sm font-medium transition-colors
@@ -163,7 +165,8 @@ const DailyCalendar = ({ puzzles = [], onSelect, isLoading = false }) => {
                   ${day && inRange && !hasPuzzle ? 'bg-[var(--color-bg-elevated)] text-[var(--color-text-muted)]' : ''}
                   ${day && inRange && hasPuzzle ? 'bg-[var(--color-bg-elevated)] hover:bg-[var(--color-primary)]/20 cursor-pointer' : ''}
                   ${today ? 'ring-1 ring-[var(--color-primary)] ring-inset' : ''}
-                  ${!clickable && hasPuzzle ? 'cursor-wait' : ''}
+                  ${selected ? 'ring-2 ring-[var(--color-secondary)] ring-inset' : ''}
+                  ${isLoading && hasPuzzle ? 'cursor-wait' : ''}
                 `}
               >
                 {day || ''}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { getDailyPuzzle, getDailyPuzzleForDate, calculateDifficulty, getTodayISOString } from '../utils/dailyPuzzleService';
+import { getDailyPuzzleForDate, calculateDifficulty, getTodayISOString } from '../utils/dailyPuzzleService';
 import { parseInstanceFile, getInstanceFileFormatDescription } from '../utils/fileParser';
 import { stringToGrid, getBoxDimensions } from '../utils/sudokuUtils';
 import { generatePuzzle } from '../utils/puzzleGenerator';
@@ -53,6 +53,7 @@ const PuzzleSelectionModal = ({
   
   // Previous daily puzzles
   const [previousDailyPuzzles, setPreviousDailyPuzzles] = useState([]);
+  const [selectedDailyDateISO, setSelectedDailyDateISO] = useState(getTodayISOString());
 
   // Create puzzle state
   const SIZES = [9, 16, 25];
@@ -186,14 +187,14 @@ const PuzzleSelectionModal = ({
     }
   }, [selectedCategory, selectedLibrarySize, selectedFillPercent, categories]);
 
-  // Handle daily puzzle selection
-  const handleDailySelect = useCallback(async () => {
+  // Handle selected daily puzzle play
+  const handleDailyPlay = useCallback(async () => {
+    const targetDateISO = selectedDailyDateISO || getTodayISOString();
     setIsLoading(true);
     setError('');
     
     try {
-      // Get today's daily puzzle (no parameters - random size/difficulty)
-      const puzzleData = await getDailyPuzzle();
+      const puzzleData = await getDailyPuzzleForDate(targetDateISO);
       const grid = stringToGrid(puzzleData.puzzleString, puzzleData.size);
       
       onPuzzleSelect({
@@ -203,7 +204,7 @@ const PuzzleSelectionModal = ({
         difficulty: puzzleData.difficulty,
         isDaily: true,
         source: puzzleData.source,
-        puzzleKey: `daily-${getTodayISOString()}`
+        puzzleKey: `daily-${targetDateISO}`
       });
       
       onClose();
@@ -212,34 +213,7 @@ const PuzzleSelectionModal = ({
     } finally {
       setIsLoading(false);
     }
-  }, [onPuzzleSelect, onClose]);
-
-  // Handle previous daily puzzle selection
-  const handlePreviousDailySelect = useCallback(async (dateISO) => {
-    setIsLoading(true);
-    setError('');
-    
-    try {
-      const puzzleData = await getDailyPuzzleForDate(dateISO);
-      const grid = stringToGrid(puzzleData.puzzleString, puzzleData.size);
-      
-      onPuzzleSelect({
-        grid,
-        size: puzzleData.size,
-        puzzleString: puzzleData.puzzleString,
-        difficulty: puzzleData.difficulty,
-        isDaily: true,
-        source: puzzleData.source,
-        puzzleKey: `daily-${dateISO}`
-      });
-      
-      onClose();
-    } catch (err) {
-      setError(`Failed to load daily puzzle: ${err.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [onPuzzleSelect, onClose]);
+  }, [selectedDailyDateISO, onPuzzleSelect, onClose]);
 
   // Handle library puzzle selection
   const handleLibrarySelect = useCallback(async (puzzleFile) => {
@@ -444,6 +418,76 @@ const PuzzleSelectionModal = ({
     }
   }, [isOpen, activeTab]);
 
+  useEffect(() => {
+    const availableDates = new Set((previousDailyPuzzles || []).map((p) => p.date).filter(Boolean));
+    const todayISO = getTodayISOString();
+
+    if (availableDates.has(selectedDailyDateISO)) return;
+    if (availableDates.has(todayISO)) {
+      setSelectedDailyDateISO(todayISO);
+      return;
+    }
+
+    const latestDate = (previousDailyPuzzles || [])
+      .map((p) => p.date)
+      .filter(Boolean)
+      .sort((a, b) => b.localeCompare(a))[0];
+
+    if (latestDate) {
+      setSelectedDailyDateISO(latestDate);
+    } else {
+      setSelectedDailyDateISO(todayISO);
+    }
+  }, [previousDailyPuzzles, selectedDailyDateISO]);
+
+  const selectedDailyPuzzle = useMemo(() => {
+    const fromList = (previousDailyPuzzles || []).find((p) => p.date === selectedDailyDateISO);
+    if (fromList) return fromList;
+
+    if (selectedDailyDateISO === getTodayISOString() && dailyInfo) {
+      return {
+        date: selectedDailyDateISO,
+        size: dailyInfo.size,
+        difficulty: dailyInfo.difficulty,
+        isCompleted: dailyInfo.isCompleted
+      };
+    }
+
+    return null;
+  }, [previousDailyPuzzles, selectedDailyDateISO, dailyInfo]);
+
+  const selectedDailyDateDisplay = useMemo(() => {
+    if (!selectedDailyDateISO) return 'Unknown date';
+    const [year, month, day] = selectedDailyDateISO.split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric'
+    });
+  }, [selectedDailyDateISO]);
+
+  const selectedDailySizeLabel = useMemo(() => {
+    const size = selectedDailyPuzzle?.size;
+    if (typeof size === 'number') return `${size}×${size}`;
+    if (typeof size === 'string' && size.includes('x')) return size.replace('x', '×');
+    return 'Unknown';
+  }, [selectedDailyPuzzle]);
+
+  const selectedDailyDifficultyLabel = useMemo(() => {
+    const difficulty = selectedDailyPuzzle?.difficulty;
+    if (!difficulty) return 'Unknown';
+    const value = String(difficulty);
+    return value.charAt(0).toUpperCase() + value.slice(1);
+  }, [selectedDailyPuzzle]);
+
+  const selectedDailyCompleted = useMemo(() => {
+    if (!selectedDailyDateISO) return false;
+    if (selectedDailyPuzzle && typeof selectedDailyPuzzle.isCompleted === 'boolean') {
+      return selectedDailyPuzzle.isCompleted;
+    }
+    return selectedDailyDateISO === getTodayISOString() ? !!dailyInfo?.isCompleted : false;
+  }, [selectedDailyDateISO, selectedDailyPuzzle, dailyInfo]);
+
   if (!isOpen) return null;
 
   const modalBody = (
@@ -546,7 +590,7 @@ const PuzzleSelectionModal = ({
               Play today's daily puzzle! A new random puzzle is generated each day.
             </p>
             
-            {/* Today's Puzzle Info */}
+            {/* Selected Puzzle Info */}
             <div className="p-4 sm:p-6 rounded-xl bg-gradient-to-br from-purple-500/10 to-cyan-500/10 border border-purple-500/30">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-3 sm:mb-4">
                 <div className="flex items-center gap-2 sm:gap-3">
@@ -556,13 +600,13 @@ const PuzzleSelectionModal = ({
                     </svg>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-base sm:text-lg font-bold">Today's Challenge</h3>
+                    <h3 className="text-base sm:text-lg font-bold">Selected Challenge</h3>
                     <p className="text-xs sm:text-sm text-[var(--color-text-muted)] truncate">
-                      {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                      {selectedDailyDateDisplay}
                     </p>
                   </div>
                 </div>
-                {dailyInfo?.isCompleted && (
+                {selectedDailyCompleted && (
                   <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-[var(--color-success)]/20 text-[var(--color-success)] flex-shrink-0">
                     <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -572,10 +616,15 @@ const PuzzleSelectionModal = ({
                 )}
               </div>
               
-              {dailyInfo && (
+              {selectedDailyPuzzle && (
                 <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
                   <div className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-[var(--color-bg-elevated)]">
-                    <span className="text-xl sm:text-2xl font-bold">{dailyInfo.size}×{dailyInfo.size}</span>
+                    <span className="text-xl sm:text-2xl font-bold">{selectedDailySizeLabel}</span>
+                  </div>
+                  <div className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-[var(--color-bg-elevated)]">
+                    <span className="text-xs sm:text-sm font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+                      {selectedDailyDifficultyLabel}
+                    </span>
                   </div>
                 </div>
               )}
@@ -583,7 +632,7 @@ const PuzzleSelectionModal = ({
             
             {/* Play Button */}
             <button
-              onClick={handleDailySelect}
+              onClick={handleDailyPlay}
               disabled={isLoading}
               className="btn btn-primary w-full py-3 sm:py-4 text-sm sm:text-lg"
             >
@@ -597,7 +646,7 @@ const PuzzleSelectionModal = ({
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
                   </svg>
-                  {dailyInfo?.isCompleted ? 'Play Again' : 'Play Daily Puzzle'}
+                  {selectedDailyCompleted ? 'Play Again' : 'Play Daily Puzzle'}
                 </span>
               )}
             </button>
@@ -609,11 +658,12 @@ const PuzzleSelectionModal = ({
               </h3>
               <DailyCalendar
                 puzzles={previousDailyPuzzles}
-                onSelect={handlePreviousDailySelect}
+                selectedDateISO={selectedDailyDateISO}
+                onDateSelect={setSelectedDailyDateISO}
                 isLoading={isLoading}
               />
               <p className="text-xs text-[var(--color-text-muted)] mt-2 px-1">
-                Click any past or current day to play that day&apos;s puzzle.
+                Click any past or current day to update the selected puzzle details above.
               </p>
             </div>
           </div>
