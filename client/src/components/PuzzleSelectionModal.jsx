@@ -10,6 +10,136 @@ import { getUserCreatedPuzzles, saveUserCreatedPuzzle, deleteUserCreatedPuzzle }
 import DailyCalendar from './DailyCalendar';
 
 const ALL_TABS = ['daily', 'library', 'upload', 'create', 'mypuzzles'];
+const modalDataCache = {
+  data: null,
+  loadingPromise: null
+};
+
+async function loadSelectionModalData() {
+  const info = getDailyPuzzleInfo();
+  const allPuzzles = [];
+  let categories = {};
+  let loadError = '';
+
+  try {
+    const serverOk = await checkServerHealth();
+    if (serverOk) {
+      try {
+        const response = await fetch('/api/puzzles/daily-list');
+        if (response.ok) {
+          const serverPuzzles = await response.json();
+          serverPuzzles.forEach((puzzle) => {
+            allPuzzles.push({
+              ...puzzle,
+              source: 'server',
+              dateDisplay: new Date(puzzle.date).toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              })
+            });
+          });
+        }
+      } catch (apiErr) {
+        console.warn('Failed to load daily puzzles from server:', apiErr);
+      }
+    }
+  } catch (err) {
+    console.warn('Server check failed:', err);
+  }
+
+  const todayPhilippines = getTodayISOString();
+  const [ty, tm, td] = todayPhilippines.split('-').map(Number);
+  for (let i = 0; i <= 30; i += 1) {
+    const past = new Date(ty, tm - 1, td - i);
+    const dateISO = `${past.getFullYear()}-${String(past.getMonth() + 1).padStart(2, '0')}-${String(past.getDate()).padStart(2, '0')}`;
+    const cacheKey = `daily-puzzle-${dateISO}`;
+
+    if (allPuzzles.some((p) => p.date === dateISO)) {
+      continue;
+    }
+
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const puzzleData = JSON.parse(cached);
+        allPuzzles.push({
+          date: dateISO,
+          dateDisplay: past.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+          }),
+          size: puzzleData.size,
+          difficulty: puzzleData.difficulty,
+          filename: puzzleData.filename,
+          source: 'local'
+        });
+      }
+    } catch {
+      // Ignore invalid local cache entries.
+    }
+  }
+
+  allPuzzles.sort((a, b) => new Date(b.date) - new Date(a.date));
+  const todayISO = getTodayISOString();
+  const previousDailyPuzzles = allPuzzles.filter((p) => p.date <= todayISO);
+
+  try {
+    const serverOk = await checkServerHealth();
+    let data;
+    if (serverOk) {
+      try {
+        data = await loadPuzzlesFromServer();
+      } catch (apiError) {
+        console.warn('API failed, falling back to static file:', apiError);
+        const response = await fetch('/instances/index.json');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch index: ${response.status}`);
+        }
+        data = await response.json();
+      }
+    } else {
+      const response = await fetch('/instances/index.json');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch index: ${response.status}`);
+      }
+      data = await response.json();
+    }
+    categories = data;
+  } catch (err) {
+    console.error('Failed to load puzzle index:', err);
+    loadError = `Failed to load puzzle library: ${err.message}`;
+  }
+
+  return {
+    dailyInfo: info,
+    previousDailyPuzzles,
+    categories,
+    loadError
+  };
+}
+
+async function getCachedSelectionModalData() {
+  if (modalDataCache.data) {
+    return modalDataCache.data;
+  }
+
+  if (!modalDataCache.loadingPromise) {
+    modalDataCache.loadingPromise = loadSelectionModalData()
+      .then((data) => {
+        modalDataCache.data = data;
+        return data;
+      })
+      .finally(() => {
+        modalDataCache.loadingPromise = null;
+      });
+  }
+
+  return modalDataCache.loadingPromise;
+}
 
 const PuzzleSelectionModal = ({
   isOpen,
@@ -19,7 +149,8 @@ const PuzzleSelectionModal = ({
   allowedTabs = null,
   embedded = false,
   title = 'Select Puzzle',
-  showCloseButton = true
+  showCloseButton = true,
+  preload = false
 }) => {
   const visibleTabs = useMemo(() => {
     if (!Array.isArray(allowedTabs) || allowedTabs.length === 0) {
@@ -65,130 +196,50 @@ const PuzzleSelectionModal = ({
   // My puzzles state
   const [myPuzzles, setMyPuzzles] = useState([]);
 
-  // Load daily puzzle info and puzzle index
+  // Load and cache daily/library datasets once. Reuse on reopen/mode changes.
   useEffect(() => {
-    const loadData = async () => {
-      // Get daily puzzle info
-      const info = getDailyPuzzleInfo();
-      setDailyInfo(info);
-      
-      // Load daily puzzles from server/KV first, then fallback to localStorage
-      const allPuzzles = [];
-      
-      try {
-        // Try to load from server/KV
-        const serverOk = await checkServerHealth();
-        if (serverOk) {
-          try {
-            const response = await fetch('/api/puzzles/daily-list');
-            if (response.ok) {
-              const serverPuzzles = await response.json();
-              // Add server puzzles with source marker
-              serverPuzzles.forEach(puzzle => {
-                allPuzzles.push({
-                  ...puzzle,
-                  source: 'server',
-                  // Format date display nicely
-                  dateDisplay: new Date(puzzle.date).toLocaleDateString('en-US', { 
-                    weekday: 'short', 
-                    month: 'short', 
-                    day: 'numeric',
-                    year: 'numeric'
-                  })
-                });
-              });
-            }
-          } catch (apiErr) {
-            console.warn('Failed to load daily puzzles from server:', apiErr);
-          }
-        }
-      } catch (err) {
-        console.warn('Server check failed:', err);
-      }
-      
-      // Also load from localStorage (for puzzles generated on client). Use Philippines date.
-      const todayPhilippines = getTodayISOString(); // YYYY-MM-DD in Philippines
-      const [ty, tm, td] = todayPhilippines.split('-').map(Number);
-      for (let i = 0; i <= 30; i++) {
-        const past = new Date(ty, tm - 1, td - i);
-        const dateISO = `${past.getFullYear()}-${String(past.getMonth() + 1).padStart(2, '0')}-${String(past.getDate()).padStart(2, '0')}`;
-        const cacheKey = `daily-puzzle-${dateISO}`;
-        
-        // Skip if already loaded from server
-        if (allPuzzles.some(p => p.date === dateISO)) {
-          continue;
-        }
-        
-        try {
-          const cached = localStorage.getItem(cacheKey);
-          if (cached) {
-            const puzzleData = JSON.parse(cached);
-            allPuzzles.push({
-              date: dateISO,
-              dateDisplay: past.toLocaleDateString('en-US', { 
-                weekday: 'short', 
-                month: 'short', 
-                day: 'numeric',
-                year: 'numeric'
-              }),
-              size: puzzleData.size,
-              difficulty: puzzleData.difficulty,
-              filename: puzzleData.filename,
-              source: 'local'
-            });
-          }
-        } catch (e) {
-          // Skip invalid entries
-        }
-      }
-      
-      // Sort by date (newest first)
-      allPuzzles.sort((a, b) => new Date(b.date) - new Date(a.date));
-      
-      // Only show puzzles on or before today (local date) - hide future-dated puzzles
-      const todayISO = getTodayISOString();
-      const filtered = allPuzzles.filter(p => p.date <= todayISO);
-      
-      setPreviousDailyPuzzles(filtered);
+    let isActive = true;
 
-      // Load user-created puzzles (My puzzles)
-      setMyPuzzles(getUserCreatedPuzzles());
-      
-      // Load puzzle categories
-      try {
-        const serverOk = await checkServerHealth();
-        let data;
-        if (serverOk) {
-          try {
-            data = await loadPuzzlesFromServer();
-          } catch (apiError) {
-            // If API fails, fall back to static file
-            console.warn('API failed, falling back to static file:', apiError);
-            const response = await fetch('/instances/index.json');
-            if (!response.ok) {
-              throw new Error(`Failed to fetch index: ${response.status}`);
-            }
-            data = await response.json();
-          }
-        } else {
-          const response = await fetch('/instances/index.json');
-          if (!response.ok) {
-            throw new Error(`Failed to fetch index: ${response.status}`);
-          }
-          data = await response.json();
-        }
-        setCategories(data);
-        setError(''); // Clear any previous errors
-      } catch (err) {
-        console.error('Failed to load puzzle index:', err);
-        setError(`Failed to load puzzle library: ${err.message}`);
-      }
-    };
-    
-    if (isOpen) {
-      loadData();
+    if (!isOpen && !preload) {
+      return () => {
+        isActive = false;
+      };
     }
-  }, [isOpen]);
+
+    setMyPuzzles(getUserCreatedPuzzles());
+
+    if (modalDataCache.data) {
+      setDailyInfo(modalDataCache.data.dailyInfo);
+      setPreviousDailyPuzzles(modalDataCache.data.previousDailyPuzzles);
+      setCategories(modalDataCache.data.categories);
+      setError(modalDataCache.data.loadError || '');
+    }
+
+    if (isOpen && !modalDataCache.data) {
+      setIsLoading(true);
+    }
+
+    getCachedSelectionModalData()
+      .then((data) => {
+        if (!isActive) return;
+        setDailyInfo(data.dailyInfo);
+        setPreviousDailyPuzzles(data.previousDailyPuzzles);
+        setCategories(data.categories);
+        setError(data.loadError || '');
+      })
+      .catch((err) => {
+        if (!isActive) return;
+        setError(`Failed to load puzzle library: ${err.message}`);
+      })
+      .finally(() => {
+        if (!isActive || !isOpen) return;
+        setIsLoading(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [isOpen, preload]);
 
   useEffect(() => {
     setActiveTab(defaultActiveTab);

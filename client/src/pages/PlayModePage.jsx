@@ -747,6 +747,7 @@ function PlayModePage({ mode }) {
         onPuzzleSelect={handlePuzzleSelect}
         allowedTabs={['library', 'daily', 'upload', 'mypuzzles']}
         initialTab={isGameMode ? 'library' : 'daily'}
+        preload
       />
 
       <CompletionModal
