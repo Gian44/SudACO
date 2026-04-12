@@ -32,10 +32,7 @@
 *.app
 
 # WebAssembly build outputs
-client/src/wasm/sudoku_solver.js
-client/src/wasm/sudoku_solver.wasm
-client/public/sudoku_solver.js
-client/public/sudoku_solver.wasm
+# Keep solver artifacts tracked so production deployments can load WASM.
 
 # Node modules
 node_modules/

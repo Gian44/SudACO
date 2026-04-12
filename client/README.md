@@ -37,6 +37,7 @@ The application includes automatic daily puzzle generation using Vercel Cron Job
 3. **WASM Files**: Ensure `sudoku_solver.js` and `sudoku_solver.wasm` are available in:
    - `client/src/wasm/` (for development)
    - `client/public/` (for production)
+   - and committed to git so remote deployments include them.
 
 ### How It Works
 

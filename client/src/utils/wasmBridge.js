@@ -8,8 +8,11 @@ function isNodeRuntime() {
 }
 
 async function importWasmFactory() {
+  const baseUrl = import.meta.env?.BASE_URL || '/';
+  const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
   const candidates = [
     new URL('../wasm/sudoku_solver.js', import.meta.url).href,
+    `${normalizedBaseUrl}sudoku_solver.js`,
     '/sudoku_solver.js'
   ];
 
@@ -111,6 +114,8 @@ export function getDefaultTimeout(size = 9) {
 export async function initWasm() {
   if (!wasmModule) {
     const runningInBrowserLikeRuntime = !isNodeRuntime();
+    const baseUrl = import.meta.env?.BASE_URL || '/';
+    const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
     const originalProcess = globalThis.process;
     const needsProcessOverride = runningInBrowserLikeRuntime
       && originalProcess
@@ -123,11 +128,20 @@ export async function initWasm() {
         globalThis.process = { ...originalProcess, type: 'renderer' };
       }
       const wasmModuleFactory = await importWasmFactory();
-      wasmModule = await wasmModuleFactory.default();
+      wasmModule = await wasmModuleFactory.default({
+        // Production bundles import a hashed JS wrapper from /assets/,
+        // but the wasm binary is served from public at the app base path.
+        locateFile: (path, scriptDirectory) => {
+          if (path.endsWith('.wasm')) {
+            return `${normalizedBaseUrl}sudoku_solver.wasm`;
+          }
+          return `${scriptDirectory}${path}`;
+        }
+      });
       console.log('✓ WebAssembly module loaded successfully');
     } catch (error) {
       console.error('✗ Failed to load WebAssembly module:', error);
-      throw new Error('Failed to load WebAssembly module. Ensure sudoku_solver.js and sudoku_solver.wasm are available in client/src/wasm or client/public.');
+      throw new Error('Failed to load WebAssembly module. Ensure sudoku_solver.js and sudoku_solver.wasm are bundled for production (recommended: commit them under client/src/wasm and/or client/public).');
     } finally {
       if (needsProcessOverride) {
         globalThis.process = originalProcess;
