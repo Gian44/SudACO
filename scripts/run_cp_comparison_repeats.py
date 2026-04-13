@@ -286,7 +286,7 @@ def _run_file_for(outdir: Path, size_name: str, alg_name: str, run_idx: int) -> 
 def _load_run_metrics(
     csv_path: Path,
     expected_instance_names: set[str] | None = None,
-) -> tuple[float, float, float, bool] | None:
+) -> dict | None:
     if not csv_path.exists():
         return None
     succ_by_instance: dict[str, float] = {}
@@ -313,7 +313,14 @@ def _load_run_metrics(
     # Success rate for the run is based on rows recorded in that run file.
     # A failed instance row (success_% = 0) is naturally counted in this mean.
     run_success = _safe_mean(list(succ_by_instance.values()))
-    return (run_success, _safe_mean(tmean), _safe_mean(cycmean), is_complete)
+    return {
+        "success": run_success,
+        "time_mean": _safe_mean(tmean),
+        # Per-run time std = stddev of per-instance time_mean values in that run CSV.
+        "time_std": _safe_std(tmean),
+        "cycles_mean": _safe_mean(cycmean),
+        "is_complete": is_complete,
+    }
 
 
 def _aggregate_alg_over_runs(
@@ -327,21 +334,48 @@ def _aggregate_alg_over_runs(
 ) -> dict:
     run_success = []
     run_time = []
+    run_time_std = []
     run_cycles = []
+    run_rows = []
     found_files = 0
     incomplete_runs = 0
     for run_idx in range(int(run_start), int(run_end) + 1):
         fp = _run_file_for(outdir, size_name, alg_name, run_idx)
         m = _load_run_metrics(fp, expected_instance_names=expected_instance_names)
         if m is None:
+            run_rows.append({
+                "run": int(run_idx),
+                "csv": str(fp),
+                "success": math.nan,
+                "time_mean": math.nan,
+                "time_std": math.nan,
+                "cycles_mean": math.nan,
+                "is_complete": False,
+                "status": "missing_or_unreadable",
+            })
             continue
-        s, t, c, is_complete = m
+        s = m["success"]
+        t = m["time_mean"]
+        ts = m["time_std"]
+        c = m["cycles_mean"]
+        is_complete = bool(m["is_complete"])
         found_files += 1
         if expected_instance_names and not is_complete:
             incomplete_runs += 1
         run_success.append(s)
         run_time.append(t)
+        run_time_std.append(ts)
         run_cycles.append(c)
+        run_rows.append({
+            "run": int(run_idx),
+            "csv": str(fp),
+            "success": s,
+            "time_mean": t,
+            "time_std": ts,
+            "cycles_mean": c,
+            "is_complete": is_complete,
+            "status": "complete" if is_complete else "incomplete",
+        })
 
     if not run_success:
         return {
@@ -354,6 +388,8 @@ def _aggregate_alg_over_runs(
             "time_mean": math.nan,
             "time_std": math.nan,
             "cycles_mean": math.nan,
+            "time_mean_std_across_runs": math.nan,
+            "run_rows": run_rows,
         }
 
     clean_s = [v for v in run_success if not math.isnan(v)]
@@ -361,7 +397,8 @@ def _aggregate_alg_over_runs(
     worst_s = min(clean_s) if clean_s else math.nan
     avg_s = _safe_mean(run_success)
     time_m = _safe_mean(run_time)
-    time_s = _safe_std(run_time)
+    # Requested aggregation: average each run's time_std across runs.
+    time_s = _safe_mean(run_time_std)
     cyc_m = _safe_mean(run_cycles)
     return {
         "files_found": found_files,
@@ -373,6 +410,8 @@ def _aggregate_alg_over_runs(
         "time_mean": time_m,
         "time_std": time_s,
         "cycles_mean": cyc_m,
+        "time_mean_std_across_runs": _safe_std(run_time),
+        "run_rows": run_rows,
     }
 
 
@@ -396,7 +435,7 @@ def _write_sheet_tables(ws, title: str, rows_by_size: list[tuple[str, list[list]
         "Worst success %",
         "Average success %",
         "Time mean (s)",
-        "Time std (s)",
+        "Time std mean (s)",
         "Cycles mean",
     ]
     for size_name, rows in rows_by_size:
@@ -409,6 +448,29 @@ def _write_sheet_tables(ws, title: str, rows_by_size: list[tuple[str, list[list]
             for c, v in enumerate(row_vals, start=1):
                 ws.cell(row=r, column=c, value=v)
             r += 1
+        r += 1
+
+
+def _write_run_details_sheet(ws, rows: list[list]) -> None:
+    ws.cell(row=1, column=1, value="Per-run metrics (from each run CSV)")
+    headers = [
+        "Phase",
+        "Puzzle size",
+        "Algorithm",
+        "Run",
+        "Status",
+        "Complete coverage",
+        "Success % (run mean)",
+        "Time mean (run mean, s)",
+        "Time std (run std of instance means, s)",
+        "Cycles mean (run mean)",
+    ]
+    for c, h in enumerate(headers, start=1):
+        ws.cell(row=3, column=c, value=h)
+    r = 4
+    for row_vals in rows:
+        for c, v in enumerate(row_vals, start=1):
+            ws.cell(row=r, column=c, value=v)
         r += 1
 
 
@@ -428,6 +490,7 @@ def consolidate_excel(
 
     main_rows_by_size = []
     reduced_rows_by_size = []
+    run_detail_rows = []
     for size_name, _script in selected_sizes:
         main_dir = repo_root / "results" / size_name
         red_dir = main_dir / "dcm_9ants"
@@ -454,6 +517,24 @@ def consolidate_excel(
                     f"values use available rows in those runs.",
                     flush=True,
                 )
+        for phase_name, alg_label, metrics in [
+            ("main experiment", "CP-ACS", main_acs),
+            ("main experiment", "CP-DCM-ACO", main_dcm),
+            ("reduced ant", "CP-DCM-ACO (9 ants)", red_dcm),
+        ]:
+            for rr in metrics.get("run_rows", []):
+                run_detail_rows.append([
+                    phase_name,
+                    size_name,
+                    alg_label,
+                    rr.get("run"),
+                    rr.get("status"),
+                    "yes" if rr.get("is_complete") else "no",
+                    _fmt(rr.get("success"), 3),
+                    _fmt(rr.get("time_mean"), 6),
+                    _fmt(rr.get("time_std"), 6),
+                    _fmt(rr.get("cycles_mean"), 3),
+                ])
 
         main_rows_by_size.append((size_name, [
             [
@@ -504,6 +585,8 @@ def consolidate_excel(
 
     ws_red = wb.create_sheet(title="reduced ant")
     _write_sheet_tables(ws_red, "Reduced Ant Summary", reduced_rows_by_size)
+    ws_runs = wb.create_sheet(title="run details")
+    _write_run_details_sheet(ws_runs, run_detail_rows)
 
     excel_path.parent.mkdir(parents=True, exist_ok=True)
     wb.save(str(excel_path))
