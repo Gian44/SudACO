@@ -109,21 +109,61 @@ function AboutPage() {
 
         {activeTab === 'about' && (
           <section className="about-section">
-            <h2>About</h2>
-            <p>
-              SudACO is a research-driven Sudoku platform focused on puzzle solving and experimentation.
-            </p>
+            <div className="about-subsection">
+              <h3>About</h3>
+              <p>
+                SudACO is a Sudoku web app that blends classic puzzle gameplay with smart solving technology.
+                It&apos;s powered by a research-based system that uses multiple &quot;ant colonies&quot; working together
+                to solve puzzles efficiently.
+              </p>
+              <p>
+                Instead of just giving you the answer, the app lets you explore how intelligent algorithms approach
+                Sudoku—making it both fun to play and interesting to observe.
+              </p>
+            </div>
+
+            <hr className="my-1 border-0 border-t border-slate-500/25" />
+
             <div className="about-subsection">
               <h3>What this game is about</h3>
               <p>
-                This project combines classic Sudoku gameplay with algorithmic solving tools so players can both
-                enjoy puzzles and observe solver behavior across different configurations.
+                At its core, SudACO is still the Sudoku you know—fill the grid so each number appears once per row,
+                column, and box.
+              </p>
+              <p>But here&apos;s the twist 👇</p>
+              <p>
+                You&apos;re not just playing… you&apos;re also seeing how an advanced solver works behind the scenes.
+              </p>
+              <p>The system:</p>
+              <ul>
+                <li>Uses logic rules to simplify the puzzle</li>
+                <li>Simulates multiple groups of agents (&quot;ants&quot;) exploring solutions</li>
+                <li>Balances trying new possibilities and improving good ones</li>
+                <li>Lets different groups share information to solve puzzles faster</li>
+              </ul>
+              <p>
+                So whether you&apos;re solving it yourself or watching the solver in action, you&apos;re experiencing
+                how cooperative AI tackles complex problems.
               </p>
             </div>
+
+            <hr className="my-1 border-0 border-t border-slate-500/25" />
+
             <div className="about-subsection">
               <h3>Who made it</h3>
               <p>
-                Placeholder: This section will include the author/team, advisers, and contributors in a future update.
+                <strong>Gian Myrl D. Renomeron</strong>
+                <br />
+                BS Computer Science
+                <br />
+                University of the Philippines Tacloban College
+              </p>
+              <p>
+                <strong>Adviser:</strong> Dr. John Paul T. Yusiong
+              </p>
+              <p>
+                This project is part of a research study focused on applying cooperative swarm intelligence to Sudoku
+                solving and making it accessible through an interactive web app.
               </p>
             </div>
           </section>
