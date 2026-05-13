@@ -1,0 +1,97 @@
+# ----------------------------------------------------------------------------
+# Native C++ build artifacts
+# ----------------------------------------------------------------------------
+
+# Object files / archives
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+
+# Native CLI executable (Linux/macOS Make build)
+sudokusolver
+sudokusolver.exe
+
+# Object-file output dir (keep the dir via .gitkeep, ignore everything else)
+obj/*
+!obj/.gitkeep
+
+# ----------------------------------------------------------------------------
+# Visual Studio / MSBuild
+# ----------------------------------------------------------------------------
+
+# Build output
+vs2017/x64/
+vs2017/Win32/
+vs2017/Debug/
+vs2017/Release/
+vs2017/sudoku_ants/
+
+# User-specific project state
+*.suo
+*.user
+*.sln.docstates
+*.opendb
+*.VC.db
+*.VC.opendb
+.vs/
+
+# Build logs / intermediate
+*.tlog
+*.log
+*.pdb
+*.idb
+*.iobj
+*.ipdb
+*.exp
+*.ilk
+*.recipe
+*.lastbuildstate
+
+# ----------------------------------------------------------------------------
+# Emscripten / WebAssembly output
+# ----------------------------------------------------------------------------
+
+sudoku_solver.js
+sudoku_solver.wasm
+client/
+
+# ----------------------------------------------------------------------------
+# Node / Tailwind
+# ----------------------------------------------------------------------------
+
+node_modules/
+
+# ----------------------------------------------------------------------------
+# Python (optional benchmark scripts)
+# ----------------------------------------------------------------------------
+
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# ----------------------------------------------------------------------------
+# Editors / OS
+# ----------------------------------------------------------------------------
+
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ----------------------------------------------------------------------------
+# Benchmark / experiment outputs
+# ----------------------------------------------------------------------------
+
+results/
+*.csv
+!instances/**/*.csv
