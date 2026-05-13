@@ -9,7 +9,7 @@ The same core compiles to:
 ## Quick start
 
 ```bash
-git clone <this-repo-url> SudACO
+git clone https://github.com/Gian44/SudACO.git
 cd SudACO
 ```
 
